@@ -1,0 +1,13 @@
+{
+  "name": "internship-matching-platform",
+  "version": "1.0.0",
+  "description": "Full-stack internship matching platform",
+  "scripts": {
+    "setup": "chmod +x scripts/setup.sh && ./scripts/setup.sh",
+    "deploy": "chmod +x scripts/deploy.sh && ./scripts/deploy.sh",
+    "backup": "chmod +x scripts/backup.sh && ./scripts/backup.sh"
+  },
+  "keywords": ["internship", "matching", "platform", "react", "nodejs"],
+  "author": "Your Name",
+  "license": "MIT"
+}
