@@ -1,201 +1,52 @@
 'use client';
 
-import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 
-const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
-
-  // Mock user data - replace with actual auth logic
-  const isLoggedIn = false;
-  const userRole = 'student'; // 'student', 'employer', or 'admin'
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
-  const toggleUserDropdown = () => {
-    setIsUserDropdownOpen(!isUserDropdownOpen);
-  };
-
+export default function Header() {
   return (
-    <header className="bg-white shadow-md sticky top-0 z-50">
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo Section */}
-          <div className="flex items-center space-x-2">
-            <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg">
-              <span className="text-white font-bold text-lg">IM</span>
+    <header className="sticky top-0 z-50 w-full border-b border-primary-200/80 bg-gradient-to-r from-primary-500 via-primary-600 to-secondary-300 backdrop-blur">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between gap-x-6 px-6 py-6 lg:px-8" aria-label="Global">
+        
+        {/* Logo */}
+        <div className="flex items-center flex-shrink-0">
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary-600 via-primary-500 to-secondary-200 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
+              <span className="text-white font-bold text-base">IM</span>
             </div>
-            <Link href="/" className="text-xl font-bold text-gray-900">
-              InternMatch
-            </Link>
-          </div>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            <Link
-              href="/browse"
-              className="text-gray-700 hover:text-blue-600 transition duration-300 font-medium"
-            >
-              Browse Internships
-            </Link>
-            <Link
-              href="/about"
-              className="text-gray-700 hover:text-blue-600 transition duration-300 font-medium"
-            >
-              About
-            </Link>
-            <Link
-              href="/contact"
-              className="text-gray-700 hover:text-blue-600 transition duration-300 font-medium"
-            >
-              Contact
-            </Link>
-          </div>
-
-          {/* Right Side - Auth & Menu */}
-          <div className="flex items-center space-x-4">
-            {!isLoggedIn ? (
-              <>
-                <Link
-                  href="/login"
-                  className="hidden md:block text-gray-700 hover:text-blue-600 font-medium transition duration-300"
-                >
-                  Login
-                </Link>
-                <Link
-                  href="/signup"
-                  className="hidden md:block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-medium transition duration-300"
-                >
-                  Sign Up
-                </Link>
-              </>
-            ) : (
-              <div className="relative">
-                <button
-                  onClick={toggleUserDropdown}
-                  className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition duration-300"
-                >
-                  <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                    <span className="text-sm font-bold">U</span>
-                  </div>
-                  <span className="hidden md:inline font-medium">Account</span>
-                </button>
-
-                {/* User Dropdown Menu */}
-                {isUserDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2">
-                    <Link
-                      href="/profile"
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                    >
-                      My Profile
-                    </Link>
-                    <Link
-                      href="/dashboard"
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                    >
-                      Dashboard
-                    </Link>
-                    <Link
-                      href="/applications"
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                    >
-                      Applications
-                    </Link>
-                    <hr className="my-2" />
-                    <Link
-                      href="/settings"
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                    >
-                      Settings
-                    </Link>
-                    <button
-                      onClick={() => {
-                        // Handle logout
-                        setIsUserDropdownOpen(false);
-                      }}
-                      className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
-                    >
-                      Logout
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Mobile Menu Button */}
-            <button
-              onClick={toggleMenu}
-              className="md:hidden flex flex-col space-y-1 text-gray-900 focus:outline-none"
-            >
-              <span
-                className={`block w-6 h-0.5 bg-gray-900 transition-all ${
-                  isMenuOpen ? 'rotate-45 translate-y-2' : ''
-                }`}
-              ></span>
-              <span
-                className={`block w-6 h-0.5 bg-gray-900 transition-all ${
-                  isMenuOpen ? 'opacity-0' : ''
-                }`}
-              ></span>
-              <span
-                className={`block w-6 h-0.5 bg-gray-900 transition-all ${
-                  isMenuOpen ? '-rotate-45 -translate-y-2' : ''
-                }`}
-              ></span>
-            </button>
-          </div>
+            <span className="text-white font-semibold text-lg tracking-tight hidden sm:inline drop-shadow-sm">InternMatch</span>
+          </Link>
         </div>
 
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden bg-gray-50 py-4 px-4 rounded-b-lg">
-            <div className="flex flex-col space-y-3">
-              <Link
-                href="/browse"
-                className="text-gray-700 hover:text-blue-600 font-medium"
-              >
-                Browse Internships
-              </Link>
-              <Link
-                href="/about"
-                className="text-gray-700 hover:text-blue-600 font-medium"
-              >
-                About
-              </Link>
-              <Link
-                href="/contact"
-                className="text-gray-700 hover:text-blue-600 font-medium"
-              >
-                Contact
-              </Link>
-              {!isLoggedIn && (
-                <>
-                  <hr className="my-2" />
-                  <Link
-                    href="/login"
-                    className="text-gray-700 hover:text-blue-600 font-medium"
-                  >
-                    Login
-                  </Link>
-                  <Link
-                    href="/signup"
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium text-center"
-                  >
-                    Sign Up
-                  </Link>
-                </>
-              )}
-            </div>
-          </div>
-        )}
+        {/* Navigation Links - Always Horizontal */}
+        <div className="flex items-center gap-x-4 lg:gap-x-8 flex-1 justify-center">
+          <Link href="/browse" className="text-xs sm:text-sm font-semibold text-white/90 hover:text-white transition-colors whitespace-nowrap">
+            Browse
+          </Link>
+          <Link href="/about" className="text-xs sm:text-sm font-semibold text-white/90 hover:text-white transition-colors whitespace-nowrap">
+            About
+          </Link>
+          <Link href="/contact" className="text-xs sm:text-sm font-semibold text-white/90 hover:text-white transition-colors whitespace-nowrap">
+            Contact
+          </Link>
+        </div>
+
+        {/* Auth Buttons - Always Horizontal */}
+        <div className="flex items-center gap-x-2 lg:gap-x-3 flex-shrink-0">
+          <Link 
+            href="/login" 
+            className="text-xs sm:text-sm font-semibold text-white/90 hover:text-white px-2 sm:px-3 py-2 rounded-md hover:bg-white/10 transition-colors whitespace-nowrap"
+          >
+            Log in
+          </Link>
+          <Link 
+            href="/signup" 
+            className="rounded-md bg-white text-primary-600 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold shadow-sm hover:bg-white/90 hover:scale-105 transition-all whitespace-nowrap"
+          >
+            Sign up
+          </Link>
+        </div>
       </nav>
     </header>
   );
-};
+}
 
-export default Header;
