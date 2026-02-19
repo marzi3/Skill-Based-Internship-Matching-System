@@ -1,17 +1,27 @@
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
+const passport = require('./config/passport'); // Import passport config
 require('dotenv').config();
 
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true // Important for cookies
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser()); // Parse cookies
+app.use(passport.initialize()); // Init passport
+
+// Static Uploads Folder
+app.use('/uploads', express.static('uploads'));
 
 // Routes
-const routes = require('./routes');
-app.use('/api', routes);
+const routes = require('./routes/index');
+app.use('/api', routes); // Use the index router which includes auth & verification
 
 // Health check
 app.get('/health', (req, res) => {
@@ -26,7 +36,7 @@ app.use((req, res) => {
 // Error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ message: 'Internal server error' });
+  res.status(500).json({ message: err.message || 'Internal server error' });
 });
 
 module.exports = app;
