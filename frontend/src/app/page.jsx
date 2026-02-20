@@ -21,9 +21,12 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
-                InternMatch
-              </span>
+              <Link href="/" className="flex items-center gap-2">
+                <img src="/images/logo.png" alt="InternMatch Logo" className="h-12 w-auto object-contain" />
+                <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 hidden sm:inline">
+                  InternMatch
+                </span>
+              </Link>
             </div>
             <div className="hidden md:flex items-center space-x-8">
               <Link href="#" className="text-gray-600 hover:text-indigo-600 transition-colors">Find Internships</Link>
@@ -114,7 +117,10 @@ export default function Home() {
       <footer className="bg-gray-900 text-white py-12 border-t border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
           <div className="mb-8 md:mb-0">
-            <span className="text-2xl font-bold">InternMatch</span>
+            <div className="flex items-center gap-3">
+              <img src="/images/logo.png" alt="InternMatch Logo" className="h-10 w-auto grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all duration-300" />
+              <span className="text-2xl font-bold">InternMatch</span>
+            </div>
             <p className="text-gray-400 text-sm mt-2">© 2026 InternMatch Inc. All rights reserved.</p>
           </div>
           <div className="flex space-x-8">
