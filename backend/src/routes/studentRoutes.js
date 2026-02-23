@@ -1,13 +1,47 @@
 const express = require('express');
 const router = express.Router();
+const {
+  getProfile,
+  initializeProfile,
+  savePersonalInfo,
+  saveEducation,
+  addSkill,
+  removeSkill,
+  getSkills,
+  getEducation,
+  removeEducation,
+  updatePortfolio,
+  getProfileCompletion,
+  uploadProfileImage,
+  uploadCoverImage,
+} = require('../controllers/studentController');
+const { protect } = require('../middleware/authMiddleware');
+const upload = require('../config/multer');
 
-// Student routes
-router.get('/', (req, res) => {
-  res.json({ message: 'Get all students' });
-});
+// Protect all routes with authentication
+router.use(protect);
 
-router.get('/:id', (req, res) => {
-  res.json({ message: 'Get student by ID' });
-});
+// Profile routes
+router.get('/profile', getProfile);
+router.post('/profile/init', initializeProfile);
+router.get('/profile/completion', getProfileCompletion);
+
+// Personal information routes
+router.post('/profile/personal', savePersonalInfo);
+router.post('/profile/image', upload.single('profileImage'), uploadProfileImage);
+router.post('/profile/cover', upload.single('coverImage'), uploadCoverImage);
+
+// Education routes
+router.get('/profile/education', getEducation);
+router.post('/profile/education', saveEducation);
+router.delete('/profile/education/:educationId', removeEducation);
+
+// Skills routes
+router.get('/profile/skills', getSkills);
+router.post('/profile/skill', addSkill);
+router.delete('/profile/skill/:skillId', removeSkill);
+
+// Portfolio routes
+router.post('/profile/portfolio', updatePortfolio);
 
 module.exports = router;

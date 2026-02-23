@@ -5,10 +5,20 @@ const fs = require('fs');
 // Set storage engine
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        const uploadDir = 'uploads/';
+        // Use different directories based on field name
+        let uploadDir = 'uploads/';
+        
+        if (file.fieldname === 'profileImage') {
+            uploadDir = 'uploads/profile-images/';
+        } else if (file.fieldname === 'resume') {
+            uploadDir = 'uploads/resumes/';
+        } else if (file.fieldname === 'companyLogo') {
+            uploadDir = 'uploads/company-logos/';
+        }
+        
         // Create directory if it doesn't exist
         if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir);
+            fs.mkdirSync(uploadDir, { recursive: true });
         }
         cb(null, uploadDir);
     },
