@@ -80,6 +80,7 @@ export default function Register() {
                 <div className="w-full md:w-5/12 bg-gradient-to-br from-indigo-600 to-purple-700 p-10 text-white flex flex-col justify-between relative overflow-hidden">
                     <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
                     <div className="relative z-10">
+                        <img src="/images/logo.png" alt="InternMatch Logo" className="h-16 w-auto object-contain mb-4 drop-shadow-md bg-white/20 p-2 rounded-xl backdrop-blur-sm" />
                         <h1 className="text-3xl font-bold mb-2">Join InternMatch</h1>
                         <p className="text-indigo-100">Start your journey today.</p>
                     </div>
