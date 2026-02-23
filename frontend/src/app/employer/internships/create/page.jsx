@@ -412,36 +412,39 @@ const CreateInternshipPage = () => {
                             </button>
                           </div>
                           <div className="flex flex-wrap gap-3 pt-2">
-                            {formData.requiredSkills.map(skill => (
-                              <div key={skill.name} className="bg-white border border-slate-200 text-slate-700 p-4 rounded-2xl flex flex-col gap-3 shadow-sm min-w-[200px] animate-in fade-in zoom-in duration-300">
-                                <div className="flex items-center justify-between gap-4">
-                                  <span className="text-xs font-black uppercase tracking-widest text-[#6366F1]">{skill.name}</span>
-                                  <button onClick={() => handleRemoveSkill(skill.name)} className="text-slate-400 hover:text-rose-500 transition-colors">
-                                    <X size={16} strokeWidth={3} />
-                                  </button>
+                            {formData.requiredSkills.map(skill => {
+                              const skillName = typeof skill === 'string' ? skill : skill.name;
+                              return (
+                                <div key={skillName} className="bg-white border border-slate-200 text-slate-700 p-4 rounded-2xl flex flex-col gap-3 shadow-sm min-w-[200px] animate-in fade-in zoom-in duration-300">
+                                  <div className="flex items-center justify-between gap-4">
+                                    <span className="text-xs font-black uppercase tracking-widest text-[#6366F1]">{skillName}</span>
+                                    <button onClick={() => handleRemoveSkill(skillName)} className="text-slate-400 hover:text-rose-500 transition-colors">
+                                      <X size={16} strokeWidth={3} />
+                                    </button>
+                                  </div>
+                                  <div className="space-y-2 pt-2 border-t border-slate-100">
+                                    <label className="flex items-center justify-between cursor-pointer group">
+                                      <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest group-hover:text-slate-900 transition-colors">Mandatory</span>
+                                      <div
+                                        onClick={() => handleToggleSkillConfig(skillName, 'mandatory')}
+                                        className={`w-8 h-4 rounded-full flex items-center p-0.5 transition-colors ${skill.mandatory ? 'bg-emerald-400' : 'bg-slate-200'}`}
+                                      >
+                                        <div className={`w-3 h-3 bg-white rounded-full shadow-sm transition-transform ${skill.mandatory ? 'translate-x-4' : 'translate-x-0'}`} />
+                                      </div>
+                                    </label>
+                                    <label className="flex items-center justify-between cursor-pointer group">
+                                      <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest group-hover:text-slate-900 transition-colors">Prefers Senior</span>
+                                      <div
+                                        onClick={() => handleToggleSkillConfig(skillName, 'prefersSenior')}
+                                        className={`w-8 h-4 rounded-full flex items-center p-0.5 transition-colors ${skill.prefersSenior ? 'bg-[#6366F1]' : 'bg-slate-200'}`}
+                                      >
+                                        <div className={`w-3 h-3 bg-white rounded-full shadow-sm transition-transform ${skill.prefersSenior ? 'translate-x-4' : 'translate-x-0'}`} />
+                                      </div>
+                                    </label>
+                                  </div>
                                 </div>
-                                <div className="space-y-2 pt-2 border-t border-slate-100">
-                                  <label className="flex items-center justify-between cursor-pointer group">
-                                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest group-hover:text-slate-900 transition-colors">Mandatory</span>
-                                    <div
-                                      onClick={() => handleToggleSkillConfig(skill.name, 'mandatory')}
-                                      className={`w-8 h-4 rounded-full flex items-center p-0.5 transition-colors ${skill.mandatory ? 'bg-emerald-400' : 'bg-slate-200'}`}
-                                    >
-                                      <div className={`w-3 h-3 bg-white rounded-full shadow-sm transition-transform ${skill.mandatory ? 'translate-x-4' : 'translate-x-0'}`} />
-                                    </div>
-                                  </label>
-                                  <label className="flex items-center justify-between cursor-pointer group">
-                                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest group-hover:text-slate-900 transition-colors">Prefers Senior</span>
-                                    <div
-                                      onClick={() => handleToggleSkillConfig(skill.name, 'prefersSenior')}
-                                      className={`w-8 h-4 rounded-full flex items-center p-0.5 transition-colors ${skill.prefersSenior ? 'bg-[#6366F1]' : 'bg-slate-200'}`}
-                                    >
-                                      <div className={`w-3 h-3 bg-white rounded-full shadow-sm transition-transform ${skill.prefersSenior ? 'translate-x-4' : 'translate-x-0'}`} />
-                                    </div>
-                                  </label>
-                                </div>
-                              </div>
-                            ))}
+                              )
+                            })}
                           </div>
                         </div>
 
@@ -690,11 +693,14 @@ const CreateInternshipPage = () => {
                     <div>
                       <h4 className="text-[10px] font-black uppercase tracking-[0.4em] opacity-40 mb-4">Skill Sequence</h4>
                       <div className="flex flex-wrap gap-3">
-                        {formData.requiredSkills.length > 0 ? formData.requiredSkills.slice(0, 4).map(s => (
-                          <span key={s.name} className="bg-white text-slate-900 px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-md transition-transform hover:-translate-y-1">
-                            {s.name} {s.mandatory && <span className="text-emerald-500 ml-1">•</span>}
-                          </span>
-                        )) : <span className="text-white/20 italic text-xs font-bold tracking-widest uppercase">Awaiting input...</span>}
+                        {formData.requiredSkills.length > 0 ? formData.requiredSkills.slice(0, 4).map(s => {
+                          const name = typeof s === 'string' ? s : s.name;
+                          return (
+                            <span key={name} className="bg-white text-slate-900 px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-md transition-transform hover:-translate-y-1">
+                              {name} {s.mandatory && <span className="text-emerald-500 ml-1">•</span>}
+                            </span>
+                          )
+                        }) : <span className="text-white/20 italic text-xs font-bold tracking-widest uppercase">Awaiting input...</span>}
                       </div>
                     </div>
 
