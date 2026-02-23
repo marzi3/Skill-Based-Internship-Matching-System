@@ -41,6 +41,7 @@ export default function Login() {
                     </div>
 
                     <div className="relative z-10">
+                        <img src="/images/logo.png" alt="InternMatch Logo" className="h-20 w-auto object-contain mb-6 drop-shadow-md bg-white/20 p-2 rounded-xl backdrop-blur-sm hidden sm:block" />
                         <motion.h1
                             initial={{ x: -20, opacity: 0 }}
                             animate={{ x: 0, opacity: 1 }}

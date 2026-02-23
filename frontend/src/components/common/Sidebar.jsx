@@ -8,7 +8,7 @@ import { Menu, X } from 'lucide-react';
 // Main Sidebar Component - Handles both onClick and href items
 const Sidebar = ({
   items = [],
-  logo = null,
+  logo = '/images/logo.png',
   brand = 'InternMatch',
   isOpen = true,
   onToggle = null,
@@ -68,17 +68,7 @@ const Sidebar = ({
           {logo ? (
             <img src={logo} alt={brand} className="h-8" />
           ) : (
-            <div className={`
-              flex items-center justify-center w-8 h-8 rounded
-              ${variant === 'light' ? 'bg-blue-600' : 'bg-white'}
-            `}>
-              <span className={`
-                font-bold text-sm
-                ${variant === 'light' ? 'text-white' : 'text-blue-600'}
-              `}>
-                IM
-              </span>
-            </div>
+            <img src="/images/logo.png" alt="Logo" className="h-10 w-auto object-contain" />
           )}
           {!collapsed && (
             <span className="font-bold text-sm hidden sm:inline truncate">
@@ -149,8 +139,8 @@ const Sidebar = ({
                         ? 'bg-blue-100 text-blue-600'
                         : 'bg-blue-900 text-blue-200'
                       : variant === 'light'
-                      ? 'text-gray-700 hover:bg-gray-100'
-                      : 'text-gray-300 hover:bg-gray-800'
+                        ? 'text-gray-700 hover:bg-gray-100'
+                        : 'text-gray-300 hover:bg-gray-800'
                     }
                   `}
                 >
@@ -192,8 +182,8 @@ const Sidebar = ({
                               ? 'bg-blue-100 text-blue-600 font-medium'
                               : 'bg-blue-900 text-blue-200 font-medium'
                             : variant === 'light'
-                            ? 'text-gray-600 hover:bg-gray-50'
-                            : 'text-gray-400 hover:bg-gray-800'
+                              ? 'text-gray-600 hover:bg-gray-50'
+                              : 'text-gray-400 hover:bg-gray-800'
                           }
                         `}
                       >
@@ -220,8 +210,8 @@ const Sidebar = ({
                       ? 'bg-blue-100 text-blue-600'
                       : 'bg-blue-900 text-blue-200'
                     : variant === 'light'
-                    ? 'text-gray-700 hover:bg-gray-100'
-                    : 'text-gray-300 hover:bg-gray-800'
+                      ? 'text-gray-700 hover:bg-gray-100'
+                      : 'text-gray-300 hover:bg-gray-800'
                   }
                 `}
               >
@@ -283,7 +273,7 @@ const Sidebar = ({
 // Collapsible Mobile Sidebar
 export const MobileSidebar = ({
   isOpen = false,
-  onClose = () => {},
+  onClose = () => { },
   items = [],
   brand = 'InternMatch',
 }) => {
@@ -375,19 +365,12 @@ export const SidebarWithSections = ({
         flex items-center justify-between p-4
         ${variant === 'light' ? 'border-b border-gray-200' : 'border-b border-gray-800'}
       `}>
-        <div className={`flex items-center justify-center w-8 h-8 rounded ${
-          variant === 'light' ? 'bg-blue-600' : 'bg-white'
-        }`}>
-          <span className={`font-bold text-sm ${
-            variant === 'light' ? 'text-white' : 'text-blue-600'
-          }`}>IM</span>
-        </div>
+        <img src="/images/logo.png" alt="Logo" className="h-10 w-auto object-contain" />
 
         <button
           onClick={handleToggle}
-          className={`p-1 rounded hover:bg-gray-200 transition duration-300 ${
-            variant === 'dark' ? 'hover:bg-gray-800' : ''
-          }`}
+          className={`p-1 rounded hover:bg-gray-200 transition duration-300 ${variant === 'dark' ? 'hover:bg-gray-800' : ''
+            }`}
         >
           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
@@ -421,8 +404,8 @@ export const SidebarWithSections = ({
                         ? 'bg-blue-100 text-blue-600'
                         : 'bg-blue-900 text-blue-200'
                       : variant === 'light'
-                      ? 'text-gray-700 hover:bg-gray-100'
-                      : 'text-gray-300 hover:bg-gray-800'
+                        ? 'text-gray-700 hover:bg-gray-100'
+                        : 'text-gray-300 hover:bg-gray-800'
                     }
                   `}
                 >
