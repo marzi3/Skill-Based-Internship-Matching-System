@@ -6,7 +6,26 @@ const User = require('../models/User');
 // @access  Public
 exports.getInternships = async (req, res) => {
     try {
-        const internships = await Internship.find({ status: 'Hiring' }).populate('employer', 'name email companyName');
+        const { q, skill, industry, location } = req.query;
+        let query = { status: 'Hiring', isDeleted: { $ne: true } };
+
+        if (q) {
+            query.$text = { $search: q };
+        }
+        if (industry) {
+            query.domain = new RegExp(industry, 'i');
+        }
+        if (location) {
+            query.workEnvironment = location;
+        }
+        if (skill) {
+            query.$or = [
+                { requiredSkills: new RegExp(skill, 'i') },
+                { 'requiredSkills.name': new RegExp(skill, 'i') }
+            ];
+        }
+
+        const internships = await Internship.find(query).populate('employer', 'name email companyName');
         res.status(200).json({
             success: true,
             count: internships.length,
@@ -175,7 +194,10 @@ exports.deleteInternship = async (req, res) => {
             });
         }
 
-        await internship.deleteOne();
+        // Soft delete instead of document.deleteOne()
+        internship.isDeleted = true;
+        internship.status = 'Closed';
+        await internship.save({ validateBeforeSave: false });
 
         res.status(200).json({
             success: true,
@@ -198,7 +220,7 @@ exports.getMyInternships = async (req, res) => {
             return res.status(401).json({ success: false, message: 'User context missing' });
         }
 
-        const internships = await Internship.find({ employer: req.user.id });
+        const internships = await Internship.find({ employer: req.user.id, isDeleted: { $ne: true } });
         res.status(200).json({
             success: true,
             count: internships.length,

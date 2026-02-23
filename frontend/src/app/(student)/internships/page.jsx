@@ -19,38 +19,42 @@ import CustomInput from '@/components/ui/CustomInput';
 import { CardLoader } from '@/components/common/Loader';
 import Link from 'next/link';
 
+import { useAuth } from '@/context/AuthContext';
+
 const StudentInternshipsPage = () => {
-    const [internships, setInternships] = useState([]);
+    const { user } = useAuth();
+    const [matches, setMatches] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        const fetchInternships = async () => {
+        const fetchMatches = async () => {
+            if (!user?._id) return;
             try {
                 setLoading(true);
-                // Protocol: Fetching all active internship records
-                const response = await axios.get('/api/internships');
+                // Protocol: Fetching personalized matches
+                const response = await axios.post('/api/matching/internships', {
+                    studentId: user._id
+                });
                 if (response.data.success) {
-                    // Filter for 'Hiring' status strictly
-                    const hiringOnly = response.data.data.filter(item => item.status === 'Hiring');
-                    setInternships(hiringOnly);
+                    setMatches(response.data.matches || []);
                 }
             } catch (err) {
                 setError('Database Synchronization Failed: Protocol transmission error.');
                 console.error(err);
             } finally {
-                setTimeout(() => setLoading(false), 800); // Smooth transition
+                setTimeout(() => setLoading(false), 800);
             }
         };
 
-        fetchInternships();
-    }, []);
+        fetchMatches();
+    }, [user?._id]);
 
-    const filteredInternships = internships.filter(item =>
-        item.positionTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.domain?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.company?.toLowerCase().includes(searchQuery.toLowerCase())
+    const filteredMatches = matches.filter(({ internship }) =>
+        internship?.positionTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        internship?.domain?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        internship?.company?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     return (
@@ -93,7 +97,7 @@ const StudentInternshipsPage = () => {
                     <div className="flex items-center gap-4">
                         <div className="h-px w-8 bg-slate-200" />
                         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300">
-                            {filteredInternships.length} Available Protocols
+                            {filteredMatches.length} Matches Found
                         </p>
                     </div>
                     {searchQuery && (
@@ -121,7 +125,7 @@ const StudentInternshipsPage = () => {
                             {error}
                         </p>
                     </motion.div>
-                ) : filteredInternships.length === 0 ? (
+                ) : filteredMatches.length === 0 ? (
                     <motion.div
                         initial={{ opacity: 0, scale: 0.98 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -131,12 +135,12 @@ const StudentInternshipsPage = () => {
                             <Filter className="text-slate-200" size={40} />
                         </div>
                         <h3 className="text-3xl font-black text-slate-900 tracking-tight">Zero Matches Detected</h3>
-                        <p className="text-slate-400 font-bold mt-3 max-w-sm mx-auto">Your search parameters did not synchronize with any available hiring protocols.</p>
+                        <p className="text-slate-400 font-bold mt-3 max-w-sm mx-auto">Your profile does not currently intersect with any active hiring protocols matching your parameters.</p>
                     </motion.div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                         <AnimatePresence mode="popLayout">
-                            {filteredInternships.map((internship, index) => (
+                            {filteredMatches.map(({ internship, score, tier }, index) => (
                                 <motion.div
                                     key={internship._id}
                                     layout
@@ -145,10 +149,16 @@ const StudentInternshipsPage = () => {
                                     transition={{ delay: index * 0.05 }}
                                     className="group bg-white rounded-[3.5rem] p-10 border border-slate-100 hover:border-[#6366F1]/30 hover:shadow-[0_50px_100px_rgba(99,102,241,0.12)] transition-all duration-500 relative flex flex-col h-full"
                                 >
-                                    {/* Status Indicator */}
-                                    <div className="absolute top-10 right-10">
-                                        <div className="flex items-center gap-2 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-2xl text-[9px] font-black uppercase tracking-widest border border-emerald-100/50">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                    {/* Status & Badge */}
+                                    <div className="absolute top-10 right-10 flex flex-col items-end gap-2">
+                                        <div className={`px-4 py-2 rounded-2xl text-[9px] font-black uppercase tracking-widest border shadow-sm ${tier === 'EXCELLENT' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' :
+                                            tier === 'GOOD' ? 'bg-indigo-50 text-indigo-600 border-indigo-200' :
+                                                tier === 'FAIR' ? 'bg-amber-50 text-amber-600 border-amber-200' :
+                                                    'bg-slate-50 text-slate-500 border-slate-200'
+                                            }`}>
+                                            {tier} Match • {score}pts
+                                        </div>
+                                        <div className="flex items-center gap-2 bg-slate-50 text-slate-500 px-3 py-1.5 rounded-xl text-[8px] font-bold uppercase tracking-widest border border-slate-100">
                                             {internship.workEnvironment || 'Remote'}
                                         </div>
                                     </div>
@@ -183,11 +193,14 @@ const StudentInternshipsPage = () => {
                                         <div>
                                             <p className="text-[9px] font-black text-slate-300 uppercase tracking-[0.3em] mb-4">Required Stack</p>
                                             <div className="flex flex-wrap gap-2.5">
-                                                {internship.requiredSkills?.slice(0, 3).map(skill => (
-                                                    <span key={skill} className="px-4 py-2 bg-slate-50 text-slate-600 border border-slate-100 rounded-xl text-[9px] font-black uppercase tracking-widest group-hover:bg-indigo-50 group-hover:text-[#6366F1] transition-colors">
-                                                        {skill}
-                                                    </span>
-                                                ))}
+                                                {internship.requiredSkills?.slice(0, 3).map(skill => {
+                                                    const skillName = typeof skill === 'string' ? skill : skill.name;
+                                                    return (
+                                                        <span key={skillName} className="px-4 py-2 bg-slate-50 text-slate-600 border border-slate-100 rounded-xl text-[9px] font-black uppercase tracking-widest group-hover:bg-indigo-50 group-hover:text-[#6366F1] transition-colors">
+                                                            {skillName}
+                                                        </span>
+                                                    );
+                                                })}
                                                 {internship.requiredSkills?.length > 3 && (
                                                     <span className="px-3 py-2 bg-slate-50 text-slate-400 rounded-xl text-[9px] font-black">
                                                         +{internship.requiredSkills.length - 3}

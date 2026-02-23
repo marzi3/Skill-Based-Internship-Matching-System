@@ -29,7 +29,8 @@ const internshipSchema = new mongoose.Schema({
         type: Date,
         required: [true, 'Expiry date is required']
     },
-    requiredSkills: [{
+    requiredSkills: [mongoose.Schema.Types.Mixed],
+    preferredSkills: [{
         type: String,
         trim: true
     }],
@@ -43,7 +44,7 @@ const internshipSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['Hiring', 'Reviewing', 'Closed'],
+        enum: ['Draft', 'Active', 'Paused', 'Filled', 'Expired', 'Hiring', 'Reviewing', 'Closed'],
         default: 'Hiring'
     },
     numberOfOpenings: {
@@ -53,6 +54,19 @@ const internshipSchema = new mongoose.Schema({
     experienceLevel: {
         type: String,
         default: 'Entry Level'
+    },
+    minimumGPA: {
+        type: Number,
+        min: 0,
+        max: 4.0
+    },
+    prefersExperienced: {
+        type: Boolean,
+        default: false
+    },
+    isDeleted: {
+        type: Boolean,
+        default: false
     },
     educationRequirements: {
         type: String,

@@ -53,14 +53,18 @@ const CreateInternshipPage = () => {
     deadline: '',
     description: '',
     requiredSkills: [],
+    preferredSkills: [],
     numberOfOpenings: '',
     perks: [],
     experienceLevel: '',
     educationRequirements: '',
+    minimumGPA: '',
+    prefersExperienced: false,
     stipendAmount: '',
   });
 
   const [skillInput, setSkillInput] = useState('');
+  const [prefSkillInput, setPrefSkillInput] = useState('');
   const [perkInput, setPerkInput] = useState('');
 
   const steps = [
@@ -101,20 +105,48 @@ const CreateInternshipPage = () => {
   const handleAddSkill = (e) => {
     if (e) e.preventDefault();
     const newSkill = skillInput.trim();
-    if (newSkill && !formData.requiredSkills.includes(newSkill)) {
+    if (newSkill && !formData.requiredSkills.some(s => s.name === newSkill)) {
       setFormData(prev => ({
         ...prev,
-        requiredSkills: [...prev.requiredSkills, newSkill],
+        requiredSkills: [...prev.requiredSkills, { name: newSkill, mandatory: true, prefersSenior: false }],
       }));
       setSkillInput('');
       setValidationErrors(prev => ({ ...prev, requiredSkills: false }));
     }
   };
 
+  const handleToggleSkillConfig = (skillName, field) => {
+    setFormData(prev => ({
+      ...prev,
+      requiredSkills: prev.requiredSkills.map(s =>
+        s.name === skillName ? { ...s, [field]: !s[field] } : s
+      )
+    }));
+  };
+
   const handleRemoveSkill = (skillToRemove) => {
     setFormData(prev => ({
       ...prev,
-      requiredSkills: prev.requiredSkills.filter(s => s !== skillToRemove),
+      requiredSkills: prev.requiredSkills.filter(s => s.name !== skillToRemove),
+    }));
+  };
+
+  const handleAddPrefSkill = (e) => {
+    if (e) e.preventDefault();
+    const newSkill = prefSkillInput.trim();
+    if (newSkill && !formData.preferredSkills.includes(newSkill)) {
+      setFormData(prev => ({
+        ...prev,
+        preferredSkills: [...prev.preferredSkills, newSkill],
+      }));
+      setPrefSkillInput('');
+    }
+  };
+
+  const handleRemovePrefSkill = (skillToRemove) => {
+    setFormData(prev => ({
+      ...prev,
+      preferredSkills: prev.preferredSkills.filter(s => s !== skillToRemove),
     }));
   };
 
@@ -194,13 +226,16 @@ const CreateInternshipPage = () => {
         duration: formData.duration,
         expiryDate: formData.deadline,
         requiredSkills: formData.requiredSkills,
+        preferredSkills: formData.preferredSkills,
         description: formData.description,
         numberOfOpenings: parseInt(formData.numberOfOpenings) || 1,
         experienceLevel: formData.experienceLevel,
+        prefersExperienced: formData.prefersExperienced,
         educationRequirements: formData.educationRequirements,
+        minimumGPA: formData.minimumGPA ? parseFloat(formData.minimumGPA) : null,
         stipend: {
           amount: parseInt(formData.stipendAmount) || 0,
-          currency: 'INR'
+          currency: 'LKR'
         },
         perks: formData.perks,
         status: 'Hiring'
@@ -376,17 +411,71 @@ const CreateInternshipPage = () => {
                               Connect
                             </button>
                           </div>
-                          <div className="flex flex-wrap gap-2.5 pt-2">
+                          <div className="flex flex-wrap gap-3 pt-2">
                             {formData.requiredSkills.map(skill => (
-                              <div key={skill} className="bg-indigo-50/50 border border-indigo-100 text-[#6366F1] px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-3 animate-in fade-in zoom-in duration-300">
+                              <div key={skill.name} className="bg-white border border-slate-200 text-slate-700 p-4 rounded-2xl flex flex-col gap-3 shadow-sm min-w-[200px] animate-in fade-in zoom-in duration-300">
+                                <div className="flex items-center justify-between gap-4">
+                                  <span className="text-xs font-black uppercase tracking-widest text-[#6366F1]">{skill.name}</span>
+                                  <button onClick={() => handleRemoveSkill(skill.name)} className="text-slate-400 hover:text-rose-500 transition-colors">
+                                    <X size={16} strokeWidth={3} />
+                                  </button>
+                                </div>
+                                <div className="space-y-2 pt-2 border-t border-slate-100">
+                                  <label className="flex items-center justify-between cursor-pointer group">
+                                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest group-hover:text-slate-900 transition-colors">Mandatory</span>
+                                    <div
+                                      onClick={() => handleToggleSkillConfig(skill.name, 'mandatory')}
+                                      className={`w-8 h-4 rounded-full flex items-center p-0.5 transition-colors ${skill.mandatory ? 'bg-emerald-400' : 'bg-slate-200'}`}
+                                    >
+                                      <div className={`w-3 h-3 bg-white rounded-full shadow-sm transition-transform ${skill.mandatory ? 'translate-x-4' : 'translate-x-0'}`} />
+                                    </div>
+                                  </label>
+                                  <label className="flex items-center justify-between cursor-pointer group">
+                                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest group-hover:text-slate-900 transition-colors">Prefers Senior</span>
+                                    <div
+                                      onClick={() => handleToggleSkillConfig(skill.name, 'prefersSenior')}
+                                      className={`w-8 h-4 rounded-full flex items-center p-0.5 transition-colors ${skill.prefersSenior ? 'bg-[#6366F1]' : 'bg-slate-200'}`}
+                                    >
+                                      <div className={`w-3 h-3 bg-white rounded-full shadow-sm transition-transform ${skill.prefersSenior ? 'translate-x-4' : 'translate-x-0'}`} />
+                                    </div>
+                                  </label>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* PREFERRED SKILLS */}
+                        <div className="space-y-4">
+                          <label className="block text-xs font-black uppercase tracking-widest ml-1 mb-2.5 text-slate-900">Preferred / Bonus Skills</label>
+                          <div className="flex gap-4">
+                            <input
+                              type="text"
+                              value={prefSkillInput}
+                              onChange={(e) => setPrefSkillInput(e.target.value)}
+                              onKeyDown={(e) => e.key === 'Enter' && handleAddPrefSkill(e)}
+                              placeholder="Type a bonus skill..."
+                              className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl py-4 px-6 text-slate-900 font-bold focus:outline-none focus:border-[#6366F1]/50 transition-all placeholder:text-slate-300 shadow-sm"
+                            />
+                            <button
+                              onClick={handleAddPrefSkill}
+                              className="px-10 bg-white border border-slate-200 hover:border-[#6366F1] hover:text-[#6366F1] text-slate-500 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-sm active:scale-95 transition-all outline-none"
+                            >
+                              Add Bonus
+                            </button>
+                          </div>
+                          <div className="flex flex-wrap gap-2.5 pt-2">
+                            {formData.preferredSkills.map(skill => (
+                              <div key={skill} className="bg-slate-100 border border-slate-200 text-slate-600 px-5 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest flex items-center gap-3 animate-in fade-in zoom-in duration-300">
                                 {skill}
-                                <button onClick={() => handleRemoveSkill(skill)} className="hover:text-rose-500 transition-colors">
+                                <button onClick={() => handleRemovePrefSkill(skill)} className="hover:text-rose-500 transition-colors">
                                   <X size={14} strokeWidth={3} />
                                 </button>
                               </div>
                             ))}
                           </div>
                         </div>
+
                         <div className="grid grid-cols-2 gap-10">
                           <CustomSelect
                             label="Seniority Level"
@@ -397,6 +486,35 @@ const CreateInternshipPage = () => {
                             options={experienceLevels}
                             error={validationErrors.experienceLevel}
                             required
+                          />
+                          <div className="space-y-4">
+                            <label className="flex items-center gap-3 cursor-pointer group mt-7 p-4 bg-slate-50 rounded-2xl border border-slate-200 hover:border-[#6366F1]/30 transition-all">
+                              <div
+                                onClick={() => setFormData(prev => ({ ...prev, prefersExperienced: !prev.prefersExperienced }))}
+                                className={`w-10 h-6 flex-shrink-0 rounded-full flex items-center p-1 transition-colors ${formData.prefersExperienced ? 'bg-[#6366F1]' : 'bg-slate-300'}`}
+                              >
+                                <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${formData.prefersExperienced ? 'translate-x-4' : 'translate-x-0'}`} />
+                              </div>
+                              <div>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-900 block">Prefers Experienced Candidates</span>
+                                <span className="text-[9px] font-semibold text-slate-400 uppercase">Prioritize students with past internships</span>
+                              </div>
+                            </label>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-10">
+                          <CustomInput
+                            label="Minimum GPA"
+                            icon={GraduationCap}
+                            name="minimumGPA"
+                            value={formData.minimumGPA}
+                            onChange={handleInputChange}
+                            type="number"
+                            placeholder="e.g. 3.0"
+                            step="0.1"
+                            min="0"
+                            max="4.0"
                           />
                           <CustomInput
                             label="Academic Standard"
@@ -573,7 +691,9 @@ const CreateInternshipPage = () => {
                       <h4 className="text-[10px] font-black uppercase tracking-[0.4em] opacity-40 mb-4">Skill Sequence</h4>
                       <div className="flex flex-wrap gap-3">
                         {formData.requiredSkills.length > 0 ? formData.requiredSkills.slice(0, 4).map(s => (
-                          <span key={s} className="bg-white text-slate-900 px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-md transition-transform hover:-translate-y-1">{s}</span>
+                          <span key={s.name} className="bg-white text-slate-900 px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-md transition-transform hover:-translate-y-1">
+                            {s.name} {s.mandatory && <span className="text-emerald-500 ml-1">•</span>}
+                          </span>
                         )) : <span className="text-white/20 italic text-xs font-bold tracking-widest uppercase">Awaiting input...</span>}
                       </div>
                     </div>
