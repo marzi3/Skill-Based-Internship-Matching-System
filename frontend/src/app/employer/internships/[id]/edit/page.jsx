@@ -24,9 +24,7 @@ import {
     Eye,
     Layers,
     GraduationCap,
-    Layers,
     Banknote,
-    Building,
 } from 'lucide-react';
 
 // UI Components
@@ -130,20 +128,20 @@ const EditInternshipPage = () => {
     const handleAddSkill = (e) => {
         if (e) e.preventDefault();
         const newSkill = skillInput.trim();
-        if (newSkill && !formData.requiredSkills.includes(newSkill)) {
+        if (newSkill && !formData.requiredSkills.some(s => (typeof s === 'string' ? s : s.name) === newSkill)) {
             setFormData(prev => ({
                 ...prev,
-                requiredSkills: [...prev.requiredSkills, newSkill],
+                requiredSkills: [...prev.requiredSkills, { name: newSkill, mandatory: true, prefersSenior: false }],
             }));
             setSkillInput('');
             setValidationErrors(prev => ({ ...prev, requiredSkills: false }));
         }
     };
 
-    const handleRemoveSkill = (skillToRemove) => {
+    const handleRemoveSkill = (skillToRemoveName) => {
         setFormData(prev => ({
             ...prev,
-            requiredSkills: prev.requiredSkills.filter(s => s !== skillToRemove),
+            requiredSkills: prev.requiredSkills.filter(s => (typeof s === 'string' ? s : s.name) !== skillToRemoveName),
         }));
     };
 
@@ -372,12 +370,15 @@ const EditInternshipPage = () => {
                                                     <button onClick={handleAddSkill} className="px-10 bg-indigo-600 text-white rounded-2xl font-black text-[10px] uppercase">Add</button>
                                                 </div>
                                                 <div className="flex flex-wrap gap-2.5 pt-2">
-                                                    {formData.requiredSkills.map(skill => (
-                                                        <div key={skill} className="bg-indigo-50 border border-indigo-100 text-indigo-600 px-5 py-3 rounded-xl text-[10px] font-black uppercase flex items-center gap-3">
-                                                            {skill}
-                                                            <button onClick={() => handleRemoveSkill(skill)}><X size={14} /></button>
-                                                        </div>
-                                                    ))}
+                                                    {formData.requiredSkills.map(skill => {
+                                                        const skillName = typeof skill === 'string' ? skill : skill.name;
+                                                        return (
+                                                            <div key={skillName} className="bg-indigo-50 border border-indigo-100 text-indigo-600 px-5 py-3 rounded-xl text-[10px] font-black uppercase flex items-center gap-3">
+                                                                {skillName}
+                                                                <button type="button" onClick={() => handleRemoveSkill(skillName)}><X size={14} /></button>
+                                                            </div>
+                                                        );
+                                                    })}
                                                 </div>
                                             </div>
                                             <div className="grid grid-cols-2 gap-10">
