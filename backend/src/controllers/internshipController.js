@@ -244,8 +244,19 @@ exports.getSkillDemands = async (req, res) => {
             { $match: { requiredSkills: { $exists: true, $not: { $size: 0 } } } },
             { $unwind: '$requiredSkills' },
             {
+                $project: {
+                    skillName: {
+                        $cond: {
+                            if: { $eq: [{ $type: "$requiredSkills" }, "object"] },
+                            then: "$requiredSkills.name",
+                            else: "$requiredSkills"
+                        }
+                    }
+                }
+            },
+            {
                 $group: {
-                    _id: '$requiredSkills',
+                    _id: '$skillName',
                     count: { $sum: 1 }
                 }
             },
