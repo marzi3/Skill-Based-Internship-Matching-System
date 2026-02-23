@@ -23,7 +23,7 @@ import {
   Eye,
   GraduationCap,
   Layers,
-  IndianRupee,
+  Banknote,
   Building,
   Calendar,
   CheckCircle2,
@@ -235,7 +235,7 @@ const CreateInternshipPage = () => {
         minimumGPA: formData.minimumGPA ? parseFloat(formData.minimumGPA) : null,
         stipend: {
           amount: parseInt(formData.stipendAmount) || 0,
-          currency: 'LKR'
+          currency: 'RS'
         },
         perks: formData.perks,
         status: 'Hiring'
@@ -544,8 +544,8 @@ const CreateInternshipPage = () => {
                         </div>
                         <div className="grid grid-cols-2 gap-10 items-end">
                           <CustomInput
-                            label="MONTHLY STIPEND (LKR)"
-                            icon={IndianRupee}
+                            label="MONTHLY STIPEND (RS)"
+                            icon={Banknote}
                             type="number"
                             name="stipendAmount"
                             value={formData.stipendAmount}

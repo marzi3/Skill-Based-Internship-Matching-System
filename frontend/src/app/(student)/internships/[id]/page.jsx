@@ -6,7 +6,7 @@ import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     ArrowLeft, Building, MapPin, Clock, Calendar,
-    GraduationCap, Briefcase, IndianRupee, Star,
+    GraduationCap, Briefcase, Banknote, Star,
     CheckCircle2, AlertTriangle, XCircle, ChevronRight, Check
 } from 'lucide-react';
 import Link from 'next/link';
@@ -128,8 +128,8 @@ export default function InternshipDetailPage({ params }) {
                                         <span className="text-[10px] font-black uppercase tracking-widest">{internship.duration || '6'} / Months</span>
                                     </div>
                                     <div className="px-5 py-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-3">
-                                        <IndianRupee size={16} className="text-amber-500" />
-                                        <span className="text-[10px] font-black uppercase tracking-widest">LKR {internship.stipend?.amount || '0'}</span>
+                                        <Banknote size={16} className="text-amber-500" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest">RS {internship.stipend?.amount || '0'}</span>
                                     </div>
                                     <div className="px-5 py-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-3">
                                         <Briefcase size={16} className="text-indigo-500" />
@@ -203,8 +203,8 @@ export default function InternshipDetailPage({ params }) {
                                     <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
                                         <span className="text-slate-400">Match Tier</span>
                                         <span className={`${isDisqualified ? 'text-rose-400' :
-                                                tier === 'EXCELLENT' ? 'text-emerald-400' :
-                                                    tier === 'GOOD' ? 'text-indigo-400' : 'text-amber-400'
+                                            tier === 'EXCELLENT' ? 'text-emerald-400' :
+                                                tier === 'GOOD' ? 'text-indigo-400' : 'text-amber-400'
                                             }`}>{tier || 'UNKNOWN'}</span>
                                     </div>
                                     {/* Score Bar */}

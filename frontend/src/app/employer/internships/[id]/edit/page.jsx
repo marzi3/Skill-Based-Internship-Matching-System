@@ -24,8 +24,9 @@ import {
     Eye,
     Layers,
     GraduationCap,
-    IndianRupee,
-    Award
+    Layers,
+    Banknote,
+    Building,
 } from 'lucide-react';
 
 // UI Components
@@ -404,10 +405,10 @@ const EditInternshipPage = () => {
                                                     required
                                                 />
                                             </div>
-                                            <div className="grid grid-cols-2 gap-10">
+                                            <div className="md:col-span-2">
                                                 <CustomInput
-                                                    label="Monthly Stipend (INR)"
-                                                    icon={IndianRupee}
+                                                    label="MONTHLY STIPEND (RS)"
+                                                    icon={Banknote}
                                                     type="number"
                                                     name="stipendAmount"
                                                     value={formData.stipendAmount}

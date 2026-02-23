@@ -7,7 +7,7 @@ import {
     MapPin,
     Clock,
     Building,
-    IndianRupee,
+    Banknote,
     Filter,
     ArrowRight,
     Sparkles,
@@ -179,12 +179,12 @@ const StudentInternshipsPage = () => {
                                             <h3 className="text-3xl font-black text-slate-900 tracking-tighter leading-[1.1] group-hover:text-[#6366F1] transition-colors line-clamp-2">
                                                 {internship.positionTitle}
                                             </h3>
-                                            <div className="flex items-center gap-4 mt-4">
-                                                <div className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-widest bg-slate-50 px-3 py-2 rounded-xl">
-                                                    <Clock size={14} className="text-indigo-400" /> {internship.duration || '6 Mo'}
+                                            <div className="flex items-center gap-4 mt-6">
+                                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-lg text-slate-500 text-[10px] font-black uppercase tracking-widest">
+                                                    <Clock size={14} className="text-emerald-500" /> {internship.duration || '6'} / MO
                                                 </div>
-                                                <div className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-widest bg-slate-50 px-3 py-2 rounded-xl">
-                                                    <IndianRupee size={14} className="text-emerald-500" /> ₹{internship.stipend?.amount || '0'}/mo
+                                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-lg text-slate-500 text-[10px] font-black uppercase tracking-widest">
+                                                    <Banknote size={14} className="text-emerald-500" /> RS {internship.stipend?.amount || '0'} / MO
                                                 </div>
                                             </div>
                                         </div>
