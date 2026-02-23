@@ -2,9 +2,10 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { Menu, X } from 'lucide-react';
 
-// Main Sidebar Component
+// Main Sidebar Component - Handles both onClick and href items
 const Sidebar = ({
   items = [],
   logo = null,
@@ -34,7 +35,7 @@ const Sidebar = ({
     }));
   };
 
-  const isActive = (href) => pathname === href;
+  const isActive = (href) => href ? pathname === href : false;
 
   const variantClasses = {
     light: 'bg-white border-r border-gray-200',
@@ -104,10 +105,40 @@ const Sidebar = ({
 
       {/* Navigation Items */}
       <nav className="p-4 space-y-2">
-        {items.map((item, index) => (
-          <div key={index}>
-            {item.submenu ? (
-              <>
+        {items.map((item, index) => {
+          // Check if item has onClick handler (for state-based navigation)
+          if (item.onClick && !item.href) {
+            return (
+              <button
+                key={item.id || index}
+                onClick={item.onClick}
+                className={`
+                  w-full flex items-center gap-3 px-4 py-2.5 rounded-lg
+                  transition duration-300 font-medium
+                  ${item.isActive
+                    ? variant === 'light'
+                      ? 'bg-blue-100 text-blue-600'
+                      : 'bg-blue-900 text-blue-200'
+                    : variant === 'light'
+                    ? 'text-gray-700 hover:bg-gray-100'
+                    : 'text-gray-300 hover:bg-gray-800'
+                  }
+                `}
+              >
+                {item.icon && (
+                  <item.icon size={20} className="flex-shrink-0" />
+                )}
+                {!collapsed && (
+                  <span className="text-sm">{item.label}</span>
+                )}
+              </button>
+            );
+          }
+
+          // Check if item has submenu
+          if (item.submenu) {
+            return (
+              <div key={item.id || index}>
                 <button
                   onClick={() => toggleSubmenu(item.id || index)}
                   className={`
@@ -153,7 +184,7 @@ const Sidebar = ({
                     {item.submenu.map((subitem, subindex) => (
                       <Link
                         key={subindex}
-                        href={subitem.href}
+                        href={subitem.href || '#'}
                         className={`
                           block px-3 py-2 rounded-lg text-sm transition duration-300
                           ${isActive(subitem.href)
@@ -171,9 +202,15 @@ const Sidebar = ({
                     ))}
                   </div>
                 )}
-              </>
-            ) : (
+              </div>
+            );
+          }
+
+          // Default: render as Link if href exists
+          if (item.href) {
+            return (
               <Link
+                key={item.id || index}
                 href={item.href}
                 className={`
                   flex items-center gap-3 px-4 py-2.5 rounded-lg
@@ -195,9 +232,11 @@ const Sidebar = ({
                   <span className="text-sm">{item.label}</span>
                 )}
               </Link>
-            )}
-          </div>
-        ))}
+            );
+          }
+
+          return null;
+        })}
       </nav>
 
       {/* Divider */}

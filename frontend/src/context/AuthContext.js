@@ -12,10 +12,22 @@ export const AuthProvider = ({ children }) => {
     const router = useRouter();
 
     // Configure axios defaults
-    axios.defaults.baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+    axios.defaults.baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
     axios.defaults.withCredentials = true; // Important for cookies
 
     useEffect(() => {
+        // Check for stored token on initialization
+        if (typeof window !== 'undefined') {
+            const storedToken = localStorage.getItem('token');
+            console.log('🔍 INIT: Checking stored token:', !!storedToken);
+            
+            if (storedToken) {
+                // Set axios header for subsequent requests
+                axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+                console.log('🔍 INIT: Set axios header with stored token');
+            }
+        }
+        
         checkUserLoggedIn();
     }, []);
 
@@ -31,12 +43,50 @@ export const AuthProvider = ({ children }) => {
     };
 
     const login = async (email, password) => {
+        console.log('🚀 AUTHCONTEXT LOGIN: Function called!', { email, hasPassword: !!password });
+        
         try {
+            console.log('🔐 LOGIN: Calling API at', axios.defaults.baseURL + '/api/auth/login');
+            
             const { data } = await axios.post('/api/auth/login', { email, password });
+            
+            console.log('✅ LOGIN: Got response:', data);
+            console.log('✅ LOGIN: Token in response:', !!data.token);
+            
+            // Save token to localStorage
+            if (data.token) {
+                console.log('💾 LOGIN: Saving token to localStorage...');
+                localStorage.setItem('token', data.token);
+                
+                // Set axios header for future requests
+                axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
+                console.log('💾 LOGIN: Set axios Authorization header');
+                
+                // Verify it was saved
+                const verified = localStorage.getItem('token');
+                console.log('💾 LOGIN: Token saved successfully:', !!verified);
+            } else {
+                console.error('❌ LOGIN: No token in response!');
+            }
+            
             setUser(data);
-            router.push('/dashboard');
+            
+            // Redirect based on user role
+            if (data.role === 'student') {
+                console.log('🔐 LOGIN: Redirecting student to dashboard');
+                router.push('/student-dashboard');
+            } else if (data.role === 'employer') {
+                router.push('/employer/dashboard');
+            } else if (data.role === 'admin') {
+                router.push('/admin/dashboard');
+            } else {
+                router.push('/dashboard');
+            }
+            
+            console.log('🎉 LOGIN: Success!');
             return { success: true };
         } catch (error) {
+            console.error('❌ LOGIN: Error:', error.response?.data || error.message);
             return { success: false, error: error.response?.data?.message || 'Login failed' };
         }
     };
@@ -45,7 +95,17 @@ export const AuthProvider = ({ children }) => {
         try {
             const { data } = await axios.post('/api/auth/register', userData);
             setUser(data);
-            router.push('/dashboard');
+            
+            // Redirect based on user role
+            if (data.role === 'student') {
+                router.push('/student-dashboard');
+            } else if (data.role === 'employer') {
+                router.push('/employer/dashboard');
+            } else if (data.role === 'admin') {
+                router.push('/admin/dashboard');
+            } else {
+                router.push('/dashboard');
+            }
             return { success: true };
         } catch (error) {
             return { success: false, error: error.response?.data?.message || 'Registration failed' };
