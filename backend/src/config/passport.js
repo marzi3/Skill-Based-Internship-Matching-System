@@ -64,7 +64,7 @@ passport.use(new LinkedInStrategy({
     clientID: process.env.LINKEDIN_CLIENT_ID,
     clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
     callbackURL: "/api/auth/linkedin/callback",
-    scope: ['r_emailaddress', 'r_liteprofile'],
+    scope: ['openid', 'profile', 'email'],
 }, async function (accessToken, refreshToken, profile, done) {
     try {
         let user = await User.findOne({ email: profile.emails[0].value });
