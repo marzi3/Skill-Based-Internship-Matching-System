@@ -116,6 +116,16 @@ const getMe = async (req, res) => {
     }
 };
 
+// Helper: get the correct dashboard path for a given role
+const getRoleDashboard = (role) => {
+    switch (role) {
+        case 'employer': return '/employer/dashboard';
+        case 'admin': return '/admin/admin-dashboard';
+        case 'student':
+        default: return '/student-dashboard';
+    }
+};
+
 // @desc    Google OAuth Callback
 // @route   GET /api/auth/google/callback
 const googleAuthCallback = (req, res) => {
@@ -125,8 +135,8 @@ const googleAuthCallback = (req, res) => {
         secure: process.env.NODE_ENV === 'production',
         maxAge: 30 * 24 * 60 * 60 * 1000,
     });
-    // Redirect to frontend dashboard or relevant page
-    res.redirect(process.env.FRONTEND_URL ? `${process.env.FRONTEND_URL}/dashboard` : 'http://localhost:3000/dashboard');
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    res.redirect(`${frontendUrl}${getRoleDashboard(req.user.role)}`);
 };
 
 const linkedinAuthCallback = (req, res) => {
@@ -136,8 +146,8 @@ const linkedinAuthCallback = (req, res) => {
         secure: process.env.NODE_ENV === 'production',
         maxAge: 30 * 24 * 60 * 60 * 1000,
     });
-    // Redirect to frontend dashboard or relevant page
-    res.redirect(process.env.FRONTEND_URL ? `${process.env.FRONTEND_URL}/dashboard` : 'http://localhost:3000/dashboard');
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    res.redirect(`${frontendUrl}${getRoleDashboard(req.user.role)}`);
 };
 
 const crypto = require('crypto');
@@ -231,6 +241,71 @@ const resetPassword = async (req, res) => {
     }
 };
 
+// @desc    Get all students
+// @route   GET /api/auth/students
+// @access  Private (Employer/Admin)
+const getStudents = async (req, res) => {
+    try {
+        const students = await User.find({ role: 'student' }).select('name email profilePicture bio skills location');
+        res.status(200).json({
+            success: true,
+            count: students.length,
+            data: students
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+// @desc    Update user profile details
+// @route   PUT /api/auth/profile
+// @access  Private
+const updateProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        user.name = req.body.name || user.name;
+        user.companyName = req.body.companyName || user.companyName;
+        user.businessRegistrationNumber = req.body.businessRegistrationNumber || user.businessRegistrationNumber;
+        user.website = req.body.website || user.website;
+        user.profilePicture = req.body.profilePicture || user.profilePicture;
+
+        const updatedUser = await user.save();
+        res.status(200).json(updatedUser);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Update user password
+// @route   PUT /api/auth/password
+// @access  Private
+const updatePassword = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select('+password');
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (!(await user.comparePassword(req.body.currentPassword))) {
+            return res.status(401).json({ message: 'Incorrect current password' });
+        }
+
+        user.password = req.body.newPassword;
+        await user.save();
+
+        const token = generateToken(user._id);
+        res.status(200).json({ success: true, message: 'Password updated successfully', token });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     registerUser,
     loginUser,
@@ -240,4 +315,7 @@ module.exports = {
     linkedinAuthCallback,
     forgotPassword,
     resetPassword,
+    updateProfile,
+    updatePassword,
+    getStudents
 };

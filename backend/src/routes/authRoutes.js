@@ -9,15 +9,21 @@ const {
   googleAuthCallback,
   linkedinAuthCallback,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  updateProfile,
+  updatePassword,
+  getStudents
 } = require('../controllers/authController');
-const { protect } = require('../middleware/auth');
+const { protect, authorize } = require('../middleware/auth');
 
 // Standard Auth
 router.post('/register', registerUser);
 router.post('/login', loginUser);
 router.post('/logout', logoutUser);
 router.get('/me', protect, getMe);
+router.put('/profile', protect, updateProfile);
+router.put('/password', protect, updatePassword);
+router.get('/students', protect, authorize('employer', 'admin'), getStudents);
 router.post('/forgotpassword', forgotPassword);
 router.put('/resetpassword/:resettoken', resetPassword);
 

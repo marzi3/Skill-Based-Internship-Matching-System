@@ -6,17 +6,17 @@ const User = require('../models/User');
 // @access  Public
 exports.getInternships = async (req, res) => {
     try {
-        const { q, skill, industry, location } = req.query;
+        const { q, skill, industry, domain, location, workEnvironment, duration, sort } = req.query;
         let query = { status: 'Hiring', isDeleted: { $ne: true } };
 
         if (q) {
             query.$text = { $search: q };
         }
-        if (industry) {
-            query.domain = new RegExp(industry, 'i');
+        if (industry || domain) {
+            query.domain = new RegExp(industry || domain, 'i');
         }
-        if (location) {
-            query.workEnvironment = location;
+        if (location || workEnvironment) {
+            query.workEnvironment = location || workEnvironment;
         }
         if (skill) {
             query.$or = [
@@ -24,8 +24,22 @@ exports.getInternships = async (req, res) => {
                 { 'requiredSkills.name': new RegExp(skill, 'i') }
             ];
         }
+        if (duration) {
+            query.duration = duration;
+        }
 
-        const internships = await Internship.find(query).populate('employer', 'name email companyName');
+        // Handle sorting options: newest (createdAt), deadline (expiryDate)
+        let sortOption = { createdAt: -1 }; // Default Best Match/Newest fallback
+
+        if (sort) {
+            if (sort === 'Newest') {
+                sortOption = { createdAt: -1 };
+            } else if (sort === 'Deadline Soon') {
+                sortOption = { expiryDate: 1 };
+            }
+        }
+
+        const internships = await Internship.find(query).sort(sortOption).populate('employer', 'name email companyName');
         res.status(200).json({
             success: true,
             count: internships.length,
@@ -118,6 +132,16 @@ exports.createInternship = async (req, res) => {
         req.body.employer = req.user.id;
         req.body.company = user.companyName || 'Incubator Labs';
 
+        // Rule: Only APPROVED employers can publish. PENDING can only DRAFT.
+        const activeStatuses = ['Active', 'Hiring', 'Reviewing'];
+        if (activeStatuses.includes(req.body.status) || !req.body.status) {
+            if (user.verificationStatus !== 'approved') {
+                req.body.status = 'Draft';
+            } else if (!req.body.status) {
+                req.body.status = 'Hiring'; // Default active status
+            }
+        }
+
         const internship = await Internship.create(req.body);
 
         res.status(201).json({
@@ -153,6 +177,15 @@ exports.updateInternship = async (req, res) => {
                 success: false,
                 message: 'User not authorized to update this internship'
             });
+        }
+
+        // Rule: Only APPROVED employers can publish. PENDING can only DRAFT.
+        const user = await User.findById(req.user.id);
+        const activeStatuses = ['Active', 'Hiring', 'Reviewing'];
+        if (req.body.status && activeStatuses.includes(req.body.status)) {
+            if (user.verificationStatus !== 'approved') {
+                req.body.status = 'Draft';
+            }
         }
 
         internship = await Internship.findByIdAndUpdate(req.params.id, req.body, {
@@ -279,5 +312,60 @@ exports.getSkillDemands = async (req, res) => {
             success: false,
             message: `Aggregation Failure: ${error.message}`
         });
+    }
+};
+
+// @desc    Get all applicants for an internship
+// @route   GET /api/internships/:id/applicants
+// @access  Private (Employer)
+exports.getInternshipApplicants = async (req, res) => {
+    try {
+        const internship = await Internship.findById(req.params.id).populate('applicants', 'name email profilePicture studentId');
+
+        if (!internship) {
+            return res.status(404).json({ success: false, message: 'Internship not found' });
+        }
+
+        if (internship.employer.toString() !== req.user.id && req.user.role !== 'admin') {
+            return res.status(401).json({ success: false, message: 'Not authorized' });
+        }
+
+        res.status(200).json({
+            success: true,
+            count: internship.applicants.length,
+            data: internship.applicants
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Get stats for a specific internship
+// @route   GET /api/internships/:id/stats
+// @access  Private (Employer)
+exports.getInternshipStats = async (req, res) => {
+    try {
+        const internship = await Internship.findById(req.params.id);
+
+        if (!internship) {
+            return res.status(404).json({ success: false, message: 'Internship not found' });
+        }
+
+        if (internship.employer.toString() !== req.user.id && req.user.role !== 'admin') {
+            return res.status(401).json({ success: false, message: 'Not authorized' });
+        }
+
+        // Send basic stats
+        res.status(200).json({
+            success: true,
+            data: {
+                views: internship.views || 0,
+                applicantCount: internship.applicants ? internship.applicants.length : 0,
+                skillMatches: internship.skillMatches || 0,
+                status: internship.status
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
 };

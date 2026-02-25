@@ -1,13 +1,19 @@
 const express = require('express');
 const router = express.Router();
+const { protect, authorize } = require('../middleware/auth');
+const {
+  getSavedInternships,
+  bookmarkInternship,
+  unbookmarkInternship
+} = require('../controllers/studentController');
 
-// Student routes
-router.get('/', (req, res) => {
-  res.json({ message: 'Get all students' });
-});
+// Apply protection to all student routes
+router.use(protect);
+router.use(authorize('student'));
 
-router.get('/:id', (req, res) => {
-  res.json({ message: 'Get student by ID' });
-});
+// Bookmark routes
+router.get('/bookmarks', getSavedInternships);
+router.post('/bookmarks/:id', bookmarkInternship);
+router.delete('/bookmarks/:id', unbookmarkInternship);
 
 module.exports = router;

@@ -8,12 +8,24 @@ const {
   deleteInternship,
   getMyInternships,
   getSkillDemands,
-  updateInternshipStatus
+  updateInternshipStatus,
+  getInternshipApplicants,
+  getInternshipStats
 } = require('../controllers/internshipController');
 const { protect, authorize, verifyStatus } = require('../middleware/auth');
+const mongoose = require('mongoose');
+
+// Middleware to validate :id is a valid ObjectId (prevents catching named routes)
+const validateObjectId = (req, res, next) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return next('route'); // Skip to next matching route
+  }
+  next();
+};
 
 // Public routes
 router.get('/', getInternships);
+router.get('/:id', validateObjectId, getInternship); // Public: anyone can view
 
 // Protected routes (Employer only)
 router.use(protect);
@@ -21,12 +33,12 @@ router.use(authorize('employer', 'admin'));
 
 router.get('/my-postings', getMyInternships);
 router.get('/skill-demands', getSkillDemands);
-router.patch('/:id/status', updateInternshipStatus);
 router.post('/create', verifyStatus, createInternship);
+router.get('/:id/applicants', getInternshipApplicants);
+router.get('/:id/stats', getInternshipStats);
+router.patch('/:id/status', updateInternshipStatus);
 router.put('/:id', updateInternship);
 router.delete('/:id', deleteInternship);
 
-// Route with param should be last to avoid catching sub-routes
-router.get('/:id', getInternship);
-
 module.exports = router;
+

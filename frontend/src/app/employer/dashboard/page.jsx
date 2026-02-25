@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import {
   LayoutDashboard,
@@ -45,7 +46,8 @@ import Avatar from '@/components/common/Avatar';
 import { useAuth } from '@/context/AuthContext';
 
 const EmployerDashboard = () => {
-  const { user, logout } = useAuth();
+  const { user, loading: authLoading, logout } = useAuth();
+  const router = useRouter();
   const [activeSection, setActiveSection] = useState('overview');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [userDropdown, setUserDropdown] = useState(false);
@@ -92,17 +94,28 @@ const EmployerDashboard = () => {
     },
   ]);
 
-  // Fetch data from backend API
+  // Redirect to login if not authenticated
   useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+    }
+  }, [authLoading, user, router]);
+
+  // Fetch data from backend API (only when user is authenticated)
+  useEffect(() => {
+    if (!user) return; // Don't fetch if not logged in
+
     const fetchInternships = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        // Fetch internships and skill demands in parallel
+        // Fetch internships and skill demands in parallel with timeout
+        const timeout = (ms) => new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), ms));
+
         const [postingsRes, skillsRes] = await Promise.all([
-          axios.get('/api/internships/my-postings'),
-          axios.get('/api/internships/skill-demands')
+          Promise.race([axios.get('/api/internships/my-postings'), timeout(10000)]),
+          Promise.race([axios.get('/api/internships/skill-demands'), timeout(10000)])
         ]);
 
         const data = postingsRes.data.data || [];
@@ -113,7 +126,7 @@ const EmployerDashboard = () => {
         if (data.length > 0) {
           const totalApplicants = data.reduce((sum, int) => sum + (int.applicants?.length || 0), 0);
           const skillMatches = data.reduce((sum, int) => sum + (int.skillMatches || 0), 0);
-          const interviews = data.reduce((sum, int) => sum + (int.interviews || 0), 0); // Handle non-array if applicable
+          const interviews = data.reduce((sum, int) => sum + (int.interviews || 0), 0);
 
           setStats([
             {
@@ -150,86 +163,25 @@ const EmployerDashboard = () => {
             },
           ]);
         }
-
-        setLoading(false);
       } catch (err) {
         console.error('Failed to fetch dashboard data:', err);
-        setError(err.response?.data?.message || err.message || 'Failed to sync with secure server.');
+        setError(err.response?.data?.message || err.message || 'Failed to load dashboard data. Please log in again.');
+      } finally {
         setLoading(false);
       }
     };
 
     fetchInternships();
-  }, []);
+  }, [user]);
 
   // Skill Demand vs Supply Analytics Data - Falling back to defaults if API empty
-  const displaySkillAnalytics = skillAnalytics.length > 0 ? skillAnalytics : [
-    { skill: 'React.js', requested: 1, available: 1, matchPercent: 90 },
-    { skill: 'Node.js', requested: 1, available: 1, matchPercent: 88 }
-  ];
+  const displaySkillAnalytics = skillAnalytics.length > 0 ? skillAnalytics : [];
 
   // Top Matched Candidates Data
-  const topCandidates = [
-    {
-      id: 1,
-      name: 'Alex Chen',
-      matchScore: 95,
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
-      topSkills: ['React.js', 'TypeScript', 'Node.js'],
-      experience: '2 years',
-    },
-    {
-      id: 2,
-      name: 'Jordan Smith',
-      matchScore: 92,
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jordan',
-      topSkills: ['React.js', 'JavaScript', 'CSS'],
-      experience: '1.5 years',
-    },
-    {
-      id: 3,
-      name: 'Taylor Williams',
-      matchScore: 88,
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Taylor',
-      topSkills: ['Python', 'Node.js', 'MongoDB'],
-      experience: '3 years',
-    },
-  ];
+  const topCandidates = [];
 
   // Recent Activity Timeline
-  const recentActivity = [
-    {
-      id: 1,
-      type: 'application',
-      title: 'New Application',
-      description: 'Alex Chen applied for React Developer',
-      time: '15 mins ago',
-      icon: Users,
-    },
-    {
-      id: 2,
-      type: 'interview',
-      title: 'Interview Scheduled',
-      description: 'Interview with Jordan Smith at 2 PM',
-      time: '2 hours ago',
-      icon: Calendar,
-    },
-    {
-      id: 3,
-      type: 'alert',
-      title: 'Posting Expiring Soon',
-      description: 'UI/UX Designer role expires in 3 days',
-      time: '4 hours ago',
-      icon: AlertCircle,
-    },
-    {
-      id: 4,
-      type: 'match',
-      title: 'High Skill Match',
-      description: 'Taylor Williams (88% match) for Backend role',
-      icon: Zap,
-    },
-  ];
+  const recentActivity = [];
 
   const toggleStatus = async (id) => {
     try {
@@ -255,70 +207,27 @@ const EmployerDashboard = () => {
     }
   };
 
-  // Live postings data - Use API data when available, fallback to mock data
-  const livePostings = apiInternships.length > 0
-    ? apiInternships.map((internship) => ({
-      id: internship._id || internship.id,
-      position: internship.positionTitle || 'Untitled Position',
-      candidates: internship.applicants?.length || 0,
-      status: internship.status || 'Hiring',
-      expiry: internship.expiryDate
-        ? new Date(internship.expiryDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
-        : 'Not Set',
-      views: internship.views || 0,
-      description: internship.description,
-      requiredSkills: internship.requiredSkills || [],
-    }))
-    : [
-      {
-        id: 1,
-        position: 'Frontend Developer (React)',
-        candidates: 34,
-        status: 'Hiring',
-        posted: '2 weeks ago',
-        views: 342,
-      },
-      {
-        id: 2,
-        position: 'Backend Engineer (Node.js)',
-        candidates: 28,
-        status: 'Hiring',
-        posted: '10 days ago',
-        views: 298,
-      },
-      {
-        id: 3,
-        position: 'UI/UX Designer',
-        candidates: 15,
-        status: 'Reviewing',
-        posted: '5 days ago',
-        views: 186,
-      },
-      {
-        id: 4,
-        position: 'Data Analyst',
-        candidates: 12,
-        status: 'Closed',
-        posted: '3 days ago',
-        views: 124,
-      },
-      {
-        id: 5,
-        position: 'DevOps Engineer',
-        candidates: 19,
-        status: 'Hiring',
-        posted: '1 week ago',
-        views: 267,
-      },
-    ];
+  // Live postings data - Use API data when available
+  const livePostings = apiInternships.map((internship) => ({
+    id: internship._id || internship.id,
+    position: internship.positionTitle || 'Untitled Position',
+    candidates: internship.applicants?.length || 0,
+    status: internship.status || 'Hiring',
+    expiry: internship.expiryDate
+      ? new Date(internship.expiryDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+      : 'Not Set',
+    views: internship.views || 0,
+    description: internship.description,
+    requiredSkills: internship.requiredSkills || [],
+  }));
 
   // Sidebar navigation items
   const sidebarItems = [
     { label: 'Dashboard', id: 'overview', icon: LayoutDashboard },
     { label: 'My Postings', id: 'postings', icon: Briefcase, path: '/employer/internships' },
     { label: 'Post Internship', id: 'post', icon: Plus, path: '/employer/internships/create' },
-    { label: 'Search Candidates', id: 'search', icon: Search },
-    { label: 'Applications', id: 'applications', icon: FileText },
+    { label: 'Search Candidates', id: 'search', icon: Search, path: '/employer/candidates' },
+    { label: 'Applications', id: 'applications', icon: FileText, path: '/employer/applications' },
     { label: 'Messages', id: 'messages', icon: MessageSquare },
   ];
 
@@ -423,10 +332,10 @@ const EmployerDashboard = () => {
 
         {/* Settings & Logout */}
         <div className="p-4 border-t border-gray-200 space-y-2">
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-all">
+          <Link href="/employer/settings" className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-all">
             <Settings className="w-5 h-5 flex-shrink-0" />
             {sidebarOpen && <span className="text-sm">Settings</span>}
-          </button>
+          </Link>
           <button
             onClick={logout}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-all"
@@ -474,12 +383,12 @@ const EmployerDashboard = () => {
                 {/* Dropdown Menu */}
                 {userDropdown && (
                   <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-50">
-                    <button className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-gray-900">
+                    <Link href="/employer/profile" className="block w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-gray-900">
                       Profile
-                    </button>
-                    <button className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-gray-900">
+                    </Link>
+                    <Link href="/employer/settings" className="block w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-gray-900">
                       Preferences
-                    </button>
+                    </Link>
                     <hr className="my-2" />
                     <button
                       onClick={logout}
@@ -615,7 +524,11 @@ const EmployerDashboard = () => {
                 </div>
 
                 <div className="space-y-5">
-                  {displaySkillAnalytics.map((skill, idx) => {
+                  {displaySkillAnalytics.length === 0 ? (
+                    <div className="text-center py-6">
+                      <p className="text-gray-500 text-sm">Post an internship to see skill analytics.</p>
+                    </div>
+                  ) : displaySkillAnalytics.map((skill, idx) => {
                     // Logic to calculate max for scaling bars
                     const maxRequested = Math.max(...displaySkillAnalytics.map(s => s.requested));
                     const maxAvailable = Math.max(...displaySkillAnalytics.map(s => s.available));
@@ -684,7 +597,9 @@ const EmployerDashboard = () => {
                     </div>
 
                     <div className="space-y-4">
-                      {topCandidates.map((candidate, idx) => (
+                      {topCandidates.length === 0 ? (
+                        <div className="text-center py-8 text-gray-500 text-sm">No matched candidates yet. Create a posting to get matches.</div>
+                      ) : topCandidates.map((candidate, idx) => (
                         <Card
                           key={candidate.id}
                           shadow="none"
@@ -761,7 +676,9 @@ const EmployerDashboard = () => {
                   </div>
 
                   <div className="space-y-4">
-                    {recentActivity.map((activity, idx) => {
+                    {recentActivity.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500 text-sm">No recent activity to show.</div>
+                    ) : recentActivity.map((activity, idx) => {
                       const ActivityIcon = activity.icon;
                       return (
                         <div key={activity.id} className="flex gap-3">

@@ -58,6 +58,7 @@ const CreateInternshipPage = () => {
     perks: [],
     experienceLevel: '',
     educationRequirements: '',
+    requiredDegreeField: [],
     minimumGPA: '',
     prefersExperienced: false,
     stipendAmount: '',
@@ -65,6 +66,7 @@ const CreateInternshipPage = () => {
 
   const [skillInput, setSkillInput] = useState('');
   const [prefSkillInput, setPrefSkillInput] = useState('');
+  const [degreeInput, setDegreeInput] = useState('');
   const [perkInput, setPerkInput] = useState('');
 
   const steps = [
@@ -150,6 +152,25 @@ const CreateInternshipPage = () => {
     }));
   };
 
+  const handleAddDegree = (e) => {
+    if (e) e.preventDefault();
+    const newDegree = degreeInput.trim();
+    if (newDegree && !formData.requiredDegreeField.includes(newDegree)) {
+      setFormData(prev => ({
+        ...prev,
+        requiredDegreeField: [...prev.requiredDegreeField, newDegree],
+      }));
+      setDegreeInput('');
+    }
+  };
+
+  const handleRemoveDegree = (degreeToRemove) => {
+    setFormData(prev => ({
+      ...prev,
+      requiredDegreeField: prev.requiredDegreeField.filter(d => d !== degreeToRemove),
+    }));
+  };
+
 
   const handleAddPerk = (e) => {
     if (e) e.preventDefault();
@@ -232,6 +253,7 @@ const CreateInternshipPage = () => {
         experienceLevel: formData.experienceLevel,
         prefersExperienced: formData.prefersExperienced,
         educationRequirements: formData.educationRequirements,
+        requiredDegreeField: formData.requiredDegreeField,
         minimumGPA: formData.minimumGPA ? parseFloat(formData.minimumGPA) : null,
         stipend: {
           amount: parseInt(formData.stipendAmount) || 0,
@@ -472,6 +494,37 @@ const CreateInternshipPage = () => {
                               <div key={skill} className="bg-slate-100 border border-slate-200 text-slate-600 px-5 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest flex items-center gap-3 animate-in fade-in zoom-in duration-300">
                                 {skill}
                                 <button onClick={() => handleRemovePrefSkill(skill)} className="hover:text-rose-500 transition-colors">
+                                  <X size={14} strokeWidth={3} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* REQUIRED DEGREES CACHE */}
+                        <div className="space-y-4">
+                          <label className="block text-xs font-black uppercase tracking-widest ml-1 mb-2.5 text-slate-900">Accepted Degree Fields</label>
+                          <div className="flex gap-4">
+                            <input
+                              type="text"
+                              value={degreeInput}
+                              onChange={(e) => setDegreeInput(e.target.value)}
+                              onKeyDown={(e) => e.key === 'Enter' && handleAddDegree(e)}
+                              placeholder="e.g. Computer Science, IT, Software Engineering..."
+                              className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl py-4 px-6 text-slate-900 font-bold focus:outline-none focus:border-[#6366F1]/50 transition-all placeholder:text-slate-300 shadow-sm"
+                            />
+                            <button
+                              onClick={handleAddDegree}
+                              className="px-10 bg-white border border-slate-200 hover:border-[#6366F1] hover:text-[#6366F1] text-slate-500 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-sm active:scale-95 transition-all outline-none"
+                            >
+                              Add Degree
+                            </button>
+                          </div>
+                          <div className="flex flex-wrap gap-2.5 pt-2">
+                            {formData.requiredDegreeField.map(degree => (
+                              <div key={degree} className="bg-indigo-50 border border-indigo-200 text-indigo-700 px-5 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest flex items-center gap-3 animate-in fade-in zoom-in duration-300">
+                                {degree}
+                                <button onClick={() => handleRemoveDegree(degree)} className="hover:text-rose-500 transition-colors">
                                   <X size={14} strokeWidth={3} />
                                 </button>
                               </div>

@@ -1,13 +1,22 @@
 const express = require('express');
 const router = express.Router();
+const { protect, authorize } = require('../middleware/auth');
+const {
+  applyToInternship,
+  getEmployerApplications,
+  updateApplicationStatus,
+  getStudentStats
+} = require('../controllers/applicationController');
 
-// Application routes
-router.get('/', (req, res) => {
-  res.json({ message: 'Get all applications' });
-});
+// All application routes are protected
+router.use(protect);
 
-router.post('/', (req, res) => {
-  res.json({ message: 'Create application' });
-});
+// Student routes
+router.get('/student/stats', authorize('student'), getStudentStats);
+router.post('/apply/:id', authorize('student'), applyToInternship);
+
+// Employer routes
+router.get('/employer', authorize('employer', 'admin'), getEmployerApplications);
+router.patch('/:id/status', authorize('employer', 'admin'), updateApplicationStatus);
 
 module.exports = router;

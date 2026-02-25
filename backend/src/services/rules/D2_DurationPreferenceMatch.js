@@ -26,7 +26,9 @@ const rule = {
         }
 
         const { min, max } = student.preferredDurationRange;
-        const duration = Number(internship.duration);
+        // Internship duration is saved from the UI as a string representing Months (e.g., '3', '6')
+        // We convert to weeks for the rule by multiplying by 4
+        const duration = Number(internship.duration) * 4;
 
         // Check boundaries safely
         const hasMin = min !== undefined && min !== null;

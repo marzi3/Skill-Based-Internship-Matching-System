@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const session = require('express-session');
 const passport = require('./config/passport'); // Import passport config
 require('dotenv').config();
 
@@ -14,7 +15,14 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser()); // Parse cookies
+app.use(session({
+  secret: process.env.JWT_SECRET || 'secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: process.env.NODE_ENV === 'production' }
+}));
 app.use(passport.initialize()); // Init passport
+app.use(passport.session()); // Passport session support
 
 // Static Uploads Folder
 app.use('/uploads', express.static('uploads'));

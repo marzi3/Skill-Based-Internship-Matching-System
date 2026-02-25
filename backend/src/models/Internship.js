@@ -72,6 +72,10 @@ const internshipSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
+    requiredDegreeField: [{
+        type: String,
+        trim: true
+    }],
     stipend: {
         amount: Number,
         currency: { type: String, default: 'INR' }

@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     ArrowLeft, Building, MapPin, Clock, Calendar,
     GraduationCap, Briefcase, Banknote, Star,
-    CheckCircle2, AlertTriangle, XCircle, ChevronRight, Check
+    CheckCircle2, AlertTriangle, XCircle, ChevronRight, Check, Loader2
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -23,6 +23,8 @@ export default function InternshipDetailPage({ params }) {
     const [analysis, setAnalysis] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [applied, setApplied] = useState(false);
+    const [applying, setApplying] = useState(false);
 
     useEffect(() => {
         const fetchDetails = async () => {
@@ -41,6 +43,8 @@ export default function InternshipDetailPage({ params }) {
                     setAnalysis(matchRes.data.analysis);
                 }
 
+                // 3. Check if already applied (logic can be added here or in backend)
+
             } catch (err) {
                 console.error(err);
                 setError(err.message || 'Error communicating with server');
@@ -49,10 +53,24 @@ export default function InternshipDetailPage({ params }) {
             }
         };
 
-        if (id) {
+        if (id && user?._id) {
             fetchDetails();
         }
     }, [id, user?._id]);
+
+    const handleApply = async () => {
+        try {
+            setApplying(true);
+            const res = await axios.post(`/api/applications/apply/${id}`);
+            if (res.data.success) {
+                setApplied(true);
+            }
+        } catch (err) {
+            alert(err.response?.data?.message || 'Failed to submit application');
+        } finally {
+            setApplying(false);
+        }
+    };
 
     if (loading) return <PageLoader />;
 
@@ -64,7 +82,7 @@ export default function InternshipDetailPage({ params }) {
                     <h2 className="text-2xl font-black text-slate-900 mb-4">Transmission Error</h2>
                     <p className="text-slate-500 font-bold mb-8">{error || "Internship not found."}</p>
                     <Link href="/internships" className="inline-flex items-center gap-2 bg-[#6366F1] text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-[#4F46E5] transition-all">
-                        <ArrowLeft size={16} /> Return to Dashboard
+                        <ArrowLeft size={16} /> Return to Search
                     </Link>
                 </div>
             </div>
@@ -75,9 +93,7 @@ export default function InternshipDetailPage({ params }) {
     const isDisqualified = tier === 'DISQUALIFIED';
 
     // Skill Gap Analysis
-    // We check user.skills against internship.requiredSkills
     const userSkillNames = (user.skills || []).map(s => (typeof s === 'string' ? s : s.name).toLowerCase());
-
     const missingSkills = (internship.requiredSkills || [])
         .filter(reqSkill => {
             const reqName = typeof reqSkill === 'string' ? reqSkill : reqSkill.name;
@@ -90,7 +106,7 @@ export default function InternshipDetailPage({ params }) {
             <div className="max-w-6xl mx-auto space-y-8">
 
                 {/* Header Back Button */}
-                <Link href="/internships" className="inline-flex items-center gap-3 text-slate-400 hover:text-slate-900 transition-colors font-black uppercase text-[10px] tracking-widest">
+                <Link href="/find-internships" className="inline-flex items-center gap-3 text-slate-400 hover:text-slate-900 transition-colors font-black uppercase text-[10px] tracking-widest">
                     <ArrowLeft size={16} /> Back to Search
                 </Link>
 
@@ -109,7 +125,7 @@ export default function InternshipDetailPage({ params }) {
                                     </div>
                                     <div>
                                         <p className="text-[10px] font-black tracking-[0.3em] uppercase text-[#6366F1] mb-1">
-                                            {internship.employer?.companyName || 'Industrial Partner'}
+                                            {internship.employer?.companyName || internship.company || 'Industrial Partner'}
                                         </p>
                                         <div className="flex items-center gap-2">
                                             <MapPin size={14} className="text-slate-400" />
@@ -125,11 +141,11 @@ export default function InternshipDetailPage({ params }) {
                                 <div className="flex flex-wrap gap-4 mb-10">
                                     <div className="px-5 py-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-3">
                                         <Clock size={16} className="text-emerald-500" />
-                                        <span className="text-[10px] font-black uppercase tracking-widest">{internship.duration || '6'} / Months</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest">{internship.duration || '6'} Months</span>
                                     </div>
                                     <div className="px-5 py-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-3">
                                         <Banknote size={16} className="text-amber-500" />
-                                        <span className="text-[10px] font-black uppercase tracking-widest">RS {internship.stipend?.amount || '0'}</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest">INR {internship.stipend?.amount || '0'}</span>
                                     </div>
                                     <div className="px-5 py-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-3">
                                         <Briefcase size={16} className="text-indigo-500" />
@@ -281,9 +297,30 @@ export default function InternshipDetailPage({ params }) {
                                         Apply Action Locked
                                     </button>
                                 </div>
+                            ) : applied ? (
+                                <div className="text-center space-y-4">
+                                    <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <CheckCircle2 className="text-emerald-500" size={28} />
+                                    </div>
+                                    <h4 className="text-sm font-black text-emerald-900 uppercase tracking-widest">Applied Successfully</h4>
+                                    <p className="text-xs font-bold text-emerald-700 leading-relaxed">
+                                        Your credentials have been submitted. The industrial partner will review your protocol shortly.
+                                    </p>
+                                    <Link href="/student/applications" className="block text-center text-[10px] font-black text-[#6366F1] uppercase tracking-widest hover:underline mt-4">
+                                        View All Applications
+                                    </Link>
+                                </div>
                             ) : (
-                                <button className="w-full group bg-[#6366F1] text-white py-5 px-6 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] hover:bg-[#4F46E5] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-indigo-600/20 flex items-center justify-center gap-3">
-                                    Initialize Application <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                                <button
+                                    onClick={handleApply}
+                                    disabled={applying}
+                                    className="w-full group bg-[#6366F1] text-white py-5 px-6 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] hover:bg-[#4F46E5] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-indigo-600/20 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {applying ? (
+                                        <Loader2 className="animate-spin" size={16} />
+                                    ) : (
+                                        <>Initialize Application <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" /></>
+                                    )}
                                 </button>
                             )}
                         </div>

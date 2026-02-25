@@ -59,11 +59,13 @@ const EditInternshipPage = () => {
         perks: [],
         experienceLevel: '',
         educationRequirements: '',
+        requiredDegreeField: [],
         stipendAmount: '',
     });
 
     const [skillInput, setSkillInput] = useState('');
     const [perkInput, setPerkInput] = useState('');
+    const [degreeInput, setDegreeInput] = useState('');
 
     const steps = [
         { id: 1, title: 'Basics' },
@@ -106,6 +108,7 @@ const EditInternshipPage = () => {
                     perks: data.perks || [],
                     experienceLevel: data.experienceLevel || '',
                     educationRequirements: data.educationRequirements || '',
+                    requiredDegreeField: data.requiredDegreeField || [],
                     stipendAmount: data.stipend?.amount || '',
                 });
                 setFetching(false);
@@ -142,6 +145,25 @@ const EditInternshipPage = () => {
         setFormData(prev => ({
             ...prev,
             requiredSkills: prev.requiredSkills.filter(s => (typeof s === 'string' ? s : s.name) !== skillToRemoveName),
+        }));
+    };
+
+    const handleAddDegree = (e) => {
+        if (e) e.preventDefault();
+        const newDegree = degreeInput.trim();
+        if (newDegree && !formData.requiredDegreeField.includes(newDegree)) {
+            setFormData(prev => ({
+                ...prev,
+                requiredDegreeField: [...prev.requiredDegreeField, newDegree],
+            }));
+            setDegreeInput('');
+        }
+    };
+
+    const handleRemoveDegree = (degreeToRemove) => {
+        setFormData(prev => ({
+            ...prev,
+            requiredDegreeField: prev.requiredDegreeField.filter(d => d !== degreeToRemove),
         }));
     };
 
@@ -216,6 +238,7 @@ const EditInternshipPage = () => {
                 numberOfOpenings: parseInt(formData.numberOfOpenings) || 1,
                 experienceLevel: formData.experienceLevel,
                 educationRequirements: formData.educationRequirements,
+                requiredDegreeField: formData.requiredDegreeField,
                 stipend: {
                     amount: parseInt(formData.stipendAmount) || 0,
                     currency: 'INR'
@@ -381,6 +404,37 @@ const EditInternshipPage = () => {
                                                     })}
                                                 </div>
                                             </div>
+
+                                            {/* REQUIRED DEGREES CACHE */}
+                                            <div className="space-y-4">
+                                                <label className="block text-xs font-black uppercase tracking-widest ml-1 mb-2.5 text-slate-900">Accepted Degree Fields</label>
+                                                <div className="flex gap-4">
+                                                    <input
+                                                        type="text"
+                                                        value={degreeInput}
+                                                        onChange={(e) => setDegreeInput(e.target.value)}
+                                                        onKeyDown={(e) => e.key === 'Enter' && handleAddDegree(e)}
+                                                        placeholder="e.g. Computer Science, IT, Software Engineering..."
+                                                        className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl py-4 px-6 text-slate-900 font-bold focus:outline-none focus:border-[#6366F1]/50 transition-all placeholder:text-slate-300 shadow-sm"
+                                                    />
+                                                    <button
+                                                        onClick={handleAddDegree}
+                                                        className="px-10 bg-white border border-slate-200 hover:border-[#6366F1] hover:text-[#6366F1] text-slate-500 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-sm active:scale-95 transition-all outline-none"
+                                                    >
+                                                        Add Degree
+                                                    </button>
+                                                </div>
+                                                <div className="flex flex-wrap gap-2.5 pt-2">
+                                                    {formData.requiredDegreeField.map(degree => (
+                                                        <div key={degree} className="bg-indigo-50 border border-indigo-200 text-indigo-700 px-5 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest flex items-center gap-3 animate-in fade-in zoom-in duration-300">
+                                                            {degree}
+                                                            <button onClick={() => handleRemoveDegree(degree)} className="hover:text-rose-500 transition-colors">
+                                                                <X size={14} strokeWidth={3} />
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
                                             <div className="grid grid-cols-2 gap-10">
                                                 <CustomSelect
                                                     label="Seniority"
@@ -490,7 +544,7 @@ const EditInternshipPage = () => {
         .custom-scrollbar::-webkit-scrollbar { width: 5px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
       `}</style>
-        </div>
+        </div >
     );
 };
 
