@@ -273,9 +273,42 @@ const updateProfile = async (req, res) => {
         user.businessRegistrationNumber = req.body.businessRegistrationNumber || user.businessRegistrationNumber;
         user.website = req.body.website || user.website;
         user.profilePicture = req.body.profilePicture || user.profilePicture;
+        if (req.body.companyDescription !== undefined) user.companyDescription = req.body.companyDescription;
+        if (req.body.positionInCompany !== undefined) user.positionInCompany = req.body.positionInCompany;
 
         const updatedUser = await user.save();
         res.status(200).json(updatedUser);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get public employer profile details
+// @route   GET /api/auth/employers/:id
+// @access  Public
+const getEmployerPublicProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id)
+            .select('name companyName website profilePicture companyDescription verificationStatus role');
+
+        if (!user || user.role !== 'employer') {
+            return res.status(404).json({ message: 'Employer not found' });
+        }
+
+        const Internship = require('../models/Internship');
+        const activeInternships = await Internship.find({
+            employer: user._id,
+            status: 'Hiring',
+            isDeleted: { $ne: true }
+        }).select('positionTitle locationType location duration createdAt requiredSkills domain');
+
+        res.status(200).json({
+            success: true,
+            data: {
+                employer: user,
+                internships: activeInternships
+            }
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -317,5 +350,6 @@ module.exports = {
     resetPassword,
     updateProfile,
     updatePassword,
-    getStudents
+    getStudents,
+    getEmployerPublicProfile
 };

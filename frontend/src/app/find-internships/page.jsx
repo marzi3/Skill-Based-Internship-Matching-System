@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     Search,
     MapPin,
@@ -12,27 +14,50 @@ import {
     Filter,
     Loader2,
     Briefcase,
+    SlidersHorizontal,
 } from 'lucide-react';
 
-export default function FindInternshipsPage() {
+function FindInternshipsContent() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
     const [internships, setInternships] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [locationQuery, setLocationQuery] = useState('');
+    const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
+    const [locationQuery, setLocationQuery] = useState(searchParams.get('location') || '');
     const [filters, setFilters] = useState({
-        jobType: [],
-        industry: [],
+        jobType: searchParams.get('jobType') ? searchParams.get('jobType').split(',') : [],
+        industry: searchParams.get('industry') ? searchParams.get('industry').split(',') : [],
     });
+    const [sort, setSort] = useState(searchParams.get('sort') || 'Best Matches');
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
 
     const fetchInternships = async () => {
         try {
             setLoading(true);
+            const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+            const user = userStr ? JSON.parse(userStr) : null;
+
+            if (sort === 'Best Matches' && user && user.role === 'student' && !searchQuery) {
+                const res = await axios.post(`${API_URL}/api/matching/internships`, {
+                    studentId: user.id || user._id,
+                });
+                if (res.data.matches) {
+                    const matchedInternships = res.data.matches.map(m => ({ ...m.internship, matchScore: m.score }));
+                    setInternships(matchedInternships);
+                    setLoading(false);
+                    return;
+                }
+            }
+
             const params = {};
             if (searchQuery) params.q = searchQuery;
-            if (locationQuery) params.workEnvironment = locationQuery;
-            if (filters.industry.length === 1) params.domain = filters.industry[0];
+            if (locationQuery) params.location = locationQuery;
+            if (filters.jobType.length > 0) params.workEnvironment = filters.jobType.join(',');
+            if (filters.industry.length > 0) params.domain = filters.industry.join(',');
+            if (sort && sort !== 'Best Matches') params.sort = sort;
+            if (sort === 'Best Matches') params.sort = 'Best Matches';
 
             const res = await axios.get(`${API_URL}/api/internships`, { params });
             setInternships(res.data.data || []);
@@ -43,12 +68,29 @@ export default function FindInternshipsPage() {
         }
     };
 
+    const updateURL = () => {
+        const params = new URLSearchParams();
+        if (searchQuery) params.set('q', searchQuery);
+        if (locationQuery) params.set('location', locationQuery);
+        if (filters.jobType.length > 0) params.set('jobType', filters.jobType.join(','));
+        if (filters.industry.length > 0) params.set('industry', filters.industry.join(','));
+        if (sort !== 'Best Matches') params.set('sort', sort);
+
+        router.push(`/find-internships?${params.toString()}`, { scroll: false });
+    };
+
     useEffect(() => {
-        fetchInternships();
-    }, []);
+        const delayDebounceFn = setTimeout(() => {
+            updateURL();
+            fetchInternships();
+        }, 300);
+        return () => clearTimeout(delayDebounceFn);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchQuery, locationQuery, filters, sort]);
 
     const handleSearch = (e) => {
         e.preventDefault();
+        updateURL();
         fetchInternships();
     };
 
@@ -62,23 +104,8 @@ export default function FindInternshipsPage() {
         });
     };
 
-    // Client-side filtering for multi-select
-    const filtered = internships.filter((job) => {
-        const matchesType =
-            filters.jobType.length === 0 ||
-            filters.jobType.some((t) => {
-                if (t === 'Remote') return job.workEnvironment === 'Remote';
-                if (t === 'On-site') return job.workEnvironment === 'On-site';
-                if (t === 'Hybrid') return job.workEnvironment === 'Hybrid';
-                return true;
-            });
-        const matchesIndustry =
-            filters.industry.length === 0 ||
-            filters.industry.some((i) =>
-                (job.domain || '').toLowerCase().includes(i.toLowerCase())
-            );
-        return matchesType && matchesIndustry;
-    });
+    // Filters are now handled server-side
+    const filtered = internships;
 
     const jobTypeOptions = ['Full-time Internship', 'Part-time Internship', 'Remote', 'On-site', 'Hybrid'];
     const industryOptions = ['Technology', 'Finance', 'Design', 'Marketing'];
@@ -207,11 +234,25 @@ export default function FindInternshipsPage() {
 
                     {/* Results */}
                     <div className="flex-1">
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-xl font-bold text-gray-900">Recommended for you</h2>
-                            <span className="text-sm text-gray-400 font-medium">
-                                Showing {filtered.length} result{filtered.length !== 1 ? 's' : ''}
-                            </span>
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-900">Recommended for you</h2>
+                                <span className="text-sm text-gray-400 font-medium">
+                                    Showing {filtered.length} result{filtered.length !== 1 ? 's' : ''}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium text-gray-500">Sort by:</span>
+                                <select
+                                    value={sort}
+                                    onChange={(e) => setSort(e.target.value)}
+                                    className="bg-white border text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2 outline-none cursor-pointer font-medium border-gray-200 shadow-sm transition-all"
+                                >
+                                    {['Best Matches', 'Newest', 'Oldest', 'Salary', 'Deadline Soon'].map(opt => (
+                                        <option key={opt} value={opt}>{opt}</option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
 
                         {loading ? (
@@ -229,8 +270,11 @@ export default function FindInternshipsPage() {
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                {filtered.map((job) => (
-                                    <div
+                                {filtered.map((job, index) => (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: index * 0.05 }}
                                         key={job._id}
                                         className="bg-white rounded-2xl border border-gray-100 hover:border-indigo-200 hover:shadow-lg transition-all duration-300 p-6 group"
                                     >
@@ -292,7 +336,7 @@ export default function FindInternshipsPage() {
                                                 </Link>
                                             </div>
                                         </div>
-                                    </div>
+                                    </motion.div>
                                 ))}
                             </div>
                         )}
@@ -300,5 +344,17 @@ export default function FindInternshipsPage() {
                 </div>
             </section>
         </div>
+    );
+}
+
+export default function FindInternshipsPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-white flex items-center justify-center">
+                <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
+            </div>
+        }>
+            <FindInternshipsContent />
+        </Suspense>
     );
 }

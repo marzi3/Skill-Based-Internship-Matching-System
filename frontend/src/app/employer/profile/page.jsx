@@ -16,7 +16,10 @@ const ProfilePage = () => {
         name: user?.name || '',
         companyName: user?.companyName || '',
         website: user?.website || '',
-        businessRegistrationNumber: user?.businessRegistrationNumber || ''
+        businessRegistrationNumber: user?.businessRegistrationNumber || '',
+        companyDescription: user?.companyDescription || '',
+        profilePicture: user?.profilePicture || '',
+        positionInCompany: user?.positionInCompany || ''
     });
 
     const handleChange = (e) => {
@@ -46,7 +49,10 @@ const ProfilePage = () => {
             name: user?.name || '',
             companyName: user?.companyName || '',
             website: user?.website || '',
-            businessRegistrationNumber: user?.businessRegistrationNumber || ''
+            businessRegistrationNumber: user?.businessRegistrationNumber || '',
+            companyDescription: user?.companyDescription || '',
+            profilePicture: user?.profilePicture || '',
+            positionInCompany: user?.positionInCompany || ''
         });
         setIsEditing(false);
         setMessage({ type: '', text: '' });
@@ -119,15 +125,38 @@ const ProfilePage = () => {
                                 user?.companyName || 'Setup Your Company'
                             )}
                         </h2>
-                        <p className="text-primary-600 font-bold uppercase tracking-widest text-[10px] mt-2">
+                        {isEditing ? (
+                            <textarea
+                                name="companyDescription"
+                                value={formData.companyDescription}
+                                onChange={handleChange}
+                                className="w-full mt-4 text-center border-b-2 border-primary-200 focus:border-primary-500 outline-none text-sm bg-transparent py-1 transition-colors resize-none h-20"
+                                placeholder="Short mission or company description..."
+                            />
+                        ) : (
+                            <p className="text-gray-500 text-sm mt-3 px-4 italic leading-relaxed">
+                                {user?.companyDescription || 'No description provided yet.'}
+                            </p>
+                        )}
+                        <p className="text-primary-600 font-bold uppercase tracking-widest text-[10px] mt-4">
                             {user?.verificationStatus === 'approved' ? 'Verified Employer' : 'Pending Verification'}
                         </p>
                     </div>
 
                     {isEditing && (
                         <div className="space-y-4 pt-4 border-t border-gray-100">
+                            <div className="text-left space-y-1">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Profile Picture URL</label>
+                                <input
+                                    name="profilePicture"
+                                    value={formData.profilePicture}
+                                    onChange={handleChange}
+                                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-primary-100 focus:border-primary-500 outline-none transition-all"
+                                    placeholder="https://example.com/logo.png"
+                                />
+                            </div>
                             <div className="text-left space-y-1 mt-4">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">BRN / CIN</label>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">BRN / TIN</label>
                                 <input
                                     name="businessRegistrationNumber"
                                     value={formData.businessRegistrationNumber}
@@ -146,17 +175,31 @@ const ProfilePage = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-2">
                             <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Primary Contact</label>
-                            <div className="flex items-center gap-3 text-gray-900 font-bold">
-                                <UserIcon size={20} className={isEditing ? 'text-gray-400' : 'text-primary-500'} />
+                            <div className="flex flex-col gap-2 text-gray-900 font-bold">
+                                <div className="flex items-center gap-3">
+                                    <UserIcon size={20} className={isEditing ? 'text-gray-400' : 'text-primary-500'} />
+                                    {isEditing ? (
+                                        <input
+                                            name="name"
+                                            value={formData.name}
+                                            onChange={handleChange}
+                                            placeholder="Full Name"
+                                            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-primary-100 outline-none"
+                                        />
+                                    ) : (
+                                        <span>{user?.name || 'Administrator'}</span>
+                                    )}
+                                </div>
                                 {isEditing ? (
                                     <input
-                                        name="name"
-                                        value={formData.name}
+                                        name="positionInCompany"
+                                        value={formData.positionInCompany}
                                         onChange={handleChange}
-                                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-primary-100 outline-none"
+                                        placeholder="Position (e.g. HR Manager)"
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-primary-100 outline-none ml-[2rem]"
                                     />
                                 ) : (
-                                    <span>{user?.name || 'Administrator'}</span>
+                                    <span className="text-xs text-gray-500 font-medium ml-[2.6rem]">{user?.positionInCompany || 'Position Not Specified'}</span>
                                 )}
                             </div>
                         </div>

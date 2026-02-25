@@ -49,6 +49,7 @@ const CreateInternshipPage = () => {
     position: '',
     category: '',
     locationType: '',
+    location: '',
     duration: '',
     deadline: '',
     description: '',
@@ -59,6 +60,7 @@ const CreateInternshipPage = () => {
     experienceLevel: '',
     educationRequirements: '',
     requiredDegreeField: [],
+    isGpaMandatory: false,
     minimumGPA: '',
     prefersExperienced: false,
     stipendAmount: '',
@@ -102,6 +104,19 @@ const CreateInternshipPage = () => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     setValidationErrors(prev => ({ ...prev, [name]: false }));
+  };
+
+  const handleGpaChange = (e) => {
+    let val = parseFloat(e.target.value);
+    if (val > 4.0) e.target.value = 4.0;
+    if (val < 0) e.target.value = 0;
+    handleInputChange(e);
+  };
+
+  const handleStipendChange = (e) => {
+    let val = parseInt(e.target.value);
+    if (val < 0) e.target.value = 0;
+    handleInputChange(e);
   };
 
   const handleAddSkill = (e) => {
@@ -244,6 +259,7 @@ const CreateInternshipPage = () => {
         positionTitle: formData.position,
         domain: formData.category,
         workEnvironment: formData.locationType,
+        location: formData.location,
         duration: formData.duration,
         expiryDate: formData.deadline,
         requiredSkills: formData.requiredSkills,
@@ -254,7 +270,7 @@ const CreateInternshipPage = () => {
         prefersExperienced: formData.prefersExperienced,
         educationRequirements: formData.educationRequirements,
         requiredDegreeField: formData.requiredDegreeField,
-        minimumGPA: formData.minimumGPA ? parseFloat(formData.minimumGPA) : null,
+        minimumGPA: formData.isGpaMandatory && formData.minimumGPA ? parseFloat(formData.minimumGPA) : null,
         stipend: {
           amount: parseInt(formData.stipendAmount) || 0,
           currency: 'RS'
@@ -375,6 +391,15 @@ const CreateInternshipPage = () => {
                             required
                           />
                         </div>
+                        <CustomInput
+                          label="Specific Location"
+                          icon={Building}
+                          name="location"
+                          value={formData.location}
+                          onChange={handleInputChange}
+                          placeholder={formData.locationType === 'Remote' ? "e.g. US Only, Worldwide" : "e.g. San Francisco, CA"}
+                          required={formData.locationType !== 'Remote'}
+                        />
                         <div className="grid grid-cols-2 gap-10">
                           <CustomSelect
                             label="Tenure Duration"
@@ -407,6 +432,7 @@ const CreateInternshipPage = () => {
                           value={formData.deadline}
                           onChange={handleInputChange}
                           error={validationErrors.deadline}
+                          min={new Date().toISOString().split('T')[0]}
                           required
                         />
                       </div>
@@ -560,18 +586,38 @@ const CreateInternshipPage = () => {
                         </div>
 
                         <div className="grid grid-cols-2 gap-10">
-                          <CustomInput
-                            label="Minimum GPA"
-                            icon={GraduationCap}
-                            name="minimumGPA"
-                            value={formData.minimumGPA}
-                            onChange={handleInputChange}
-                            type="number"
-                            placeholder="e.g. 3.0"
-                            step="0.1"
-                            min="0"
-                            max="4.0"
-                          />
+                          <div className="space-y-4">
+                            <label className="flex items-center gap-3 cursor-pointer group mt-7 p-4 bg-slate-50 rounded-2xl border border-slate-200 hover:border-[#6366F1]/30 transition-all">
+                              <div
+                                onClick={() => setFormData(prev => ({ ...prev, isGpaMandatory: !prev.isGpaMandatory, minimumGPA: prev.isGpaMandatory ? '' : prev.minimumGPA }))}
+                                className={`w-10 h-6 flex-shrink-0 rounded-full flex items-center p-1 transition-colors ${formData.isGpaMandatory ? 'bg-[#6366F1]' : 'bg-slate-300'}`}
+                              >
+                                <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${formData.isGpaMandatory ? 'translate-x-4' : 'translate-x-0'}`} />
+                              </div>
+                              <div>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-900 block">Require Minimum GPA</span>
+                                <span className="text-[9px] font-semibold text-slate-400 uppercase">Make GPA mandatory for applicants</span>
+                              </div>
+                            </label>
+
+                            {formData.isGpaMandatory && (
+                              <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                                <CustomInput
+                                  label="Minimum GPA (Max 4.0)"
+                                  icon={GraduationCap}
+                                  name="minimumGPA"
+                                  value={formData.minimumGPA}
+                                  onChange={handleGpaChange}
+                                  type="number"
+                                  placeholder="e.g. 3.0"
+                                  step="0.01"
+                                  min="0"
+                                  max="4.0"
+                                  required
+                                />
+                              </div>
+                            )}
+                          </div>
                           <CustomInput
                             label="Academic Standard"
                             icon={GraduationCap}
@@ -605,7 +651,8 @@ const CreateInternshipPage = () => {
                             type="number"
                             name="stipendAmount"
                             value={formData.stipendAmount}
-                            onChange={handleInputChange}
+                            onChange={handleStipendChange}
+                            min="0"
                             placeholder="15000"
                           />
                           <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
@@ -736,6 +783,7 @@ const CreateInternshipPage = () => {
                   <div className="flex flex-wrap gap-4">
                     <div className="bg-white/10 backdrop-blur-md px-5 py-3.5 rounded-[1.25rem] text-[10px] font-black uppercase tracking-widest flex items-center gap-3 border border-white/10">
                       <MapPin size={16} className="text-emerald-300" /> {formData.locationType || 'Hybrid'}
+                      {formData.location && <span className="text-emerald-100/50">| {formData.location}</span>}
                     </div>
                     <div className="bg-white/10 backdrop-blur-md px-5 py-3.5 rounded-[1.25rem] text-[10px] font-black uppercase tracking-widest flex items-center gap-3 border border-white/10">
                       <Clock size={16} className="text-indigo-200" /> {formData.duration ? (typeof formData.duration === 'string' ? formData.duration : durationOptions.find(o => o.value === formData.duration)?.label) || '6 Months' : '3 Mo'}

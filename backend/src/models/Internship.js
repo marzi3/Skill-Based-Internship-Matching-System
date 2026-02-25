@@ -21,6 +21,10 @@ const internshipSchema = new mongoose.Schema({
         enum: ['Remote', 'On-site', 'Hybrid'],
         default: 'Remote'
     },
+    location: {
+        type: String,
+        trim: true
+    },
     duration: {
         type: String, // String to handle "3 Months" or "12 Months" from select
         required: [true, 'Duration is required']

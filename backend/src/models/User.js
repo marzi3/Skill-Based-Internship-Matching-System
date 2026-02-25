@@ -86,6 +86,14 @@ const userSchema = new mongoose.Schema({
   businessDocument: {
     type: String, // Path to uploaded PDF
   },
+  companyDescription: {
+    type: String,
+    trim: true,
+  },
+  positionInCompany: {
+    type: String,
+    trim: true,
+  },
   website: {
     type: String,
     trim: true,

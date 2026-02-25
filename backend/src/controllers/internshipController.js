@@ -12,34 +12,65 @@ exports.getInternships = async (req, res) => {
         if (q) {
             query.$text = { $search: q };
         }
-        if (industry || domain) {
-            query.domain = new RegExp(industry || domain, 'i');
+
+        // Handle comma-separated domains/industries
+        const industries = industry || domain;
+        if (industries) {
+            const industryArray = industries.split(',').map(i => new RegExp(`^${i.trim()}$`, 'i'));
+            query.domain = { $in: industryArray };
         }
-        if (location || workEnvironment) {
-            query.workEnvironment = location || workEnvironment;
+
+        // Handle comma-separated work environments
+        if (workEnvironment) {
+            const envArray = workEnvironment.split(',').map(e => e.trim());
+            // Filter out empty strings
+            const validEnvs = envArray.filter(e => e);
+            if (validEnvs.length > 0) {
+                query.workEnvironment = { $in: validEnvs };
+            }
         }
+
+        // Handle free-text location search
+        if (location) {
+            // Search in Location OR workEnvironment if it matches Remote/On-site/Hybrid
+            query.$or = query.$or || [];
+            query.$or.push({ location: new RegExp(location, 'i') });
+            query.$or.push({ workEnvironment: new RegExp(location, 'i') });
+        }
+
         if (skill) {
-            query.$or = [
-                { requiredSkills: new RegExp(skill, 'i') },
-                { 'requiredSkills.name': new RegExp(skill, 'i') }
-            ];
+            query.$or = query.$or || [];
+            query.$or.push({ requiredSkills: new RegExp(skill, 'i') });
+            query.$or.push({ 'requiredSkills.name': new RegExp(skill, 'i') });
         }
+
         if (duration) {
             query.duration = duration;
         }
 
-        // Handle sorting options: newest (createdAt), deadline (expiryDate)
-        let sortOption = { createdAt: -1 }; // Default Best Match/Newest fallback
+        // Handle sorting options: newest (createdAt), deadline (expiryDate), etc.
+        let sortOption = { createdAt: -1 }; // Default Newest
 
         if (sort) {
             if (sort === 'Newest') {
                 sortOption = { createdAt: -1 };
+            } else if (sort === 'Oldest') {
+                sortOption = { createdAt: 1 };
             } else if (sort === 'Deadline Soon') {
                 sortOption = { expiryDate: 1 };
+            } else if (sort === 'Salary') {
+                sortOption = { 'stipend.amount': -1 };
+            } else if (sort === 'Best Matches' && q) {
+                sortOption = { score: { $meta: "textScore" } };
             }
         }
 
-        const internships = await Internship.find(query).sort(sortOption).populate('employer', 'name email companyName');
+        let projection = {};
+        if (sort === 'Best Matches' && q) {
+            projection = { score: { $meta: "textScore" } };
+        }
+
+        const internships = await Internship.find(query, projection).sort(sortOption).populate('employer', 'name email companyName');
         res.status(200).json({
             success: true,
             count: internships.length,
@@ -297,14 +328,35 @@ exports.getSkillDemands = async (req, res) => {
             { $limit: 10 }
         ]);
 
+        const result = [];
+        for (const item of skillDemands) {
+            const skillName = item._id;
+            const requested = item.count;
+
+            // Find available students that have this skill (case-insensitive fuzzy match)
+            // The student.skills array might contain strings or objects with a 'name' field
+            const available = await User.countDocuments({
+                role: 'student',
+                $or: [
+                    { skills: new RegExp(skillName, 'i') },
+                    { 'skills.name': new RegExp(skillName, 'i') }
+                ]
+            });
+
+            // Match percent formula (capped at 100%)
+            const matchPercent = available > 0 ? Math.min(Math.round((available / requested) * 100), 100) : 0;
+
+            result.push({
+                skill: skillName || 'Unknown',
+                requested,
+                available,
+                matchPercent
+            });
+        }
+
         res.status(200).json({
             success: true,
-            data: (skillDemands || []).map(item => ({
-                skill: item._id || 'Unknown',
-                requested: item.count || 0,
-                available: Math.floor((item.count || 0) * 0.85) + 2,
-                matchPercent: 85 + Math.floor(Math.random() * 10)
-            }))
+            data: result
         });
     } catch (error) {
         console.error('CRITICAL: getSkillDemands Failure:', error);

@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Settings as SettingsIcon, Bell, Shield, User, CreditCard, Save, Loader2 } from 'lucide-react';
+import { Settings as SettingsIcon, Bell, Shield, User, CreditCard, Save, Loader2, Moon, Sun } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import Card from '@/components/common/Card';
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
@@ -11,12 +12,24 @@ const SettingsPage = () => {
     const [activeTab, setActiveTab] = useState('profile');
 
     // Forms State
-    const [profileData, setProfileData] = useState({ name: user?.name || '' });
+    const [profileData, setProfileData] = useState({
+        name: user?.name || '',
+        companyDescription: user?.companyDescription || '',
+        profilePicture: user?.profilePicture || '',
+        positionInCompany: user?.positionInCompany || ''
+    });
     const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
 
     // UI State
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
+    const { theme, setTheme } = useTheme();
+    const [mounted, setMounted] = useState(false);
+
+    // Hydration fix for next-themes
+    import('react').then(React => {
+        React.useEffect(() => setMounted(true), []);
+    });
 
     const showMessage = (type, text) => {
         setMessage({ type, text });
@@ -106,17 +119,49 @@ const SettingsPage = () => {
                         <Card shadow="sm" rounded="lg" padding="lg" className="border border-gray-100">
                             <h2 className="text-xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4">Personal Information</h2>
                             <form onSubmit={handleProfileSubmit} className="space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold text-gray-700">Full Name</label>
+                                        <input
+                                            type="text"
+                                            value={profileData.name}
+                                            onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                                            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary-100 focus:border-primary-500 outline-none transition-all"
+                                            placeholder="Your full name"
+                                            required
+                                        />
+                                        <p className="text-xs text-gray-500">This is how you will appear to potential candidates.</p>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold text-gray-700">Position in Company</label>
+                                        <input
+                                            type="text"
+                                            value={profileData.positionInCompany}
+                                            onChange={(e) => setProfileData({ ...profileData, positionInCompany: e.target.value })}
+                                            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary-100 focus:border-primary-500 outline-none transition-all"
+                                            placeholder="e.g. HR Manager"
+                                        />
+                                    </div>
+                                </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-bold text-gray-700">Full Name</label>
+                                    <label className="text-sm font-bold text-gray-700">Profile Picture URL</label>
                                     <input
-                                        type="text"
-                                        value={profileData.name}
-                                        onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                                        type="url"
+                                        value={profileData.profilePicture}
+                                        onChange={(e) => setProfileData({ ...profileData, profilePicture: e.target.value })}
                                         className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary-100 focus:border-primary-500 outline-none transition-all"
-                                        placeholder="Your full name"
-                                        required
+                                        placeholder="https://example.com/logo.png"
                                     />
-                                    <p className="text-xs text-gray-500">This is how you will appear to potential candidates.</p>
+                                    <p className="text-xs text-gray-500">Provide a direct link to your company logo or profile picture.</p>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-gray-700">Company Description</label>
+                                    <textarea
+                                        value={profileData.companyDescription}
+                                        onChange={(e) => setProfileData({ ...profileData, companyDescription: e.target.value })}
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary-100 focus:border-primary-500 outline-none transition-all h-24 resize-none"
+                                        placeholder="Briefly describe your company's mission and culture..."
+                                    />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-bold text-gray-700">Email Address</label>
@@ -129,7 +174,23 @@ const SettingsPage = () => {
                                     <p className="text-xs text-gray-400">Your email address cannot be changed.</p>
                                 </div>
 
-                                <div className="pt-4">
+                                {mounted && (
+                                    <div className="pt-6 mt-4 border-t border-gray-100 flex items-center justify-between">
+                                        <div>
+                                            <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">Interface Theme</h3>
+                                            <p className="text-xs text-gray-500">Toggle dark mode on or off to change the workspace aesthetic.</p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                                            className="p-3 bg-gray-100 dark:bg-gray-800 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                                        >
+                                            {theme === 'dark' ? <Sun className="text-amber-500" size={20} /> : <Moon className="text-indigo-500" size={20} />}
+                                        </button>
+                                    </div>
+                                )}
+
+                                <div className="pt-4 mt-2">
                                     <button
                                         type="submit"
                                         disabled={isLoading}

@@ -35,7 +35,18 @@ export const ProtectedRoute = ({
         if (requiredRole && userData?.role !== requiredRole) {
           setIsAuthenticated(false);
           setIsLoading(false);
-          router.push('/unauthorized');
+
+          // Redirect to their correct dashboard based on role
+          const getRoleDashboard = (role) => {
+            switch (role) {
+              case 'employer': return '/employer/dashboard';
+              case 'admin': return '/admin/admin-dashboard';
+              case 'student':
+              default: return '/student-dashboard';
+            }
+          };
+
+          router.push(getRoleDashboard(userData?.role));
           return;
         }
 

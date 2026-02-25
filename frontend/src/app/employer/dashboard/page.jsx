@@ -463,10 +463,22 @@ const EmployerDashboard = () => {
                       exportDate: new Date().toLocaleDateString(),
                     };
                     // Create CSV or PDF download
-                    const csvContent = `Employer Dashboard Report\nExport Date: ${exportData.exportDate}\n\nStatistics:\nTotal Internships Posted: ${exportData.totalInternships}\nTotal Applicants: ${exportData.totalApplicants}\nSkill Matches: ${exportData.skillMatches}\nInterviews Scheduled: ${exportData.interviews}`;
+                    let csvContent = "Report Type,Employer Dashboard Statistics\n";
+                    csvContent += `Export Date,${exportData.exportDate}\n\n`;
+                    csvContent += "Metric,Value\n";
+                    csvContent += `Total Internships Posted,${exportData.totalInternships}\n`;
+                    csvContent += `Total Applicants,${exportData.totalApplicants}\n`;
+                    csvContent += `Skill Matches,${exportData.skillMatches}\n`;
+                    csvContent += `Interviews Scheduled,${exportData.interviews}\n\n`;
+
+                    csvContent += "Internship Position,Status,Applicants,Expiry Date\n";
+                    exportData.postings.forEach(p => {
+                      csvContent += `"${p.position}","${p.status}",${p.candidates},"${p.expiry}"\n`;
+                    });
+
                     const element = document.createElement('a');
-                    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(csvContent));
-                    element.setAttribute('download', 'employer-dashboard-report.txt');
+                    element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent));
+                    element.setAttribute('download', 'employer-dashboard-report.csv');
                     element.style.display = 'none';
                     document.body.appendChild(element);
                     element.click();

@@ -51,6 +51,7 @@ const EditInternshipPage = () => {
         position: '',
         category: '',
         locationType: '',
+        location: '',
         duration: '',
         deadline: '',
         description: '',
@@ -61,6 +62,9 @@ const EditInternshipPage = () => {
         educationRequirements: '',
         requiredDegreeField: [],
         stipendAmount: '',
+        isGpaMandatory: false,
+        minimumGPA: '',
+        prefersExperienced: false,
     });
 
     const [skillInput, setSkillInput] = useState('');
@@ -100,6 +104,7 @@ const EditInternshipPage = () => {
                     position: data.positionTitle,
                     category: data.domain,
                     locationType: data.workEnvironment,
+                    location: data.location || '',
                     duration: data.duration,
                     deadline: data.expiryDate ? new Date(data.expiryDate).toISOString().split('T')[0] : '',
                     description: data.description,
@@ -110,6 +115,9 @@ const EditInternshipPage = () => {
                     educationRequirements: data.educationRequirements || '',
                     requiredDegreeField: data.requiredDegreeField || [],
                     stipendAmount: data.stipend?.amount || '',
+                    isGpaMandatory: !!data.minimumGPA,
+                    minimumGPA: data.minimumGPA || '',
+                    prefersExperienced: data.prefersExperienced || false,
                 });
                 setFetching(false);
             } catch (err) {
@@ -126,6 +134,19 @@ const EditInternshipPage = () => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
         setValidationErrors(prev => ({ ...prev, [name]: false }));
+    };
+
+    const handleGpaChange = (e) => {
+        let val = parseFloat(e.target.value);
+        if (val > 4.0) e.target.value = 4.0;
+        if (val < 0) e.target.value = 0;
+        handleInputChange(e);
+    };
+
+    const handleStipendChange = (e) => {
+        let val = parseInt(e.target.value);
+        if (val < 0) e.target.value = 0;
+        handleInputChange(e);
     };
 
     const handleAddSkill = (e) => {
@@ -231,6 +252,7 @@ const EditInternshipPage = () => {
                 positionTitle: formData.position,
                 domain: formData.category,
                 workEnvironment: formData.locationType,
+                location: formData.location,
                 duration: formData.duration,
                 expiryDate: formData.deadline,
                 requiredSkills: formData.requiredSkills,
@@ -239,6 +261,8 @@ const EditInternshipPage = () => {
                 experienceLevel: formData.experienceLevel,
                 educationRequirements: formData.educationRequirements,
                 requiredDegreeField: formData.requiredDegreeField,
+                minimumGPA: formData.isGpaMandatory && formData.minimumGPA ? parseFloat(formData.minimumGPA) : null,
+                prefersExperienced: formData.prefersExperienced || false,
                 stipend: {
                     amount: parseInt(formData.stipendAmount) || 0,
                     currency: 'INR'
@@ -344,6 +368,15 @@ const EditInternshipPage = () => {
                                                     required
                                                 />
                                             </div>
+                                            <CustomInput
+                                                label="Specific Location"
+                                                icon={Building}
+                                                name="location"
+                                                value={formData.location}
+                                                onChange={handleInputChange}
+                                                placeholder={formData.locationType === 'Remote' ? "e.g. US Only, Worldwide" : "e.g. San Francisco, CA"}
+                                                required={formData.locationType !== 'Remote'}
+                                            />
                                             <div className="grid grid-cols-2 gap-10">
                                                 <CustomSelect
                                                     label="Duration"
@@ -373,6 +406,7 @@ const EditInternshipPage = () => {
                                                 name="deadline"
                                                 value={formData.deadline}
                                                 onChange={handleInputChange}
+                                                min={new Date().toISOString().split('T')[0]}
                                             />
                                         </div>
                                     )}
@@ -435,6 +469,65 @@ const EditInternshipPage = () => {
                                                     ))}
                                                 </div>
                                             </div>
+                                            <div className="space-y-4">
+                                                <label className="flex items-center gap-3 cursor-pointer group mt-7 p-4 bg-slate-50 rounded-2xl border border-slate-200 hover:border-[#6366F1]/30 transition-all">
+                                                    <div
+                                                        onClick={() => setFormData(prev => ({ ...prev, prefersExperienced: !prev.prefersExperienced }))}
+                                                        className={`w-10 h-6 flex-shrink-0 rounded-full flex items-center p-1 transition-colors ${formData.prefersExperienced ? 'bg-[#6366F1]' : 'bg-slate-300'}`}
+                                                    >
+                                                        <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${formData.prefersExperienced ? 'translate-x-4' : 'translate-x-0'}`} />
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-900 block">Prefers Experienced Candidates</span>
+                                                        <span className="text-[9px] font-semibold text-slate-400 uppercase">Prioritize students with past internships</span>
+                                                    </div>
+                                                </label>
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-10">
+                                                <div className="space-y-4">
+                                                    <label className="flex items-center gap-3 cursor-pointer group mt-7 p-4 bg-slate-50 rounded-2xl border border-slate-200 hover:border-[#6366F1]/30 transition-all">
+                                                        <div
+                                                            onClick={() => setFormData(prev => ({ ...prev, isGpaMandatory: !prev.isGpaMandatory, minimumGPA: prev.isGpaMandatory ? '' : prev.minimumGPA }))}
+                                                            className={`w-10 h-6 flex-shrink-0 rounded-full flex items-center p-1 transition-colors ${formData.isGpaMandatory ? 'bg-[#6366F1]' : 'bg-slate-300'}`}
+                                                        >
+                                                            <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${formData.isGpaMandatory ? 'translate-x-4' : 'translate-x-0'}`} />
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-900 block">Require Minimum GPA</span>
+                                                            <span className="text-[9px] font-semibold text-slate-400 uppercase">Make GPA mandatory</span>
+                                                        </div>
+                                                    </label>
+
+                                                    {formData.isGpaMandatory && (
+                                                        <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                                                            <CustomInput
+                                                                label="Minimum GPA (Max 4.0)"
+                                                                icon={GraduationCap}
+                                                                name="minimumGPA"
+                                                                value={formData.minimumGPA}
+                                                                onChange={handleGpaChange}
+                                                                type="number"
+                                                                placeholder="e.g. 3.0"
+                                                                step="0.01"
+                                                                min="0"
+                                                                max="4.0"
+                                                                required
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                <CustomInput
+                                                    label="Academic Standard"
+                                                    icon={GraduationCap}
+                                                    name="educationRequirements"
+                                                    value={formData.educationRequirements}
+                                                    onChange={handleInputChange}
+                                                    placeholder="e.g. Master's in Design"
+                                                />
+                                            </div>
+
                                             <div className="grid grid-cols-2 gap-10">
                                                 <CustomSelect
                                                     label="Seniority"
@@ -467,7 +560,8 @@ const EditInternshipPage = () => {
                                                     type="number"
                                                     name="stipendAmount"
                                                     value={formData.stipendAmount}
-                                                    onChange={handleInputChange}
+                                                    onChange={handleStipendChange}
+                                                    min="0"
                                                 />
                                             </div>
                                         </div>
@@ -526,7 +620,10 @@ const EditInternshipPage = () => {
                                     <p className="text-indigo-200 font-bold text-lg mt-2">{user?.companyName || 'Incubator'}</p>
                                 </div>
                                 <div className="flex gap-4">
-                                    <div className="bg-white/10 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-white/10">{formData.locationType || 'Remote'}</div>
+                                    <div className="bg-white/10 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-white/10">
+                                        {formData.locationType || 'Remote'}
+                                        {formData.location && <span> | {formData.location}</span>}
+                                    </div>
                                     <div className="bg-white/10 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-white/10">{formData.duration || '6M'}</div>
                                 </div>
                                 <div className="block border-t border-white/10 pt-6">
