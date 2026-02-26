@@ -14,6 +14,10 @@ const {
   getProfileCompletion,
   uploadProfileImage,
   uploadCoverImage,
+  addCertification,
+  removeCertification,
+  uploadResume,
+  resetProfile,
 } = require('../controllers/studentController');
 const { protect } = require('../middleware/authMiddleware');
 const upload = require('../config/multer');
@@ -43,5 +47,15 @@ router.delete('/profile/skill/:skillId', removeSkill);
 
 // Portfolio routes
 router.post('/profile/portfolio', updatePortfolio);
+
+// Certification routes
+router.post('/profile/certification', addCertification);
+router.delete('/profile/certification/:certificationId', removeCertification);
+
+// Resume routes
+router.post('/profile/resume', upload.single('resume'), uploadResume);
+
+// Reset profile route
+router.delete('/profile/reset', resetProfile);
 
 module.exports = router;
