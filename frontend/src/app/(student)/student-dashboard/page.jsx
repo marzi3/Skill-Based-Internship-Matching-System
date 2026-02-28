@@ -78,6 +78,9 @@ export default function StudentDashboard() {
                     <Link href="/student-dashboard" className="flex items-center gap-3 px-4 py-3 bg-primary-50 text-primary-700 rounded-xl font-bold">
                         <LayoutDashboard size={20} /> Dashboard
                     </Link>
+                    <Link href="/student-profile" className="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-bold transition-all">
+                        <Settings size={20} /> Profile Settings
+                    </Link>
                     <Link href="/find-internships" className="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-bold transition-all">
                         <Search size={20} /> Browse Jobs
                     </Link>

@@ -7,8 +7,19 @@ const User = require('../models/User');
 exports.getInternships = async (req, res) => {
     try {
         const { q, skill, industry, domain, location, workEnvironment, duration, sort } = req.query;
-        let query = { status: 'Hiring', isDeleted: { $ne: true } };
 
+
+        // new added -1
+
+
+        let query = { 
+            status: { $in: ['Hiring', 'Active'] },
+            isDeleted: { $ne: true },
+            expiryDate: { $gte: new Date() }
+        };
+
+
+        
         if (q) {
             query.$text = { $search: q };
         }
@@ -71,6 +82,7 @@ exports.getInternships = async (req, res) => {
         }
 
         const internships = await Internship.find(query, projection).sort(sortOption).populate('employer', 'name email companyName');
+        
         res.status(200).json({
             success: true,
             count: internships.length,

@@ -3,19 +3,18 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import Link from 'next/link';
 import { useAuth } from '../../../context/AuthContext';
-import Sidebar from '../../../components/common/Sidebar';
 import Input from '../../../components/common/Input';
 import Button from '../../../components/common/Button';
 import Card from '../../../components/common/Card';
-import { X, User, GraduationCap, Code, Loader, Upload, Pencil, Plus, Trash2, Badge, Eye, ExternalLink, Download, CheckCircle, ArrowRight, FileText } from 'lucide-react';
+import { X, User, GraduationCap, Code, Loader, Upload, Pencil, Plus, Trash2, Badge, Eye, ExternalLink, Download, CheckCircle, ArrowRight, FileText, LayoutDashboard, Home, Settings, Search, Briefcase, Zap, LogOut } from 'lucide-react';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
-export default function StudentDashboard() {
-  const { user, token, loading: authLoading } = useAuth();
+export default function StudentProfile() {
+  const { user, token, loading: authLoading, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('personal');
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [localToken, setLocalToken] = useState(null);
@@ -1065,44 +1064,50 @@ export default function StudentDashboard() {
     }
   };
 
-  const menuItems = [
-    {
-      id: 'personal',
-      label: 'Personal Information',
-      icon: User,
-      onClick: () => setActiveTab('personal')
-    },
-    {
-      id: 'education',
-      label: 'Education Details',
-      icon: GraduationCap,
-      onClick: () => setActiveTab('education')
-    },
-    {
-      id: 'skills',
-      label: 'Skills & Certifications',
-      icon: Code,
-      onClick: () => setActiveTab('skills')
-    }
-  ];
-
   return (
-    <div className="flex min-h-screen bg-slate-100">
+    <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
-      <Sidebar
-        items={menuItems}
-        brand="InternMatch"
-        variant="light"
-        isOpen={sidebarOpen}
-        onToggle={setSidebarOpen}
-        width="w-60"
-      />
+      <aside className="w-64 bg-white border-r border-gray-200 hidden md:flex flex-col">
+        <div className="p-6">
+          <h2 className="text-2xl font-black text-primary-600 tracking-tighter">InternMatch</h2>
+        </div>
+        <nav className="flex-1 px-4 space-y-2">
+          <Link href="/student-dashboard" className="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-bold transition-all">
+            <LayoutDashboard size={20} /> Dashboard
+          </Link>
+          <Link href="/student-profile" className="flex items-center gap-3 px-4 py-3 bg-primary-50 text-primary-700 rounded-xl font-bold">
+            <Settings size={20} /> Profile Settings
+          </Link>
+          <Link href="/find-internships" className="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-bold transition-all">
+            <Search size={20} /> Browse Jobs
+          </Link>
+          <Link href="/student/applications" className="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-bold transition-all">
+            <Briefcase size={20} /> My Applications
+          </Link>
+          <Link href="/student/matches" className="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-bold transition-all">
+            <Zap size={20} /> Best Matches
+          </Link>
+        </nav>
+        <div className="p-4 border-t border-gray-100 space-y-2">
+          <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-3 text-rose-600 hover:bg-rose-50 rounded-xl font-bold transition-all">
+            <LogOut size={20} /> Logout
+          </button>
+        </div>
+      </aside>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Header */}
+        <header className="bg-white border-b border-gray-100 px-8 py-6 flex items-center justify-between sticky top-0 z-10">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Profile Settings</h1>
+            <p className="text-sm text-gray-500 font-medium">Manage your profile information and preferences</p>
+          </div>
+        </header>
+
         {/* Main Content Area */}
         <main className="flex-1 overflow-auto p-8">
-          <h1 className="text-2xl font-bold text-slate-900 mb-6">Settings</h1>
+          {/* Remove the duplicate Settings title since we added it to header */}
 
           {/* Profile Completion Bar */}
           <div className="mb-8 bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-xl shadow-lg">

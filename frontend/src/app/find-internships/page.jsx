@@ -15,6 +15,7 @@ import {
     Loader2,
     Briefcase,
     SlidersHorizontal,
+    ArrowLeft,
 } from 'lucide-react';
 
 function FindInternshipsContent() {
@@ -31,7 +32,7 @@ function FindInternshipsContent() {
     });
     const [sort, setSort] = useState(searchParams.get('sort') || 'Best Matches');
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
     const fetchInternships = async () => {
         try {
@@ -40,11 +41,18 @@ function FindInternshipsContent() {
             const user = userStr ? JSON.parse(userStr) : null;
 
             if (sort === 'Best Matches' && user && user.role === 'student' && !searchQuery) {
-                const res = await axios.post(`${API_URL}/api/matching/internships`, {
-                    studentId: user.id || user._id,
-                });
-                if (res.data.matches) {
-                    const matchedInternships = res.data.matches.map(m => ({ ...m.internship, matchScore: m.score }));
+                // Use GET request with authentication header for personalized matches
+                const token = localStorage.getItem('token');
+                const config = {
+                    headers: { Authorization: `Bearer ${token}` }
+                };
+                
+                const res = await axios.get(`${API_URL}/api/matching/best-matches`, config);
+                if (res.data.success && res.data.data) {
+                    const matchedInternships = res.data.data.map(m => ({ 
+                        ...m.internship, 
+                        matchScore: m.score || m.matchScore 
+                    }));
                     setInternships(matchedInternships);
                     setLoading(false);
                     return;
@@ -132,6 +140,19 @@ function FindInternshipsContent() {
                     </div>
                 </div>
             </nav>
+
+            {/* ── Back Navigation ── */}
+            <div className="bg-white border-b border-gray-100">
+                <div className="max-w-7xl mx-auto px-6 lg:px-8 py-4">
+                    <button 
+                        onClick={() => router.push('/student-dashboard')}
+                        className="flex items-center gap-2 text-gray-600 hover:text-indigo-600 transition-colors group"
+                    >
+                        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                        <span className="text-sm font-medium">Back to Dashboard</span>
+                    </button>
+                </div>
+            </div>
 
             {/* ── Hero / Search Section ── */}
             <section className="bg-gradient-to-b from-indigo-50/40 to-white pt-16 pb-12">
