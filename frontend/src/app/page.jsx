@@ -29,8 +29,8 @@ export default function Home() {
               </Link>
             </div>
             <div className="hidden md:flex items-center space-x-8">
-              <Link href="#" className="text-gray-600 hover:text-indigo-600 transition-colors">Find Internships</Link>
-              <Link href="#" className="text-gray-600 hover:text-indigo-600 transition-colors">For Employers</Link>
+              <Link href="/find-internships" className="text-gray-600 hover:text-indigo-600 transition-colors">Find Internships</Link>
+              <Link href="/employers" className="text-gray-600 hover:text-indigo-600 transition-colors">For Employers</Link>
               <Link href="/login" className="text-gray-900 font-medium hover:text-indigo-600 transition-colors">Sign In</Link>
               <Link href="/register" className="px-5 py-2.5 rounded-full bg-gray-900 text-white font-medium hover:bg-black transition-all shadow-lg shadow-gray-200">
                 Get Started

@@ -69,6 +69,10 @@ const userSchema = new mongoose.Schema({
   studentIdImage: {
     type: String, // Path to uploaded image
   },
+  savedInternships: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Internship'
+  }],
 
   // Employer Specific
   companyName: {
@@ -81,6 +85,14 @@ const userSchema = new mongoose.Schema({
   },
   businessDocument: {
     type: String, // Path to uploaded PDF
+  },
+  companyDescription: {
+    type: String,
+    trim: true,
+  },
+  positionInCompany: {
+    type: String,
+    trim: true,
   },
   website: {
     type: String,

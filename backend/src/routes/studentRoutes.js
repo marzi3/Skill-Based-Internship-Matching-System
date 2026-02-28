@@ -19,7 +19,7 @@ const {
   uploadResume,
   resetProfile,
 } = require('../controllers/studentController');
-const { protect } = require('../middleware/authMiddleware');
+const { protect, authorize } = require('../middleware/auth');
 const upload = require('../config/multer');
 
 // Protect all routes with authentication
@@ -57,5 +57,17 @@ router.post('/profile/resume', upload.single('resume'), uploadResume);
 
 // Reset profile route
 router.delete('/profile/reset', resetProfile);
+
+// Additional controller imports
+const {
+  getSavedInternships,
+  bookmarkInternship,
+  unbookmarkInternship
+} = require('../controllers/studentController');
+
+// Bookmark routes
+router.get('/bookmarks', getSavedInternships);
+router.post('/bookmarks/:id', bookmarkInternship);
+router.delete('/bookmarks/:id', unbookmarkInternship);
 
 module.exports = router;

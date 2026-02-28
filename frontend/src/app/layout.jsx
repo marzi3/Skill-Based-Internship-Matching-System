@@ -1,6 +1,6 @@
 import { Providers } from '../context/Providers';
 import { Inter } from 'next/font/google';
-import '../styles/globals.css';
+import '@/styles/globals.css';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -11,7 +11,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans min-h-screen bg-gradient-to-br from-gray-50 to-indigo-50`}>
         <Providers>
           {children}

@@ -2,9 +2,18 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
-import Cookies from 'js-cookie';
 
 const AuthContext = createContext();
+
+// Helper: get the correct dashboard path for a given role
+const getRoleDashboard = (role) => {
+    switch (role) {
+        case 'employer': return '/employer/dashboard';
+        case 'admin': return '/admin/admin-dashboard';
+        case 'student':
+        default: return '/student-dashboard';
+    }
+};
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
@@ -14,6 +23,19 @@ export const AuthProvider = ({ children }) => {
     // Configure axios defaults
     axios.defaults.baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
     axios.defaults.withCredentials = true; // Important for cookies
+
+    // Sync user data to localStorage for ProtectedRoute compatibility
+    const syncUserToStorage = (userData) => {
+        if (userData) {
+            localStorage.setItem('user', JSON.stringify(userData));
+            if (userData.token) {
+                localStorage.setItem('authToken', userData.token);
+            }
+        } else {
+            localStorage.removeItem('user');
+            localStorage.removeItem('authToken');
+        }
+    };
 
     useEffect(() => {
         // Check for stored token on initialization
@@ -35,8 +57,10 @@ export const AuthProvider = ({ children }) => {
         try {
             const { data } = await axios.get('/api/auth/me');
             setUser(data);
+            syncUserToStorage(data);
         } catch (error) {
             setUser(null);
+            syncUserToStorage(null);
         } finally {
             setLoading(false);
         }
@@ -70,20 +94,8 @@ export const AuthProvider = ({ children }) => {
             }
             
             setUser(data);
-            
-            // Redirect based on user role
-            if (data.role === 'student') {
-                console.log('🔐 LOGIN: Redirecting student to dashboard');
-                router.push('/student-dashboard');
-            } else if (data.role === 'employer') {
-                router.push('/employer/dashboard');
-            } else if (data.role === 'admin') {
-                router.push('/admin/dashboard');
-            } else {
-                router.push('/dashboard');
-            }
-            
-            console.log('🎉 LOGIN: Success!');
+            syncUserToStorage(data);
+            router.push(getRoleDashboard(data.role));
             return { success: true };
         } catch (error) {
             console.error('❌ LOGIN: Error:', error.response?.data || error.message);
@@ -95,17 +107,8 @@ export const AuthProvider = ({ children }) => {
         try {
             const { data } = await axios.post('/api/auth/register', userData);
             setUser(data);
-            
-            // Redirect based on user role
-            if (data.role === 'student') {
-                router.push('/student-dashboard');
-            } else if (data.role === 'employer') {
-                router.push('/employer/dashboard');
-            } else if (data.role === 'admin') {
-                router.push('/admin/dashboard');
-            } else {
-                router.push('/dashboard');
-            }
+            syncUserToStorage(data);
+            router.push(getRoleDashboard(data.role));
             return { success: true };
         } catch (error) {
             return { success: false, error: error.response?.data?.message || 'Registration failed' };
@@ -115,10 +118,12 @@ export const AuthProvider = ({ children }) => {
     const logout = async () => {
         try {
             await axios.post('/api/auth/logout');
-            setUser(null);
-            router.push('/login');
         } catch (error) {
-            console.error(error);
+            console.error('Logout API error:', error);
+        } finally {
+            setUser(null);
+            syncUserToStorage(null);
+            router.push('/login');
         }
     };
 
@@ -140,8 +145,10 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const isAuthenticated = !!user;
+
     return (
-        <AuthContext.Provider value={{ user, loading, login, register, logout, checkUserLoggedIn, forgotPassword, resetPassword }}>
+        <AuthContext.Provider value={{ user, loading, isAuthenticated, login, register, logout, checkUserLoggedIn, forgotPassword, resetPassword, getRoleDashboard }}>
             {children}
         </AuthContext.Provider>
     );

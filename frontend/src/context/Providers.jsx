@@ -1,10 +1,13 @@
 'use client';
+import { ThemeProvider } from 'next-themes';
 import { AuthProvider } from '../context/AuthContext';
 
 export function Providers({ children }) {
     return (
-        <AuthProvider>
-            {children}
-        </AuthProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <AuthProvider>
+                {children}
+            </AuthProvider>
+        </ThemeProvider>
     );
 }
