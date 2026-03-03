@@ -51,15 +51,16 @@ exports.getBestMatches = async (req, res) => {
             .slice(0, 10); // Limit to top 10 matches
 
         const formattedMatches = matches.map(match => {
-            const fullInternship = internships.find(int =>
-                (int._id && int._id.toString() === match.internshipId) ||
-                (int.id && int.id.toString() === match.internshipId)
-            );
+            const fullInternship = internships.find(int => {
+                const searchId = match.internshipId?.toString();
+                return (int._id && int._id.toString() === searchId) ||
+                    (int.id && int.id.toString() === searchId);
+            });
 
             return {
                 internship: fullInternship || {
                     _id: match.internshipId,
-                    title: match.internshipTitle,
+                    positionTitle: match.internshipTitle,
                     company: match.internshipCompany
                 },
                 score: match.normalizedScore || (match.tier === 'EXCELLENT' ? 90 :
@@ -171,15 +172,16 @@ exports.matchInternshipsForStudent = async (req, res) => {
         // 5. Format response for frontend compatibility - enrich with full internship data
         const formattedMatches = matches.map(match => {
             // Find the full internship object
-            const fullInternship = internships.find(int =>
-                (int._id && int._id.toString() === match.internshipId) ||
-                (int.id && int.id.toString() === match.internshipId)
-            );
+            const fullInternship = internships.find(int => {
+                const searchId = match.internshipId?.toString();
+                return (int._id && int._id.toString() === searchId) ||
+                    (int.id && int.id.toString() === searchId);
+            });
 
             return {
                 internship: fullInternship || {
                     _id: match.internshipId,
-                    title: match.internshipTitle,
+                    positionTitle: match.internshipTitle,
                     company: match.internshipCompany
                 },
                 score: match.normalizedScore || (match.tier === 'EXCELLENT' ? 90 :
@@ -257,11 +259,22 @@ exports.explainMatch = async (req, res) => {
     try {
         const { studentId, internshipId } = req.params;
 
-        const student = await Student.findById(studentId).lean();
+        // Search for student by either its own _id or the linked userId
+        const student = await Student.findOne({
+            $or: [
+                { _id: studentId },
+                { userId: studentId }
+            ]
+        }).lean();
+
         const internship = await Internship.findById(internshipId).lean();
 
         if (!student || !internship) {
-            return res.status(404).json({ success: false, message: 'Fact base entities missing' });
+            console.log(`[Matching Controller] Explain Match failed: Student: ${!!student}, Internship: ${!!internship}`);
+            return res.status(404).json({
+                success: false,
+                message: !student ? 'Student profile not found' : 'Internship listing not found'
+            });
         }
 
         const analysis = MatchingEngine.explainMatch(student, internship);

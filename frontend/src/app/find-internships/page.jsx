@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '@/context/AuthContext';
 import {
     Search,
     MapPin,
@@ -16,12 +17,14 @@ import {
     Briefcase,
     SlidersHorizontal,
     ArrowLeft,
+    LogOut,
 } from 'lucide-react';
 
 function FindInternshipsContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
+    const { user, logout } = useAuth();
     const [internships, setInternships] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
@@ -46,12 +49,12 @@ function FindInternshipsContent() {
                 const config = {
                     headers: { Authorization: `Bearer ${token}` }
                 };
-                
+
                 const res = await axios.get(`${API_URL}/api/matching/best-matches`, config);
                 if (res.data.success && res.data.data) {
-                    const matchedInternships = res.data.data.map(m => ({ 
-                        ...m.internship, 
-                        matchScore: m.score || m.matchScore 
+                    const matchedInternships = res.data.data.map(m => ({
+                        ...m.internship,
+                        matchScore: m.score || m.matchScore
                     }));
                     setInternships(matchedInternships);
                     setLoading(false);
@@ -126,17 +129,38 @@ function FindInternshipsContent() {
                 <div className="max-w-7xl mx-auto px-6 lg:px-8 flex items-center justify-between h-16">
                     <Link href="/" className="flex items-center gap-2">
                         <img src="/images/logo.png" alt="InternMatch" className="h-10 w-auto object-contain" />
-                        <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+                        <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 hidden sm:block">
                             InternMatch
                         </span>
                     </Link>
-                    <div className="flex items-center gap-6">
-                        <Link href="/employers" className="text-gray-600 hover:text-indigo-600 transition-colors text-sm font-medium">
-                            For Employers
-                        </Link>
-                        <Link href="/login" className="text-sm font-semibold text-gray-900 hover:text-indigo-600 transition-colors">
-                            Sign In
-                        </Link>
+                    <div className="flex items-center gap-4 sm:gap-6">
+                        {user ? (
+                            <div className="flex items-center gap-4">
+                                <div className="hidden sm:flex flex-col items-end">
+                                    <span className="text-sm font-bold text-gray-900">{user.name}</span>
+                                    <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest">{user.role}</span>
+                                </div>
+                                <div className="w-10 h-10 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-center text-indigo-600 font-bold">
+                                    {user.name?.charAt(0)}
+                                </div>
+                                <button
+                                    onClick={logout}
+                                    className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-red-500 transition-colors"
+                                    title="Logout"
+                                >
+                                    <LogOut className="w-5 h-5" />
+                                </button>
+                            </div>
+                        ) : (
+                            <>
+                                <Link href="/employers" className="text-gray-600 hover:text-indigo-600 transition-colors text-sm font-medium">
+                                    For Employers
+                                </Link>
+                                <Link href="/login" className="bg-indigo-600 text-white px-5 py-2 rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200">
+                                    Sign In
+                                </Link>
+                            </>
+                        )}
                     </div>
                 </div>
             </nav>
@@ -144,7 +168,7 @@ function FindInternshipsContent() {
             {/* ── Back Navigation ── */}
             <div className="bg-white border-b border-gray-100">
                 <div className="max-w-7xl mx-auto px-6 lg:px-8 py-4">
-                    <button 
+                    <button
                         onClick={() => router.push('/student-dashboard')}
                         className="flex items-center gap-2 text-gray-600 hover:text-indigo-600 transition-colors group"
                     >

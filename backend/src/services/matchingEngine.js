@@ -153,7 +153,7 @@ function matchInternshipsForStudent(student, internships) {
         const evaluation = evaluatePair(student, internship);
         return {
             internshipId: internship._id || internship.id,
-            internshipTitle: internship.title || 'Unknown Title',
+            internshipTitle: internship.positionTitle || internship.title || 'Unknown Title',
             internshipCompany: internship.company || 'Unknown Company',
             ...evaluation
         };
