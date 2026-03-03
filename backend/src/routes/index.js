@@ -11,6 +11,7 @@ const notificationRoutes = require('./notificationRoutes');
 const searchRoutes = require('./searchRoutes');
 const adminRoutes = require('./adminRoutes');
 const verificationRoutes = require('./verificationRoutes');
+const settingsRoutes = require('./settingsRoutes');
 
 // Route registration
 router.use('/auth', authRoutes);
@@ -25,5 +26,6 @@ router.use('/messages', messageRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/search', searchRoutes);
 router.use('/admin', adminRoutes);
+router.use('/settings', settingsRoutes);
 
 module.exports = router;

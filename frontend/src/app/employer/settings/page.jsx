@@ -1,13 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { Settings as SettingsIcon, Bell, Shield, User, CreditCard, Save, Loader2, Moon, Sun } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Settings as SettingsIcon, Bell, Shield, User, CreditCard, Save, Loader2, Moon, Sun, ArrowLeft } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Card from '@/components/common/Card';
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
 
 const SettingsPage = () => {
+    const router = useRouter();
     const { user, setUser } = useAuth();
     const [activeTab, setActiveTab] = useState('profile');
 
@@ -83,9 +85,14 @@ const SettingsPage = () => {
 
     return (
         <div className="p-8 max-w-5xl mx-auto space-y-8">
-            <div>
-                <h1 className="text-3xl font-bold text-gray-900">Account Settings</h1>
-                <p className="text-gray-600">Manage your employer account preferences and configurations</p>
+            <div className="flex items-center gap-4">
+                <button onClick={() => router.push('/employer/dashboard')} className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600 transition-all">
+                    <ArrowLeft className="w-4 h-4" />
+                </button>
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-900">Account Settings</h1>
+                    <p className="text-gray-600">Manage your employer account preferences and configurations</p>
+                </div>
             </div>
 
             {message.text && (

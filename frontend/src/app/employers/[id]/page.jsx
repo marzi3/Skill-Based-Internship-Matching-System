@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
+import Navbar from '@/components/common/Navbar';
 import { Building, MapPin, Globe, Briefcase, Calendar, ChevronRight, Loader2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import Badge from '@/components/common/Badge';
@@ -163,7 +162,6 @@ export default function EmployerPublicProfile() {
                 </div>
             </main>
 
-            <Footer />
         </div>
     );
 }

@@ -1,5 +1,6 @@
 const Student = require('../models/Student');
 const Internship = require('../models/Internship');
+const Match = require('../models/Match');
 const MatchingEngine = require('../services/matchingEngine');
 
 
@@ -18,7 +19,7 @@ exports.getBestMatches = async (req, res) => {
         const student = await Student.findOne({ userId: req.user.id })
             .populate('userId', 'name email')
             .lean();
-            
+
         if (!student) {
             return res.status(404).json({
                 success: false,
@@ -43,16 +44,65 @@ exports.getBestMatches = async (req, res) => {
 
         // Use matching engine to get matches
         let matches = MatchingEngine.matchInternshipsForStudent(student, internships);
-        
+
         // Filter out disqualified matches and get top matches
         matches = matches
             .filter(m => m.tier !== 'DISQUALIFIED')
             .slice(0, 10); // Limit to top 10 matches
 
+        const formattedMatches = matches.map(match => {
+            const fullInternship = internships.find(int =>
+                (int._id && int._id.toString() === match.internshipId) ||
+                (int.id && int.id.toString() === match.internshipId)
+            );
+
+            return {
+                internship: fullInternship || {
+                    _id: match.internshipId,
+                    title: match.internshipTitle,
+                    company: match.internshipCompany
+                },
+                score: match.normalizedScore || (match.tier === 'EXCELLENT' ? 90 :
+                    match.tier === 'GOOD' ? 75 :
+                        match.tier === 'FAIR' ? 60 : 45),
+                rawScore: match.rawScore,
+                tier: match.tier,
+                reasons: match.explanation?.map(e => e.detail) || [],
+                explanationData: match.explanation || []
+            };
+        });
+
+        // Cache the formatted matches to the DB using bulkWrite
+        if (formattedMatches.length > 0) {
+            const bulkOps = formattedMatches.map(matchObj => ({
+                updateOne: {
+                    filter: { student: student._id, internship: matchObj.internship._id },
+                    update: {
+                        $set: {
+                            student: student._id,
+                            internship: matchObj.internship._id,
+                            employer: matchObj.internship.employer,
+                            rawScore: matchObj.rawScore,
+                            normalizedScore: matchObj.score,
+                            tier: matchObj.tier,
+                            explanations: matchObj.explanationData,
+                            status: 'Pending'
+                        }
+                    },
+                    upsert: true
+                }
+            }));
+
+            // Execute the bulk write asynchronously; don't await so we don't slow down the response
+            Match.bulkWrite(bulkOps).catch(err => {
+                console.error('[Matching Controller] Failed to cache matches in DB:', err);
+            });
+        }
+
         return res.status(200).json({
             success: true,
-            data: matches,
-            totalMatches: matches.length
+            data: formattedMatches.map(({ rawScore, explanationData, ...rest }) => rest), // Strip sensitive internal details
+            totalMatches: formattedMatches.length
         });
 
     } catch (error) {
@@ -116,13 +166,13 @@ exports.matchInternshipsForStudent = async (req, res) => {
 
         //new added -3
 
-        
+
 
         // 5. Format response for frontend compatibility - enrich with full internship data
         const formattedMatches = matches.map(match => {
             // Find the full internship object
-            const fullInternship = internships.find(int => 
-                (int._id && int._id.toString() === match.internshipId) || 
+            const fullInternship = internships.find(int =>
+                (int._id && int._id.toString() === match.internshipId) ||
                 (int.id && int.id.toString() === match.internshipId)
             );
 
@@ -132,9 +182,9 @@ exports.matchInternshipsForStudent = async (req, res) => {
                     title: match.internshipTitle,
                     company: match.internshipCompany
                 },
-                score: match.normalizedScore || (match.tier === 'EXCELLENT' ? 90 : 
-                                               match.tier === 'GOOD' ? 75 : 
-                                               match.tier === 'FAIR' ? 60 : 45),
+                score: match.normalizedScore || (match.tier === 'EXCELLENT' ? 90 :
+                    match.tier === 'GOOD' ? 75 :
+                        match.tier === 'FAIR' ? 60 : 45),
                 tier: match.tier,
                 reasons: match.explanation?.map(e => e.detail) || []
             };

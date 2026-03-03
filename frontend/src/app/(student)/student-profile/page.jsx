@@ -26,7 +26,7 @@ export default function StudentProfile() {
       const storedToken = localStorage.getItem('token');
       setLocalToken(storedToken);
     }
-    
+
     // Set current date
     const now = new Date();
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -93,27 +93,27 @@ export default function StudentProfile() {
 
   // Stepper logic
   const steps = [
-    { 
-      id: 'personal', 
-      name: 'Personal Details', 
+    {
+      id: 'personal',
+      name: 'Personal Details',
       icon: User,
       isCompleted: personalInfo.firstName && personalInfo.lastName && personalInfo.email && personalInfo.phone && personalInfo.dateOfBirth && personalInfo.address
     },
-    { 
-      id: 'education', 
-      name: 'Education', 
+    {
+      id: 'education',
+      name: 'Education',
       icon: GraduationCap,
       isCompleted: education.length > 0
     },
-    { 
-      id: 'skills', 
-      name: 'Skills', 
+    {
+      id: 'skills',
+      name: 'Skills',
       icon: Code,
       isCompleted: skills.length > 0
     },
-    { 
-      id: 'documents', 
-      name: 'Documents', 
+    {
+      id: 'documents',
+      name: 'Documents',
       icon: FileText,
       isCompleted: resumeFile || certifications.length > 0
     }
@@ -132,7 +132,7 @@ export default function StudentProfile() {
   const cropContainerRef = useRef(null);
   const coverCropCanvasRef = useRef(null);
   const coverCropContainerRef = useRef(null);
-  
+
   const [profileImage, setProfileImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [storedProfileImage, setStoredProfileImage] = useState(null);
@@ -144,7 +144,7 @@ export default function StudentProfile() {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [croppedImage, setCroppedImage] = useState(null);
-  
+
   // Cover photo states
   const [coverImage, setCoverImage] = useState(null);
   const [coverImagePreview, setCoverImagePreview] = useState(null);
@@ -169,16 +169,16 @@ export default function StudentProfile() {
       });
 
       const data = response.data.data;
-      
+
       if (data.personalInfo) {
         // Handle both old format (firstName/lastName) and new format (fullName)
         let personalData = { ...data.personalInfo };
-        
+
         // If we have firstName/lastName but no fullName, construct it
         if (!personalData.fullName && (personalData.firstName || personalData.lastName)) {
           personalData.fullName = `${personalData.firstName || ''} ${personalData.lastName || ''}`.trim();
         }
-        
+
         setPersonalInfo({
           ...personalData,
           email: user?.email || personalData.email,
@@ -233,11 +233,11 @@ export default function StudentProfile() {
   // Helper function to get token from all possible sources
   const getAuthToken = () => {
     let authToken = token || localToken;
-    
+
     if (!authToken && typeof window !== 'undefined') {
       authToken = localStorage.getItem('token');
     }
-    
+
     return authToken;
   };
 
@@ -247,7 +247,7 @@ export default function StudentProfile() {
       'HIGH_SCHOOL': 'High School',
       'CERTIFICATE': 'Certificate',
       'ASSOCIATE': 'Associate\'s',
-      'BACHELOR': 'Bachelor\'s', 
+      'BACHELOR': 'Bachelor\'s',
       'MASTER': 'Master\'s',
       'DOCTORATE': 'Doctorate/PhD'
     };
@@ -263,7 +263,7 @@ export default function StudentProfile() {
   const handleIndustryChange = (industry, checked) => {
     setPersonalInfo(prev => ({
       ...prev,
-      industriesOfInterest: checked 
+      industriesOfInterest: checked
         ? [...prev.industriesOfInterest, industry]
         : prev.industriesOfInterest.filter(item => item !== industry)
     }));
@@ -328,11 +328,10 @@ export default function StudentProfile() {
       const response = await axios.post(
         `${apiUrl}/api/students/profile/resume`,
         formData,
-        { 
-          headers: { 
-            Authorization: `Bearer ${authToken}`,
-            'Content-Type': 'multipart/form-data'
-          } 
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`
+          }
         }
       );
 
@@ -372,12 +371,12 @@ export default function StudentProfile() {
         setLoading(false);
         return;
       }
-      
+
       const response = await axios.delete(
         `${apiUrl}/api/students/profile/certification/${certificationId}`,
         { headers: { Authorization: `Bearer ${authToken}` } }
       );
-      
+
       setCertifications(response.data.data.certifications);
       setMessage('Certification removed successfully');
       setTimeout(() => setMessage(''), 3000);
@@ -432,20 +431,20 @@ export default function StudentProfile() {
     try {
       setLoading(true);
       setMessage('');
-      
+
       const authToken = getAuthToken();
       if (!authToken) {
         setMessage('Error: No authentication token. Please login again.');
         setLoading(false);
         return;
       }
-      
+
       const response = await axios.delete(
         `${apiUrl}/api/students/profile/reset`,
-        { 
-          headers: { 
+        {
+          headers: {
             'Authorization': `Bearer ${authToken}`
-          } 
+          }
         }
       );
 
@@ -486,27 +485,27 @@ export default function StudentProfile() {
     try {
       setLoading(true);
       setMessage('');
-      
+
       let authToken = token || localToken;
-      
+
       if (!authToken && typeof window !== 'undefined') {
         authToken = localStorage.getItem('token');
       }
-      
+
       if (!authToken) {
         setMessage('Error: No authentication token. Please login again.');
         setLoading(false);
         return;
       }
-      
+
       const response = await axios.post(
         `${apiUrl}/api/students/profile/personal`,
         personalInfo,
-        { 
-          headers: { 
+        {
+          headers: {
             'Authorization': `Bearer ${authToken}`,
             'Content-Type': 'application/json'
-          } 
+          }
         }
       );
 
@@ -541,14 +540,14 @@ export default function StudentProfile() {
     try {
       setLoading(true);
       setMessage('');
-      
+
       const authToken = getAuthToken();
       if (!authToken) {
         setMessage('Error: No authentication token. Please login again.');
         setLoading(false);
         return;
       }
-      
+
       const response = await axios.post(
         `${apiUrl}/api/students/profile/education`,
         newEducation,
@@ -579,16 +578,16 @@ export default function StudentProfile() {
     try {
       setLoading(true);
       let authToken = token || localToken;
-      
+
       if (!authToken && typeof window !== 'undefined') {
         authToken = localStorage.getItem('token');
       }
-      
+
       const response = await axios.delete(
         `${apiUrl}/api/students/profile/education/${educationId}`,
         { headers: { 'Authorization': `Bearer ${authToken}` } }
       );
-      
+
       setEducation(response.data.data.education);
       setMessage('Education removed successfully');
     } catch (error) {
@@ -608,14 +607,14 @@ export default function StudentProfile() {
     try {
       setLoading(true);
       setMessage('');
-      
+
       const authToken = getAuthToken();
       if (!authToken) {
         setMessage('Error: No authentication token. Please login again.');
         setLoading(false);
         return;
       }
-      
+
       const response = await axios.post(
         `${apiUrl}/api/students/profile/skill`,
         { name: newSkill, proficiency },
@@ -638,14 +637,14 @@ export default function StudentProfile() {
   const removeSkill = async (skillId) => {
     try {
       setLoading(true);
-      
+
       const authToken = getAuthToken();
       if (!authToken) {
         setMessage('Error: No authentication token. Please login again.');
         setLoading(false);
         return;
       }
-      
+
       const response = await axios.delete(
         `${apiUrl}/api/students/profile/skill/${skillId}`,
         { headers: { Authorization: `Bearer ${authToken}` } }
@@ -767,14 +766,14 @@ export default function StudentProfile() {
 
     const ctx = canvas.getContext('2d');
     const img = new Image();
-    
+
     img.onload = () => {
       const cropSize = 256; // Match visual preview size (w-64 h-64)
       canvas.width = cropSize;
       canvas.height = cropSize;
 
       ctx.save();
-      
+
       // Create circular clipping path first
       ctx.beginPath();
       ctx.arc(cropSize / 2, cropSize / 2, cropSize / 2, 0, Math.PI * 2);
@@ -782,17 +781,17 @@ export default function StudentProfile() {
 
       // Move to center for transforms
       ctx.translate(cropSize / 2, cropSize / 2);
-      
+
       // Apply transforms: translate, rotate, then scale
       ctx.translate(cropOffsetX, cropOffsetY);
       ctx.rotate((cropRotation * Math.PI) / 180);
       ctx.scale(cropZoom, cropZoom);
-      
+
       // Calculate scale to fit image in container
       const scale = Math.min(cropSize / img.width, cropSize / img.height);
       const scaledWidth = img.width * scale;
       const scaledHeight = img.height * scale;
-      
+
       // Draw image centered at origin
       ctx.drawImage(
         img,
@@ -801,7 +800,7 @@ export default function StudentProfile() {
         scaledWidth,
         scaledHeight
       );
-      
+
       ctx.restore();
 
       canvas.toBlob((blob) => {
@@ -816,7 +815,7 @@ export default function StudentProfile() {
         }
       }, 'image/png');
     };
-    
+
     img.src = imagePreview;
   };
 
@@ -858,7 +857,7 @@ export default function StudentProfile() {
 
     const ctx = canvas.getContext('2d');
     const img = new Image();
-    
+
     img.onload = () => {
       const cropWidth = 400; // 4:1 aspect ratio for cover (like 1200x300)
       const cropHeight = 100;
@@ -866,7 +865,7 @@ export default function StudentProfile() {
       canvas.height = cropHeight;
 
       ctx.save();
-      
+
       // Create rectangular clipping path
       ctx.beginPath();
       ctx.rect(0, 0, cropWidth, cropHeight);
@@ -874,17 +873,17 @@ export default function StudentProfile() {
 
       // Move to center for transforms
       ctx.translate(cropWidth / 2, cropHeight / 2);
-      
+
       // Apply transforms: translate, rotate, then scale
       ctx.translate(coverCropOffsetX, coverCropOffsetY);
       ctx.rotate((coverCropRotation * Math.PI) / 180);
       ctx.scale(coverCropZoom, coverCropZoom);
-      
+
       // Calculate scale to fit image in container
       const scale = Math.max(cropWidth / img.width, cropHeight / img.height);
       const scaledWidth = img.width * scale;
       const scaledHeight = img.height * scale;
-      
+
       // Draw image centered at origin
       ctx.drawImage(
         img,
@@ -893,7 +892,7 @@ export default function StudentProfile() {
         scaledWidth,
         scaledHeight
       );
-      
+
       ctx.restore();
 
       canvas.toBlob((blob) => {
@@ -908,7 +907,7 @@ export default function StudentProfile() {
         }
       }, 'image/png');
     };
-    
+
     img.src = coverImagePreview;
   };
 
@@ -953,9 +952,8 @@ export default function StudentProfile() {
         formData,
         {
           headers: {
-            'Authorization': `Bearer ${authToken}`,
-            'Content-Type': 'multipart/form-data',
-          },
+            'Authorization': `Bearer ${authToken}`
+          }
         }
       );
 
@@ -1037,9 +1035,8 @@ export default function StudentProfile() {
         formData,
         {
           headers: {
-            'Authorization': `Bearer ${authToken}`,
-            'Content-Type': 'multipart/form-data',
-          },
+            'Authorization': `Bearer ${authToken}`
+          }
         }
       );
 
@@ -1119,14 +1116,14 @@ export default function StudentProfile() {
               <div className="text-right">
                 <div className="text-3xl font-bold">{profileCompletion}%</div>
                 <div className="text-sm opacity-90">
-                  +{Math.floor(profileCompletion/10)*5} bonus points
+                  +{Math.floor(profileCompletion / 10) * 5} bonus points
                 </div>
               </div>
             </div>
             <div className="w-full bg-white/20 rounded-full h-3">
-              <div 
+              <div
                 className="bg-white h-3 rounded-full transition-all duration-500 ease-out"
-                style={{width: `${profileCompletion}%`}}
+                style={{ width: `${profileCompletion}%` }}
               ></div>
             </div>
             <div className="mt-3 text-sm opacity-90">
@@ -1144,23 +1141,23 @@ export default function StudentProfile() {
                 {/* Profile Header - Cover Photo or Gradient */}
                 <div className="h-36 relative group">
                   {storedCoverImage ? (
-                    <img 
-                      src={storedCoverImage} 
-                      alt="Cover" 
+                    <img
+                      src={storedCoverImage}
+                      alt="Cover"
                       className="w-full h-full object-cover"
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-indigo-500 to-indigo-600"></div>
                   )}
                   {/* Cover Edit Icon Overlay */}
-                  <button 
+                  <button
                     onClick={() => setIsCoverImageModalOpen(true)}
                     className="absolute top-2 right-2 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 rounded-lg p-2 flex items-center justify-center"
                   >
                     <Pencil size={16} className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                   </button>
                 </div>
-                
+
                 {/* Profile Image - Positioned outside cover container */}
                 <div className="relative -mt-12 flex justify-center pb-4">
                   <div className="w-24 h-24 rounded-full border-4 border-white bg-slate-200 flex items-center justify-center text-2xl font-bold text-slate-400 overflow-hidden shadow-lg relative group">
@@ -1170,7 +1167,7 @@ export default function StudentProfile() {
                       personalInfo.fullName?.charAt(0)?.toUpperCase() || 'U'
                     )}
                     {/* Edit Icon Overlay */}
-                    <button 
+                    <button
                       onClick={() => setIsProfileImageModalOpen(true)}
                       className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 rounded-full flex items-center justify-center"
                     >
@@ -1282,15 +1279,14 @@ export default function StudentProfile() {
                         <div className="flex flex-col items-center">
                           <button
                             onClick={() => setActiveStep(step.id)}
-                            className={`w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
-                              isCompleted
+                            className={`w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${isCompleted
                                 ? 'bg-green-500 border-green-500 text-white'
                                 : isActive
-                                ? 'border-indigo-600 bg-indigo-600 text-white'
-                                : isPast
-                                ? 'border-slate-300 bg-white text-slate-400'
-                                : 'border-slate-300 bg-white text-slate-400 hover:border-indigo-300'
-                            }`}
+                                  ? 'border-indigo-600 bg-indigo-600 text-white'
+                                  : isPast
+                                    ? 'border-slate-300 bg-white text-slate-400'
+                                    : 'border-slate-300 bg-white text-slate-400 hover:border-indigo-300'
+                              }`}
                           >
                             {isCompleted ? (
                               <CheckCircle size={20} />
@@ -1306,11 +1302,10 @@ export default function StudentProfile() {
                         {/* Connector Line */}
                         {index < steps.length - 1 && (
                           <div className="flex-1 h-0.5 mx-4 mb-6">
-                            <div className={`h-full transition-colors ${
-                              index < currentStepIndex || isCompleted
+                            <div className={`h-full transition-colors ${index < currentStepIndex || isCompleted
                                 ? 'bg-green-500'
                                 : 'bg-slate-200'
-                            }`} />
+                              }`} />
                           </div>
                         )}
                       </div>
@@ -1341,7 +1336,7 @@ export default function StudentProfile() {
                           type="text"
                           name="fullName"
                           value={personalInfo.fullName || ''}
-                          onChange={(e) => setPersonalInfo({...personalInfo, fullName: e.target.value})}
+                          onChange={(e) => setPersonalInfo({ ...personalInfo, fullName: e.target.value })}
                           className="bg-slate-50"
                           placeholder="Enter your full name"
                         />
@@ -1350,7 +1345,7 @@ export default function StudentProfile() {
                           type="text"
                           name="designation"
                           value={personalInfo.designation || ''}
-                          onChange={(e) => setPersonalInfo({...personalInfo, designation: e.target.value})}
+                          onChange={(e) => setPersonalInfo({ ...personalInfo, designation: e.target.value })}
                           className="bg-slate-50"
                           placeholder="e.g., Computer Science Student"
                         />
@@ -1366,17 +1361,17 @@ export default function StudentProfile() {
                           label="Phone"
                           type="tel"
                           value={personalInfo.phone || ''}
-                          onChange={(e) => setPersonalInfo({...personalInfo, phone: e.target.value})}
+                          onChange={(e) => setPersonalInfo({ ...personalInfo, phone: e.target.value })}
                           className="bg-slate-50"
                         />
                         <Input
                           label="Location"
                           type="text"
                           value={personalInfo.location || ''}
-                          onChange={(e) => setPersonalInfo({...personalInfo, location: e.target.value})}
+                          onChange={(e) => setPersonalInfo({ ...personalInfo, location: e.target.value })}
                           className="bg-slate-50 col-span-2"
                         />
-                        
+
                         {/* CRITICAL MATCHING FIELDS */}
                         <Input
                           label="GPA *"
@@ -1399,7 +1394,7 @@ export default function StudentProfile() {
                           className="bg-green-50 border-green-300"
                           placeholder="https://yourportfolio.com"
                         />
-                        
+
                         <div className="col-span-1">
                           <label className="block text-sm font-medium text-slate-700 mb-2">
                             Preferred Location * <span className="text-blue-500">(+6 points)</span>
@@ -1420,7 +1415,7 @@ export default function StudentProfile() {
                             <option value="Other">Other</option>
                           </select>
                         </div>
-                        
+
                         <div className="col-span-1">
                           <label className="block text-sm font-medium text-slate-700 mb-2">
                             Duration Preference <span className="text-blue-500">(+6 points)</span>
@@ -1437,7 +1432,7 @@ export default function StudentProfile() {
                             <option value="6+ months">6+ months</option>
                           </select>
                         </div>
-                        
+
                         <div className="col-span-2 mb-4">
                           <label className="block text-sm font-medium text-slate-700 mb-2">
                             Industries of Interest * <span className="text-green-500">(+7 points per match)</span>
@@ -1456,7 +1451,7 @@ export default function StudentProfile() {
                             ))}
                           </div>
                         </div>
-                        
+
                         <Input
                           label="Previous Internships Count"
                           type="number"
@@ -1466,14 +1461,14 @@ export default function StudentProfile() {
                           className="bg-slate-50"
                           min="0"
                         />
-                        
+
                         <div className="col-span-1">
                           <label className="flex items-center cursor-pointer p-3 border border-slate-300 bg-slate-50 rounded-lg">
                             <input
                               type="checkbox"
                               name="isPublic"
                               checked={personalInfo.isPublic !== false}
-                              onChange={(e) => setPersonalInfo(prev => ({...prev, isPublic: e.target.checked}))}
+                              onChange={(e) => setPersonalInfo(prev => ({ ...prev, isPublic: e.target.checked }))}
                               className="mr-3 rounded"
                             />
                             <span className="text-sm font-medium">Make my profile visible to employers</span>
@@ -1498,7 +1493,7 @@ export default function StudentProfile() {
                         {message}
                       </p>
                     )}
-                  
+
                     {/* Step Navigation */}
                     <div className="flex justify-between pt-6 border-t border-slate-200 mt-8">
                       <div>
@@ -1522,7 +1517,7 @@ export default function StudentProfile() {
                   <div className="space-y-6">
                     <div>
                       <h3 className="text-base font-semibold text-slate-900 mb-4">Add Education</h3>
-                      
+
                       <div className="grid grid-cols-2 gap-4 mb-4">
                         <Input
                           label="Institution"
@@ -1540,7 +1535,7 @@ export default function StudentProfile() {
                           className="bg-slate-50"
                           placeholder="e.g., Bachelor's, Master's"
                         />
-                        
+
                         <div className="col-span-1">
                           <label className="block text-sm font-medium text-slate-700 mb-2">
                             Degree Level * <span className="text-purple-500">(+8 points if qualified)</span>
@@ -1560,7 +1555,7 @@ export default function StudentProfile() {
                             <option value="DOCTORATE">Doctorate/PhD</option>
                           </select>
                         </div>
-                        
+
                         <Input
                           label="Field of Study"
                           name="field"
@@ -1631,7 +1626,7 @@ export default function StudentProfile() {
                         </div>
                       </div>
                     )}
-                  
+
                     {/* Step Navigation */}
                     <div className="flex justify-between pt-6 border-t border-slate-200 mt-8">
                       <button
@@ -1658,10 +1653,10 @@ export default function StudentProfile() {
                     <div>
                       <h3 className="text-base font-semibold text-slate-900 mb-4">Add Skills</h3>
                       <p className="text-sm text-slate-600 mb-4">
-                        <span className="font-semibold text-red-600">Critical for matching:</span> Skills drive Rules B1-B3. 
+                        <span className="font-semibold text-red-600">Critical for matching:</span> Skills drive Rules B1-B3.
                         Advanced/Expert levels get bonus points.
                       </p>
-                      
+
                       <div className="grid grid-cols-3 gap-4 mb-6">
                         <input
                           type="text"
@@ -1698,19 +1693,17 @@ export default function StudentProfile() {
                           {skills.map((skill, index) => (
                             <div
                               key={index}
-                              className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
-                                (skill.proficiency === 'ADVANCED' || skill.proficiency === 'EXPERT') 
-                                  ? 'border-green-300 bg-green-50' 
+                              className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${(skill.proficiency === 'ADVANCED' || skill.proficiency === 'EXPERT')
+                                  ? 'border-green-300 bg-green-50'
                                   : 'border-slate-200 bg-slate-50'
-                              } hover:bg-slate-100`}
+                                } hover:bg-slate-100`}
                             >
                               <div className="min-w-0">
                                 <p className="text-sm font-medium text-slate-900">{skill.name}</p>
-                                <p className={`text-xs font-semibold ${
-                                  (skill.proficiency === 'ADVANCED' || skill.proficiency === 'EXPERT') 
-                                    ? 'text-green-700' 
+                                <p className={`text-xs font-semibold ${(skill.proficiency === 'ADVANCED' || skill.proficiency === 'EXPERT')
+                                    ? 'text-green-700'
                                     : 'text-slate-600'
-                                }`}>
+                                  }`}>
                                   {skill.proficiency}
                                   {(skill.proficiency === 'ADVANCED' || skill.proficiency === 'EXPERT') && ' 🏆'}
                                 </p>
@@ -1726,7 +1719,7 @@ export default function StudentProfile() {
                         </div>
                       </div>
                     )}
-                  
+
                     {/* Step Navigation */}
                     <div className="flex justify-between pt-6 border-t border-slate-200 mt-8">
                       <button
@@ -1758,7 +1751,7 @@ export default function StudentProfile() {
                       <p className="text-sm text-slate-600 mb-4">
                         Upload your resume to get 5 bonus points in the matching algorithm (Rule C1).
                       </p>
-                      
+
                       <div className="border-2 border-dashed border-green-300 bg-green-50 rounded-lg p-6">
                         <input
                           type="file"
@@ -1767,7 +1760,7 @@ export default function StudentProfile() {
                           className="hidden"
                           ref={resumeInputRef}
                         />
-                        
+
                         {resumeFile ? (
                           <div className="text-center">
                             <div className="bg-green-100 text-green-800 p-4 rounded-lg mb-4">
@@ -1821,31 +1814,31 @@ export default function StudentProfile() {
                       <p className="text-sm text-slate-600 mb-4">
                         Add your professional certifications to improve your profile credibility.
                       </p>
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <Input
                           label="Certification Name"
                           placeholder="e.g., AWS Certified Developer"
                           value={newCertification.name}
-                          onChange={(e) => setNewCertification(prev => ({...prev, name: e.target.value}))}
+                          onChange={(e) => setNewCertification(prev => ({ ...prev, name: e.target.value }))}
                           className="bg-slate-50"
                         />
                         <Input
                           label="Credential URL"
                           placeholder="https://credential-url.com"
                           value={newCertification.credentialUrl}
-                          onChange={(e) => setNewCertification(prev => ({...prev, credentialUrl: e.target.value}))}
+                          onChange={(e) => setNewCertification(prev => ({ ...prev, credentialUrl: e.target.value }))}
                           className="bg-slate-50"
                         />
                         <Input
                           label="Issue Date"
                           type="date"
                           value={newCertification.issuedDate}
-                          onChange={(e) => setNewCertification(prev => ({...prev, issuedDate: e.target.value}))}
+                          onChange={(e) => setNewCertification(prev => ({ ...prev, issuedDate: e.target.value }))}
                           className="bg-slate-50"
                         />
                       </div>
-                      
+
                       <button
                         onClick={handleAddCertification}
                         disabled={loading}
@@ -1903,7 +1896,7 @@ export default function StudentProfile() {
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-slate-900">Update Profile Picture</h3>
-                <button 
+                <button
                   onClick={() => setIsProfileImageModalOpen(false)}
                   className="text-slate-400 hover:text-slate-600 transition-colors"
                 >
@@ -1923,7 +1916,7 @@ export default function StudentProfile() {
                       )}
                     </div>
                   </div>
-                  
+
                   <div className="text-center">
                     <input
                       ref={fileInputRef}
@@ -1941,7 +1934,7 @@ export default function StudentProfile() {
                     </button>
                     <p className="text-xs text-slate-500 mt-2">JPG, PNG (Max: 5MB)</p>
                   </div>
-                  
+
                   {profileImage && !cropMode && (
                     <div className="text-center">
                       <p className="text-sm text-slate-600 mb-3">
@@ -1983,9 +1976,9 @@ export default function StudentProfile() {
                 <div className="space-y-4">
                   <h4 className="text-sm font-semibold text-slate-900">Crop Your Image</h4>
                   <p className="text-xs text-slate-600">Drag to move • Scroll to zoom • Use sliders below</p>
-                  
+
                   <div className="flex justify-center">
-                    <div 
+                    <div
                       ref={cropContainerRef}
                       className="cursor-move touch-none"
                       onMouseDown={handleMouseDown}
@@ -2077,7 +2070,7 @@ export default function StudentProfile() {
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-slate-900">Update Cover Photo</h3>
-                <button 
+                <button
                   onClick={() => setIsCoverImageModalOpen(false)}
                   className="text-slate-400 hover:text-slate-600 transition-colors"
                 >
@@ -2097,7 +2090,7 @@ export default function StudentProfile() {
                       )}
                     </div>
                   </div>
-                  
+
                   <div className="text-center">
                     <input
                       ref={coverInputRef}
@@ -2115,7 +2108,7 @@ export default function StudentProfile() {
                     </button>
                     <p className="text-xs text-slate-500 mt-2">JPG, PNG (Max: 5MB) - Recommended: 1200x300px</p>
                   </div>
-                  
+
                   {coverImage && !coverCropMode && (
                     <div className="text-center">
                       <p className="text-sm text-slate-600 mb-3">
@@ -2157,9 +2150,9 @@ export default function StudentProfile() {
                 <div className="space-y-4">
                   <h4 className="text-sm font-semibold text-slate-900">Crop Your Cover Image</h4>
                   <p className="text-xs text-slate-600">Drag to move • Scroll to zoom • Use sliders below</p>
-                  
+
                   <div className="flex justify-center">
-                    <div 
+                    <div
                       ref={coverCropContainerRef}
                       className="cursor-move touch-none"
                       onMouseDown={handleCoverMouseDown}
@@ -2237,7 +2230,7 @@ export default function StudentProfile() {
               )}
             </div>
           </div>
-          
+
           {/* Step Navigation */}
           <div className="flex justify-between pt-6 border-t border-slate-200 mt-8">
             <button

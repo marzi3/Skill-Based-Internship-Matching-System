@@ -29,8 +29,11 @@ export default function VerifyStudent() {
 
         setUploading(true);
         try {
-            await axios.post('/api/verification/student', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
+            const token = localStorage.getItem('token');
+            await axios.post('http://localhost:5001/api/verification/student', formData, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                },
             });
             window.location.reload();
         } catch (error) {

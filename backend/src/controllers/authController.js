@@ -246,11 +246,26 @@ const resetPassword = async (req, res) => {
 // @access  Private (Employer/Admin)
 const getStudents = async (req, res) => {
     try {
-        const students = await User.find({ role: 'student' }).select('name email profilePicture bio skills location');
+        const Student = require('../models/Student');
+        const users = await User.find({ role: 'student' }).select('name email profilePicture bio location');
+
+        // Enrich each user with skills from the Student profile
+        const enrichedStudents = await Promise.all(
+            users.map(async (u) => {
+                const studentProfile = await Student.findOne({ userId: u._id }).select('skills personalInfo education gpa fieldOfStudy');
+                const plain = u.toObject();
+                plain.skills = studentProfile?.skills?.map(s => s.name) || [];
+                plain.gpa = studentProfile?.gpa;
+                plain.fieldOfStudy = studentProfile?.fieldOfStudy;
+                plain.location = plain.location || studentProfile?.personalInfo?.location || '';
+                return plain;
+            })
+        );
+
         res.status(200).json({
             success: true,
-            count: students.length,
-            data: students
+            count: enrichedStudents.length,
+            data: enrichedStudents
         });
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -314,6 +329,45 @@ const getEmployerPublicProfile = async (req, res) => {
     }
 };
 
+// @desc    Get public student profile details
+// @route   GET /api/auth/students/:id
+// @access  Public
+const getStudentPublicProfile = async (req, res) => {
+    try {
+        const Student = require('../models/Student');
+        let user = null;
+        let studentDetails = null;
+
+        // First, try to find by User ID
+        user = await User.findById(req.params.id).select('name email profilePicture bio location');
+
+        if (user && user.role === 'student') {
+            // Found a student user — look up their Student profile
+            studentDetails = await Student.findOne({ userId: user._id });
+        } else {
+            // Not a User doc or not a student — try as a Student doc ID
+            studentDetails = await Student.findById(req.params.id);
+            if (studentDetails) {
+                user = await User.findById(studentDetails.userId).select('name email profilePicture bio location');
+            }
+        }
+
+        if (!user) {
+            return res.status(404).json({ message: 'Student not found' });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: {
+                user,
+                profile: studentDetails
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 // @desc    Update user password
 // @route   PUT /api/auth/password
 // @access  Private
@@ -351,5 +405,6 @@ module.exports = {
     updateProfile,
     updatePassword,
     getStudents,
-    getEmployerPublicProfile
+    getEmployerPublicProfile,
+    getStudentPublicProfile
 };

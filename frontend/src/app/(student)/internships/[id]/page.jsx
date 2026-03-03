@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,7 +15,7 @@ import { useAuth } from '@/context/AuthContext';
 import { PageLoader } from '@/components/common/Loader';
 
 export default function InternshipDetailPage({ params }) {
-    const { id } = params;
+    const { id } = use(params);
     const router = useRouter();
     const { user } = useAuth();
 

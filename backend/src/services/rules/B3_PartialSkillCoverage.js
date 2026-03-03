@@ -30,15 +30,16 @@ const rule = {
             return { ratio: 0, matchedCount: 0, totalCount: 0 };
         }
 
-        const studentSkillNames = studentSkills.map(s =>
-            (typeof s === 'string' ? s : s.name).toLowerCase()
-        );
+        const studentSkillNames = studentSkills.map(s => {
+            const name = typeof s === 'string' ? s : s?.name;
+            return (name || '').toLowerCase();
+        });
 
         let matchedCount = 0;
 
         requiredSkills.forEach(req => {
-            const reqName = typeof req === 'string' ? req : req.name;
-            if (studentSkillNames.includes(reqName.toLowerCase())) {
+            const reqName = typeof req === 'string' ? req : req?.name;
+            if (reqName && studentSkillNames.includes(reqName.toLowerCase())) {
                 matchedCount++;
             }
         });

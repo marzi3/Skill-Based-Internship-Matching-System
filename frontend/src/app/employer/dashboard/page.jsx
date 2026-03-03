@@ -4,905 +4,467 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import Cookies from 'js-cookie';
 import {
-  LayoutDashboard,
-  Plus,
-  Search,
-  Users,
-  FileText,
-  CheckCircle2,
-  MessageSquare,
-  Settings,
-  LogOut,
-  ChevronDown,
-  TrendingUp,
-  Briefcase,
-  Eye,
-  Clock,
-  Calendar,
-  Download,
-  Activity,
-  Zap,
-  Star,
-  TrendingDown,
-  AlertCircle,
-  ArrowUpRight,
-  Filter,
-  Loader,
-  AlertTriangle,
-  Edit,
-  Trash2,
-  Power,
-  XCircle,
+  Plus, Users, FileText, CheckCircle2, MessageSquare,
+  ChevronDown, TrendingUp, Briefcase, Eye, Clock, Calendar,
+  Download, Activity, Zap, Star, Search, Edit, Trash2,
+  Power, Filter, Loader2, AlertTriangle, ArrowUpRight,
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-// Components
 import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
 import Badge from '@/components/common/Badge';
 import Avatar from '@/components/common/Avatar';
-
-// Context
 import { useAuth } from '@/context/AuthContext';
 
+/**
+ * Employer Dashboard — main overview page.
+ * Fetches internships, matching engine data, recent activity, and skill demand analytics.
+ */
 const EmployerDashboard = () => {
-  const { user, loading: authLoading, logout } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [activeSection, setActiveSection] = useState('overview');
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [userDropdown, setUserDropdown] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
 
-  // API Integration States
+  // Data states
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [apiInternships, setApiInternships] = useState([]);
   const [skillAnalytics, setSkillAnalytics] = useState([]);
-  const [stats, setStats] = useState([
-    {
-      id: 1,
-      label: 'Internships Posted',
-      value: '0',
-      icon: Briefcase,
-      color: 'primary',
-      trend: '+0 this month',
-    },
-    {
-      id: 2,
-      label: 'Total Applicants',
-      value: '0',
-      icon: Users,
-      color: 'success',
-      trend: '+0 this week',
-    },
-    {
-      id: 3,
-      label: 'Skill Matches',
-      value: '0',
-      icon: CheckCircle2,
-      color: 'accent',
-      trend: '0% match rate',
-    },
-    {
-      id: 4,
-      label: 'Interviews Scheduled',
-      value: '0',
-      icon: Calendar,
-      color: 'warning',
-      trend: '+0 pending',
-    },
-  ]);
+  const [topCandidates, setTopCandidates] = useState([]);
+  const [recentActivity, setRecentActivity] = useState([]);
+  const [stats, setStats] = useState({
+    internships: 0,
+    applicants: 0,
+    skillMatches: 0,
+    interviews: 0,
+  });
 
-  // Redirect to login if not authenticated
+  // UI states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [userDropdown, setUserDropdown] = useState(false);
+
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login');
-    }
+    if (!authLoading && !user) router.push('/login');
   }, [authLoading, user, router]);
 
-  // Fetch data from backend API (only when user is authenticated)
   useEffect(() => {
-    if (!user) return; // Don't fetch if not logged in
-
-    const fetchInternships = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        // Fetch internships and skill demands in parallel with timeout
-        const timeout = (ms) => new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), ms));
-
-        const [postingsRes, skillsRes] = await Promise.all([
-          Promise.race([axios.get('/api/internships/my-postings'), timeout(10000)]),
-          Promise.race([axios.get('/api/internships/skill-demands'), timeout(10000)])
-        ]);
-
-        const data = postingsRes.data.data || [];
-        setApiInternships(data);
-        setSkillAnalytics(skillsRes.data.data || []);
-
-        // Calculate statistics
-        if (data.length > 0) {
-          const totalApplicants = data.reduce((sum, int) => sum + (int.applicants?.length || 0), 0);
-          const skillMatches = data.reduce((sum, int) => sum + (int.skillMatches || 0), 0);
-          const interviews = data.reduce((sum, int) => sum + (int.interviews || 0), 0);
-
-          setStats([
-            {
-              id: 1,
-              label: 'Internships Posted',
-              value: String(data.length),
-              icon: Briefcase,
-              color: 'primary',
-              trend: `+${data.length} total`,
-            },
-            {
-              id: 2,
-              label: 'Total Applicants',
-              value: String(totalApplicants),
-              icon: Users,
-              color: 'success',
-              trend: `${totalApplicants > 0 ? 'Active pipeline' : 'No applicants yet'}`,
-            },
-            {
-              id: 3,
-              label: 'Skill Matches',
-              value: String(skillMatches),
-              icon: CheckCircle2,
-              color: 'accent',
-              trend: totalApplicants > 0 ? `${Math.round((skillMatches / (totalApplicants || 1)) * 100)}% match rate` : '0% match rate',
-            },
-            {
-              id: 4,
-              label: 'Interviews Scheduled',
-              value: String(interviews),
-              icon: Calendar,
-              color: 'warning',
-              trend: `Operational`,
-            },
-          ]);
-        }
-      } catch (err) {
-        console.error('Failed to fetch dashboard data:', err);
-        setError(err.response?.data?.message || err.message || 'Failed to load dashboard data. Please log in again.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchInternships();
+    if (!user) return;
+    fetchDashboardData();
   }, [user]);
 
-  // Skill Demand vs Supply Analytics Data - Falling back to defaults if API empty
-  const displaySkillAnalytics = skillAnalytics.length > 0 ? skillAnalytics : [];
+  /** Fetch all dashboard data concurrently. */
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const token = Cookies.get('token') || localStorage.getItem('token');
+      const config = { headers: { Authorization: `Bearer ${token}` } };
 
-  // Top Matched Candidates Data
-  const topCandidates = [];
+      // Fetch postings, skill analytics, and notifications in parallel
+      const [postingsRes, skillsRes, notifsRes] = await Promise.allSettled([
+        axios.get('/api/internships/my-postings'),
+        axios.get('/api/internships/skill-demands'),
+        axios.get('http://localhost:5001/api/notifications', config),
+      ]);
 
-  // Recent Activity Timeline
-  const recentActivity = [];
+      const internships = postingsRes.status === 'fulfilled' ? (postingsRes.value.data.data || []) : [];
+      setApiInternships(internships);
+      setSkillAnalytics(skillsRes.status === 'fulfilled' ? (skillsRes.value.data.data || []) : []);
+
+      // Build stats
+      const totalApplicants = internships.reduce((sum, i) => sum + (i.applicants?.length || 0), 0);
+      setStats({
+        internships: internships.length,
+        applicants: totalApplicants,
+        skillMatches: 0,
+        interviews: internships.reduce((sum, i) => sum + (i.interviews || 0), 0),
+      });
+
+      // Build recent activity from notifications
+      if (notifsRes.status === 'fulfilled') {
+        const notifs = notifsRes.value.data.data || notifsRes.value.data.notifications || [];
+        setRecentActivity(notifs.slice(0, 5));
+      }
+
+      // Fetch best matched candidates using matching engine
+      if (internships.length > 0) {
+        try {
+          const matchRes = await axios.post('http://localhost:5001/api/matching/students', {
+            internshipId: internships[0]._id,
+            limit: 5,
+          });
+          if (matchRes.data.success) {
+            const candidates = matchRes.data.candidates || [];
+            setTopCandidates(candidates);
+            // Update skill match count from matching results
+            const matchedCount = candidates.filter(c => c.finalScore >= 50).length;
+            setStats(prev => ({ ...prev, skillMatches: matchedCount }));
+          }
+        } catch (matchErr) {
+          console.error('Matching engine call failed:', matchErr);
+        }
+      }
+    } catch (err) {
+      console.error('Dashboard data fetch failed:', err);
+      setError(err.response?.data?.message || err.message || 'Failed to load dashboard');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const toggleStatus = async (id) => {
     try {
-      const response = await axios.patch(`/api/internships/${id}/status`);
-      if (response.data.success) {
-        setApiInternships(apiInternships.map(item =>
-          item._id === id ? { ...item, status: response.data.data.status } : item
-        ));
+      const resp = await axios.patch(`/api/internships/${id}/status`);
+      if (resp.data.success) {
+        setApiInternships(prev => prev.map(i => i._id === id ? { ...i, status: resp.data.data.status } : i));
       }
-    } catch (err) {
-      alert('Failed to update status');
-    }
+    } catch { /* silent */ }
   };
 
   const handleDelete = async (id) => {
     if (window.confirm('Permanently delete this internship?')) {
       try {
         await axios.delete(`/api/internships/${id}`);
-        setApiInternships(apiInternships.filter(item => item._id !== id));
-      } catch (err) {
-        alert('Failed to delete internship');
-      }
+        setApiInternships(prev => prev.filter(i => i._id !== id));
+      } catch { /* silent */ }
     }
   };
 
-  // Live postings data - Use API data when available
-  const livePostings = apiInternships.map((internship) => ({
-    id: internship._id || internship.id,
-    position: internship.positionTitle || 'Untitled Position',
-    candidates: internship.applicants?.length || 0,
-    status: internship.status || 'Hiring',
-    expiry: internship.expiryDate
-      ? new Date(internship.expiryDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
-      : 'Not Set',
-    views: internship.views || 0,
-    description: internship.description,
-    requiredSkills: internship.requiredSkills || [],
+  // Derived data
+  const livePostings = apiInternships.map(i => ({
+    id: i._id || i.id,
+    position: i.positionTitle || 'Untitled',
+    candidates: i.applicants?.length || 0,
+    status: i.status || 'Hiring',
+    expiry: i.expiryDate ? new Date(i.expiryDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'Not Set',
+    views: i.views || 0,
   }));
 
-  // Sidebar navigation items
-  const sidebarItems = [
-    { label: 'Dashboard', id: 'overview', icon: LayoutDashboard },
-    { label: 'My Postings', id: 'postings', icon: Briefcase, path: '/employer/internships' },
-    { label: 'Post Internship', id: 'post', icon: Plus, path: '/employer/internships/create' },
-    { label: 'Search Candidates', id: 'search', icon: Search, path: '/employer/candidates' },
-    { label: 'Applications', id: 'applications', icon: FileText, path: '/employer/applications' },
-    { label: 'Messages', id: 'messages', icon: MessageSquare },
-  ];
-
-  // Get color classes based on color prop
-  const getColorClasses = (color) => {
-    const colorMap = {
-      primary: 'bg-primary-50 text-primary-600',
-      secondary: 'bg-secondary-50 text-secondary-600',
-      success: 'bg-success-50 text-success-600',
-      warning: 'bg-warning-50 text-warning-600',
-      danger: 'bg-danger-50 text-danger-600',
-      accent: 'bg-accent-50 text-accent-600',
-    };
-    return colorMap[color] || colorMap.primary;
-  };
-
-  // Get status badge styling
-  const getStatusStyle = (status) => {
-    const statusMap = {
-      'Hiring': { variant: 'success', label: 'Hiring' },
-      'Reviewing': { variant: 'warning', label: 'Reviewing' },
-      'Closed': { variant: 'danger', label: 'Closed' },
-    };
-    return statusMap[status] || statusMap['Reviewing'];
-  };
-
-  // Filter postings based on search and status
-  const filteredPostings = livePostings.filter((posting) => {
-    const matchesSearch = (posting?.position || '').toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'All' || posting.status === statusFilter;
-    return matchesSearch && matchesStatus;
+  const filteredPostings = livePostings.filter(p => {
+    const matchSearch = p.position.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchStatus = statusFilter === 'All' || p.status === statusFilter;
+    return matchSearch && matchStatus;
   });
 
-  // Get color for match score
-  const getMatchScoreColor = (score) => {
-    if (score >= 90) return 'success';
-    if (score >= 80) return 'accent';
-    return 'warning';
+  const displaySkillAnalytics = skillAnalytics.length > 0 ? skillAnalytics : [];
+
+  const getScoreColor = (score) => {
+    if (score >= 80) return 'text-emerald-600 bg-emerald-50 border-emerald-200';
+    if (score >= 60) return 'text-amber-600 bg-amber-50 border-amber-200';
+    return 'text-rose-600 bg-rose-50 border-rose-200';
   };
 
-  // Get activity icon color based on type
-  const getActivityIconColor = (type) => {
-    const colorMap = {
-      application: 'text-primary-600',
-      interview: 'text-secondary-600',
-      alert: 'text-warning-600',
-      match: 'text-success-600',
-    };
-    return colorMap[type] || 'text-primary-600';
-  };
+  const statCards = [
+    { label: 'Internships Posted', value: stats.internships, icon: Briefcase, gradient: 'from-indigo-500 to-violet-600' },
+    { label: 'Total Applicants', value: stats.applicants, icon: Users, gradient: 'from-emerald-400 to-teal-500' },
+    { label: 'Skill Matches', value: stats.skillMatches, icon: CheckCircle2, gradient: 'from-amber-400 to-orange-500' },
+    { label: 'Interviews Scheduled', value: stats.interviews, icon: Calendar, gradient: 'from-sky-400 to-blue-500' },
+  ];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
+          <p className="text-sm font-semibold text-gray-500">Loading Dashboard…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-8">
+        <div className="bg-red-50 border border-red-200 rounded-2xl p-8 text-center">
+          <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-red-800 mb-2">Failed to Load Dashboard</h3>
+          <p className="text-red-600 mb-4">{error}</p>
+          <button onClick={() => window.location.reload()} className="px-6 py-2 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-colors">Retry</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* SIDEBAR */}
-      <aside
-        className={`${sidebarOpen ? 'w-64' : 'w-20'
-          } bg-white border-r border-gray-200 sticky top-0 transition-all duration-300 flex flex-col`}
-      >
-        {/* Logo Area */}
-        <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-          {sidebarOpen && (
-            <div>
-              <h2 className="text-lg font-bold text-primary-600">InternMatch</h2>
-              <p className="text-xs text-gray-500">Employer Portal</p>
-            </div>
-          )}
+    <div className="space-y-8">
+      {/* Header Bar */}
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+            Welcome back, {user?.name?.split(' ')[0] || 'Employer'}
+          </h1>
+          <p className="text-gray-500 mt-1">Here's what's happening with your internship postings today</p>
         </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-          {sidebarItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeSection === item.id;
-
-            // Navigation links for specific items
-            if (item.path) {
-              return (
-                <Link key={item.id} href={item.path} className="w-full">
-                  <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-gray-700 hover:bg-gray-100">
-                    <Icon className="w-5 h-5 flex-shrink-0" />
-                    {sidebarOpen && <span className="text-sm">{item.label}</span>}
-                  </button>
-                </Link>
-              );
-            }
-
-            return (
-              <button
-                key={item.id}
-                onClick={() => setActiveSection(item.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive
-                  ? 'bg-primary-100 text-primary-700 font-semibold'
-                  : 'text-gray-700 hover:bg-gray-100'
-                  }`}
-              >
-                <Icon className="w-5 h-5 flex-shrink-0" />
-                {sidebarOpen && <span className="text-sm">{item.label}</span>}
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* Settings & Logout */}
-        <div className="p-4 border-t border-gray-200 space-y-2">
-          <Link href="/employer/settings" className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-all">
-            <Settings className="w-5 h-5 flex-shrink-0" />
-            {sidebarOpen && <span className="text-sm">Settings</span>}
-          </Link>
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 text-sm text-gray-500">
+            <Clock className="w-4 h-4" /> Last Activity: Just now
+          </div>
           <button
-            onClick={logout}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-all"
+            onClick={() => {
+              let csv = "Metric,Value\n";
+              csv += `Internships Posted,${stats.internships}\n`;
+              csv += `Total Applicants,${stats.applicants}\n`;
+              csv += `Skill Matches,${stats.skillMatches}\n`;
+              const el = document.createElement('a');
+              el.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv));
+              el.setAttribute('download', 'employer-dashboard-report.csv');
+              el.style.display = 'none';
+              document.body.appendChild(el);
+              el.click();
+              document.body.removeChild(el);
+            }}
+            className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200"
           >
-            <LogOut className="w-5 h-5 flex-shrink-0" />
-            {sidebarOpen && <span className="text-sm">Logout</span>}
+            <Download className="w-4 h-4" /> Export Report
           </button>
         </div>
-      </aside>
+      </div>
 
-      {/* MAIN CONTENT */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* TOP NAVIGATION BAR */}
-        <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-          <div className="px-6 py-4 flex items-center justify-between">
-            <div>
-              <h3 className="text-xl font-bold text-gray-900">Employer Portal</h3>
-              <p className="text-sm text-gray-500">Manage your internship postings</p>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+        {statCards.map((stat, idx) => {
+          const Icon = stat.icon;
+          return (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.1 }}
+              className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group"
+            >
+              <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-[0.04] transition-opacity duration-500`} />
+              <div className="flex justify-between items-start mb-4 relative z-10">
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{stat.label}</span>
+                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center shadow-lg`}>
+                  <Icon className="w-5 h-5 text-white" />
+                </div>
+              </div>
+              <p className="text-3xl font-black text-gray-900 relative z-10">{stat.value}</p>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* Skill Demand vs Supply */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6"
+      >
+        <div className="mb-6">
+          <h2 className="text-lg font-bold text-gray-900">Skill Demand vs Supply</h2>
+          <p className="text-sm text-gray-500 mt-1">Comparison of required skills in your postings vs available candidates</p>
+        </div>
+        <div className="space-y-5">
+          {displaySkillAnalytics.length === 0 ? (
+            <div className="text-center py-8 text-gray-400 text-sm">Post an internship to see skill analytics.</div>
+          ) : displaySkillAnalytics.map((skill, idx) => {
+            const maxVal = Math.max(...displaySkillAnalytics.map(s => Math.max(s.requested || 0, s.available || 0)), 1);
+            const reqPct = ((skill.requested || 0) / maxVal) * 100;
+            const avlPct = ((skill.available || 0) / maxVal) * 100;
+            return (
+              <div key={idx} className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-gray-900">{skill.skill}</h3>
+                  <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${getScoreColor(skill.matchPercent || 0)}`}>
+                    {skill.matchPercent || 0}% Match
+                  </span>
+                </div>
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <div className="flex justify-between mb-1"><span className="text-xs text-gray-500">Required</span><span className="text-xs font-bold">{skill.requested}</span></div>
+                    <div className="w-full bg-gray-100 rounded-full h-2"><div className="bg-indigo-600 h-2 rounded-full transition-all" style={{ width: `${reqPct}%` }} /></div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex justify-between mb-1"><span className="text-xs text-gray-500">Available</span><span className="text-xs font-bold">{skill.available}</span></div>
+                    <div className="w-full bg-gray-100 rounded-full h-2"><div className="bg-emerald-500 h-2 rounded-full transition-all" style={{ width: `${avlPct}%` }} /></div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </motion.div>
+
+      {/* Best Matches + Recent Activity Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Best Matches */}
+        <div className="lg:col-span-2">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl border border-indigo-200 p-6"
+          >
+            <div className="mb-6">
+              <div className="flex items-center gap-2 mb-1"><Star className="w-5 h-5 text-purple-600" /><h2 className="text-lg font-bold text-gray-900">Best Matches for You</h2></div>
+              <p className="text-sm text-gray-500">Top candidates from the matching engine based on skill alignment</p>
             </div>
-
-            {/* User Profile Section */}
-            <div className="flex items-center gap-4">
-              <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100">
-                <Clock className="w-4 h-4 text-gray-600" />
-                <span className="text-sm text-gray-600">Last Activity: 2 hours ago</span>
-              </div>
-
-              <div className="relative">
-                <button
-                  onClick={() => setUserDropdown(!userDropdown)}
-                  className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-100 transition-all"
-                >
-                  <Avatar
-                    src={user?.profilePicture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'User'}`}
-                    name={user?.name || 'User'}
-                    size="md"
-                  />
-                  <div className="hidden sm:flex flex-col items-start">
-                    <p className="text-sm font-semibold text-gray-900">{user?.name || 'Loading...'}</p>
-                    <p className="text-xs text-gray-500">{user?.companyName || 'Employer'}</p>
+            <div className="space-y-4">
+              {topCandidates.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 text-sm">No matched candidates yet. Create a posting to get matches.</div>
+              ) : topCandidates.map((c, idx) => (
+                <div key={c.studentId || idx} className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-all">
+                  <div className="flex items-start gap-4">
+                    <Avatar
+                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${c.studentName || 'user'}`}
+                      name={c.studentName || 'Candidate'}
+                      size="lg"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="font-bold text-gray-900">{c.studentName || 'Unknown Student'}</h3>
+                          <p className="text-xs text-gray-500">{c.fieldOfStudy || 'Student'} • GPA: {c.gpa || 'N/A'}</p>
+                        </div>
+                        <span className={`text-sm font-black px-3 py-1.5 rounded-full border ${getScoreColor(c.finalScore || 0)}`}>
+                          {Math.round(c.finalScore || 0)}%
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        {(c.matchedSkills || []).slice(0, 4).map((skill, si) => (
+                          <span key={si} className="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-md border border-indigo-100">{skill}</span>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                  <ChevronDown className="w-4 h-4 text-gray-600" />
-                </button>
-
-                {/* Dropdown Menu */}
-                {userDropdown && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-50">
-                    <Link href="/employer/profile" className="block w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-gray-900">
-                      Profile
+                  <div className="mt-3 pt-3 border-t border-gray-100 flex gap-2">
+                    <Link href={`/students/${c.studentId}`} className="flex-1">
+                      <button className="w-full py-2 text-sm font-bold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">View Profile</button>
                     </Link>
-                    <Link href="/employer/settings" className="block w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-gray-900">
-                      Preferences
+                    <Link href="/employer/messages" className="flex-1">
+                      <button className="w-full py-2 text-sm font-bold border border-indigo-600 text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors">Message</button>
                     </Link>
-                    <hr className="my-2" />
-                    <button
-                      onClick={logout}
-                      className="w-full text-left px-4 py-2 hover:bg-red-50 text-sm text-red-600"
-                    >
-                      Logout
-                    </button>
                   </div>
-                )}
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Recent Activity */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6"
+        >
+          <div className="flex items-center gap-2 mb-6">
+            <Activity className="w-5 h-5 text-indigo-600" />
+            <h2 className="text-lg font-bold text-gray-900">Recent Activity</h2>
+          </div>
+          <div className="space-y-4">
+            {recentActivity.length === 0 ? (
+              <div className="text-center py-8 text-gray-400 text-sm">No recent activity to show.</div>
+            ) : recentActivity.map((item, idx) => (
+              <div key={item._id || idx} className="flex gap-3">
+                <div className="flex flex-col items-center">
+                  <div className="p-2 rounded-full bg-indigo-50 text-indigo-600">
+                    <Activity className="w-4 h-4" />
+                  </div>
+                  {idx < recentActivity.length - 1 && <div className="w-0.5 h-6 bg-gray-200 mt-2" />}
+                </div>
+                <div className="flex-1 pt-0.5">
+                  <h4 className="text-sm font-bold text-gray-900">{item.type?.replace(/_/g, ' ') || 'Activity'}</h4>
+                  <p className="text-xs text-gray-500 mt-0.5">{item.message || 'System event'}</p>
+                  <p className="text-xs text-gray-400 mt-1">{item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ''}</p>
+                </div>
               </div>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Live Postings Table */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">Live Postings</h2>
+              <p className="text-sm text-gray-500 mt-1">{filteredPostings.length} of {livePostings.length} positions</p>
+            </div>
+            <Link href="/employer/internships/create">
+              <button className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2.5 rounded-xl font-bold hover:shadow-lg transition-all">
+                <Plus className="w-4 h-4" /> Post New Role
+              </button>
+            </Link>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text" placeholder="Search positions…" value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all"
+              />
+            </div>
+            <div className="relative">
+              <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
+                className="appearance-none pl-10 pr-8 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-white cursor-pointer">
+                <option>All</option><option>Hiring</option><option>Reviewing</option><option>Closed</option>
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             </div>
           </div>
-        </header>
+        </div>
 
-        {/* PAGE CONTENT */}
-        <main className="flex-1 overflow-auto">
-          {/* Loading State */}
-          {loading && activeSection === 'overview' && (
-            <div className="flex items-center justify-center h-full">
-              <Card shadow="md" rounded="lg" padding="lg" className="text-center">
-                <div className="flex flex-col items-center gap-4">
-                  <Loader className="w-12 h-12 text-primary-600 animate-spin" />
-                  <h3 className="text-lg font-semibold text-gray-900">Loading Dashboard</h3>
-                  <p className="text-sm text-gray-600">Fetching your internship data from the server...</p>
-                </div>
-              </Card>
-            </div>
-          )}
-
-          {/* Error State */}
-          {error && activeSection === 'overview' && (
-            <div className="p-6 md:p-8">
-              <Card shadow="md" rounded="lg" padding="lg" className="border-l-4 border-danger-600 bg-danger-50">
-                <div className="flex items-start gap-4">
-                  <AlertTriangle className="w-6 h-6 text-danger-600 flex-shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold text-danger-900 mb-2">Failed to Load Dashboard</h3>
-                    <p className="text-sm text-danger-700 mb-4">{error}</p>
-                    <Button
-                      onClick={() => window.location.reload()}
-                      className="bg-danger-600 text-white hover:bg-danger-700 rounded-lg px-4 py-2 transition-all"
-                    >
-                      Retry Loading Data
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            </div>
-          )}
-
-          {activeSection === 'overview' && !loading && !error && (
-            <div className="p-6 md:p-8 space-y-8">
-              {/* Welcome Section */}
-              <div className="flex items-center justify-between">
-                <div className="space-y-2">
-                  <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-secondary-600">
-                    Welcome back, {user?.name?.split(' ')[0] || 'Employer'}
-                  </h1>
-                  <p className="text-gray-600">
-                    Here's what's happening with {user?.companyName || 'your'} internship postings today
-                  </p>
-                </div>
-                <Button
-                  onClick={() => {
-                    // Generate export data
-                    const exportData = {
-                      totalInternships: stats[0].value,
-                      totalApplicants: stats[1].value,
-                      skillMatches: stats[2].value,
-                      interviews: stats[3].value,
-                      postings: filteredPostings,
-                      exportDate: new Date().toLocaleDateString(),
-                    };
-                    // Create CSV or PDF download
-                    let csvContent = "Report Type,Employer Dashboard Statistics\n";
-                    csvContent += `Export Date,${exportData.exportDate}\n\n`;
-                    csvContent += "Metric,Value\n";
-                    csvContent += `Total Internships Posted,${exportData.totalInternships}\n`;
-                    csvContent += `Total Applicants,${exportData.totalApplicants}\n`;
-                    csvContent += `Skill Matches,${exportData.skillMatches}\n`;
-                    csvContent += `Interviews Scheduled,${exportData.interviews}\n\n`;
-
-                    csvContent += "Internship Position,Status,Applicants,Expiry Date\n";
-                    exportData.postings.forEach(p => {
-                      csvContent += `"${p.position}","${p.status}",${p.candidates},"${p.expiry}"\n`;
-                    });
-
-                    const element = document.createElement('a');
-                    element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent));
-                    element.setAttribute('download', 'employer-dashboard-report.csv');
-                    element.style.display = 'none';
-                    document.body.appendChild(element);
-                    element.click();
-                    document.body.removeChild(element);
-                  }}
-                  className="hidden sm:flex items-center gap-2 bg-primary-600 text-white hover:bg-primary-700 rounded-xl px-4 py-2 transition-all"
-                >
-                  <Download className="w-4 h-4" />
-                  Export Report
-                </Button>
-              </div>
-
-              {/* Stats Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {stats.map((stat) => {
-                  const Icon = stat.icon;
-                  const colorClass = getColorClasses(stat.color);
-                  const cardContent = (
-                    <Card key={stat.id} shadow="sm" rounded="lg" padding="md" className={stat.id === 1 ? 'cursor-pointer hover:shadow-md transition-all border-primary-100' : ''}>
-                      <div className="space-y-4">
-                        <div className="flex items-start justify-between">
-                          <div className={`p-3 rounded-xl ${colorClass}`}>
-                            <Icon className="w-6 h-6" />
-                          </div>
+        {filteredPostings.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100 bg-gray-50/50">
+                  <th className="text-left py-3 px-6 font-bold text-gray-500 text-xs uppercase tracking-wider">Position</th>
+                  <th className="text-left py-3 px-6 font-bold text-gray-500 text-xs uppercase tracking-wider">Candidates</th>
+                  <th className="text-left py-3 px-6 font-bold text-gray-500 text-xs uppercase tracking-wider">Views</th>
+                  <th className="text-left py-3 px-6 font-bold text-gray-500 text-xs uppercase tracking-wider">Status</th>
+                  <th className="text-right py-3 px-6 font-bold text-gray-500 text-xs uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {filteredPostings.map(p => (
+                  <tr key={p.id} className="hover:bg-gray-50/50 transition-colors group">
+                    <td className="py-3 px-6">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-100 to-violet-100 flex items-center justify-center">
+                          <Briefcase className="w-4 h-4 text-indigo-500" />
                         </div>
                         <div>
-                          <p className="text-sm text-gray-600 font-medium">{stat.label}</p>
-                          <div className="mt-2 flex items-baseline gap-2">
-                            <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <TrendingUp className="w-4 h-4 text-success-600" />
-                          <p className="text-xs text-gray-600">{stat.trend}</p>
+                          <p className="font-bold text-gray-900">{p.position}</p>
+                          <p className="text-xs text-indigo-500 font-medium">Expires {p.expiry}</p>
                         </div>
                       </div>
-                    </Card>
-                  );
-
-                  return stat.id === 1 ? (
-                    <Link key={stat.id} href="/employer/internships">
-                      {cardContent}
-                    </Link>
-                  ) : cardContent;
-                })}
-              </div>
-
-              {/* Skill Demand vs Supply Chart */}
-              <Card shadow="sm" rounded="lg" padding="md">
-                <div className="mb-6">
-                  <h2 className="text-lg font-bold text-gray-900">Skill Demand vs Supply</h2>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Comparison of required skills in your postings vs available candidates
-                  </p>
-                </div>
-
-                <div className="space-y-5">
-                  {displaySkillAnalytics.length === 0 ? (
-                    <div className="text-center py-6">
-                      <p className="text-gray-500 text-sm">Post an internship to see skill analytics.</p>
-                    </div>
-                  ) : displaySkillAnalytics.map((skill, idx) => {
-                    // Logic to calculate max for scaling bars
-                    const maxRequested = Math.max(...displaySkillAnalytics.map(s => s.requested));
-                    const maxAvailable = Math.max(...displaySkillAnalytics.map(s => s.available));
-                    const maxValue = Math.max(maxRequested, maxAvailable, 1);
-
-                    const requestedPercent = (skill.requested / maxValue) * 100;
-                    const availablePercent = (skill.available / maxValue) * 100;
-                    const matchColorClass = getColorClasses(getMatchScoreColor(skill.matchPercent));
-
-                    return (
-                      <div key={idx} className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <h3 className="text-sm font-semibold text-gray-900">{skill.skill}</h3>
-                          <div className={`flex items-center gap-2 px-3 py-1 rounded-full ${matchColorClass}`}>
-                            <CheckCircle2 className="w-4 h-4" />
-                            <span className="text-sm font-bold">{skill.matchPercent}% Match</span>
-                          </div>
-                        </div>
-                        <div className="flex gap-3">
-                          {/* Requested Bar */}
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="text-xs text-gray-600">Required</span>
-                              <span className="text-xs font-semibold text-gray-900">{skill.requested}</span>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
-                              <div
-                                className="bg-primary-600 h-2 rounded-full transition-all duration-300"
-                                style={{ width: `${requestedPercent}%` }}
-                              />
-                            </div>
-                          </div>
-                          {/* Available Bar */}
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="text-xs text-gray-600">Available</span>
-                              <span className="text-xs font-semibold text-gray-900">{skill.available}</span>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
-                              <div
-                                className="bg-success-600 h-2 rounded-full transition-all duration-300"
-                                style={{ width: `${availablePercent}%` }}
-                              />
-                            </div>
-                          </div>
-                        </div>
+                    </td>
+                    <td className="py-3 px-6"><div className="flex items-center gap-2"><Users className="w-4 h-4 text-gray-400" /><span className="font-bold">{p.candidates}</span></div></td>
+                    <td className="py-3 px-6"><div className="flex items-center gap-2"><Eye className="w-4 h-4 text-gray-400" /><span className="text-gray-600">{p.views}</span></div></td>
+                    <td className="py-3 px-6">
+                      <span className={`px-2.5 py-1 text-xs font-bold rounded-full ${p.status === 'Hiring' ? 'bg-emerald-100 text-emerald-700' : p.status === 'Closed' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'}`}>
+                        {p.status}
+                      </span>
+                    </td>
+                    <td className="py-3 px-6 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button onClick={() => toggleStatus(p.id)} className="w-7 h-7 flex items-center justify-center rounded-lg border bg-gray-50 hover:bg-amber-50 text-gray-500 hover:text-amber-600 transition-all" title="Toggle Status"><Power className="w-3.5 h-3.5" /></button>
+                        <Link href={`/employer/internships/${p.id}/edit`}><button className="w-7 h-7 flex items-center justify-center rounded-lg border bg-gray-50 hover:bg-blue-50 text-gray-500 hover:text-blue-600 transition-all" title="Edit"><Edit className="w-3.5 h-3.5" /></button></Link>
+                        <button onClick={() => handleDelete(p.id)} className="w-7 h-7 flex items-center justify-center rounded-lg border bg-gray-50 hover:bg-rose-50 text-gray-500 hover:text-rose-600 transition-all" title="Delete"><Trash2 className="w-3.5 h-3.5" /></button>
                       </div>
-                    );
-                  })}
-                </div>
-              </Card>
-
-              {/* Top Matched Candidates + Recent Activity Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Top Matched Candidates - Featured Section */}
-                <div className="lg:col-span-2">
-                  <Card shadow="sm" rounded="lg" padding="md" className="bg-gradient-to-br from-primary-50 to-secondary-50 border border-primary-200">
-                    <div className="mb-6">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Star className="w-5 h-5 text-secondary-600" />
-                        <h2 className="text-lg font-bold text-gray-900">Best Matches for You</h2>
-                      </div>
-                      <p className="text-sm text-gray-600">
-                        Top candidates based on skill alignment with your requirements
-                      </p>
-                    </div>
-
-                    <div className="space-y-4">
-                      {topCandidates.length === 0 ? (
-                        <div className="text-center py-8 text-gray-500 text-sm">No matched candidates yet. Create a posting to get matches.</div>
-                      ) : topCandidates.map((candidate, idx) => (
-                        <Card
-                          key={candidate.id}
-                          shadow="none"
-                          rounded="lg"
-                          padding="md"
-                          className="bg-white border border-gray-200 hover:shadow-md transition-all"
-                        >
-                          <div className="flex items-start gap-4">
-                            {/* Avatar */}
-                            <Avatar
-                              src={candidate.avatar}
-                              name={candidate.name}
-                              size="lg"
-                            />
-
-                            {/* Content */}
-                            <div className="flex-1 space-y-2">
-                              <div className="flex items-start justify-between">
-                                <div>
-                                  <h3 className="font-bold text-gray-900">{candidate.name}</h3>
-                                  <p className="text-xs text-gray-600">{candidate.experience} experience</p>
-                                </div>
-                                <div className={`flex items-center gap-1 px-3 py-1.5 rounded-full ${getColorClasses(getMatchScoreColor(candidate.matchScore))}`}>
-                                  <TrendingUp className="w-4 h-4" />
-                                  <span className="text-sm font-bold">{candidate.matchScore}%</span>
-                                </div>
-                              </div>
-
-                              {/* Skills */}
-                              <div className="flex flex-wrap gap-2">
-                                {candidate.topSkills.map((skill, skillIdx) => (
-                                  <Badge
-                                    key={skillIdx}
-                                    variant="secondary"
-                                    size="sm"
-                                  >
-                                    {skill}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Quick Actions */}
-                          <div className="mt-4 pt-4 border-t border-gray-200 flex gap-2">
-                            <Link href={`/employer/candidates/${candidate.id}`}>
-                              <Button
-                                size="sm"
-                                className="flex-1 bg-primary-600 text-white hover:bg-primary-700 rounded-lg transition-all"
-                              >
-                                View Profile
-                              </Button>
-                            </Link>
-                            <Button
-                              size="sm"
-                              className="flex-1 border border-primary-600 text-primary-600 hover:bg-primary-50 rounded-lg transition-all"
-                            >
-                              Schedule
-                            </Button>
-                          </div>
-                        </Card>
-                      ))}
-                    </div>
-                  </Card>
-                </div>
-
-                {/* Recent Activity Timeline */}
-                <Card shadow="sm" rounded="lg" padding="md">
-                  <div className="mb-6">
-                    <div className="flex items-center gap-2">
-                      <Activity className="w-5 h-5 text-primary-600" />
-                      <h2 className="text-lg font-bold text-gray-900">Recent Activity</h2>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    {recentActivity.length === 0 ? (
-                      <div className="text-center py-8 text-gray-500 text-sm">No recent activity to show.</div>
-                    ) : recentActivity.map((activity, idx) => {
-                      const ActivityIcon = activity.icon;
-                      return (
-                        <div key={activity.id} className="flex gap-3">
-                          {/* Timeline dot and line */}
-                          <div className="flex flex-col items-center">
-                            <div className={`p-2 rounded-full bg-gray-100 ${getActivityIconColor(activity.type)}`}>
-                              <ActivityIcon className="w-4 h-4" />
-                            </div>
-                            {idx < recentActivity.length - 1 && (
-                              <div className="w-0.5 h-8 bg-gray-200 mt-2" />
-                            )}
-                          </div>
-
-                          {/* Activity Content */}
-                          <div className="flex-1 pt-1">
-                            <h4 className="text-sm font-semibold text-gray-900">
-                              {activity.title}
-                            </h4>
-                            <p className="text-xs text-gray-600 mt-0.5">
-                              {activity.description}
-                            </p>
-                            <p className="text-xs text-gray-400 mt-1">{activity.time}</p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </Card>
-              </div>
-
-              {/* Live Postings Table with Search & Filters */}
-              <Card shadow="sm" rounded="lg" padding="md">
-                <div className="mb-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h2 className="text-lg font-bold text-gray-900">Live Postings</h2>
-                      <p className="text-sm text-gray-600 mt-1">
-                        {filteredPostings.length} of {livePostings.length} positions
-                      </p>
-                    </div>
-                    <Link href="/employer/internships/create">
-                      <Button
-                        className="flex items-center gap-2 bg-gradient-to-r from-primary-600 to-secondary-600 text-white hover:shadow-lg hover:-translate-y-0.5 rounded-xl px-4 py-2 transition-all duration-200 font-semibold"
-                      >
-                        <Plus className="w-4 h-4" />
-                        Post New Role
-                      </Button>
-                    </Link>
-                  </div>
-
-                  {/* Search & Filter Bar */}
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    {/* Search Input */}
-                    <div className="flex-1 relative">
-                      <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                      <input
-                        type="text"
-                        placeholder="Search positions..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all"
-                      />
-                    </div>
-
-                    {/* Status Filter */}
-                    <div className="relative">
-                      <Filter className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                      <select
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                        className="appearance-none pl-10 pr-4 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all bg-white cursor-pointer"
-                      >
-                        <option>All</option>
-                        <option>Hiring</option>
-                        <option>Reviewing</option>
-                        <option>Closed</option>
-                      </select>
-                      <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Table */}
-                {filteredPostings.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b border-gray-200">
-                          <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                            Position
-                          </th>
-                          <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                            Candidates
-                          </th>
-                          <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                            Views
-                          </th>
-                          <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                            Status
-                          </th>
-                          <th className="text-right py-3 px-4 font-semibold text-gray-700">
-                            Actions
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredPostings.map((posting) => {
-                          const statusStyle = getStatusStyle(posting.status);
-                          return (
-                            <tr
-                              key={posting.id}
-                              className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                            >
-                              <td className="py-3 px-4">
-                                <div>
-                                  <p className="font-medium text-gray-900">
-                                    {posting.position}
-                                  </p>
-                                  <p className="text-xs text-indigo-600 font-medium">
-                                    Expires {posting.expiry}
-                                  </p>
-                                </div>
-                              </td>
-                              <td className="py-3 px-4">
-                                <div className="flex items-center gap-2">
-                                  <Users className="w-4 h-4 text-gray-400" />
-                                  <span className="font-semibold text-gray-900">
-                                    {posting.candidates}
-                                  </span>
-                                </div>
-                              </td>
-                              <td className="py-3 px-4">
-                                <div className="flex items-center gap-2">
-                                  <Eye className="w-4 h-4 text-gray-400" />
-                                  <span className="text-gray-600">
-                                    {posting.views}
-                                  </span>
-                                </div>
-                              </td>
-                              <td className="py-3 px-4">
-                                <Badge variant={statusStyle.variant} size="sm">
-                                  {statusStyle.label}
-                                </Badge>
-                              </td>
-                              <td className="py-3 px-4 text-right">
-                                <div className="flex items-center justify-end gap-2">
-                                  <button
-                                    onClick={() => toggleStatus(posting.id)}
-                                    className="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all"
-                                    title="Toggle Status"
-                                  >
-                                    <Power className="w-4 h-4" />
-                                  </button>
-                                  <Link href={`/employer/internships/${posting.id}/edit`}>
-                                    <button
-                                      className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all"
-                                      title="Edit"
-                                    >
-                                      <Edit className="w-4 h-4" />
-                                    </button>
-                                  </Link>
-                                  <button
-                                    onClick={() => handleDelete(posting.id)}
-                                    className="p-1.5 text-gray-400 hover:text-danger-600 hover:bg-danger-50 rounded-lg transition-all"
-                                    title="Delete"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <Search className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                    <p className="text-gray-600 font-medium">No positions found</p>
-                    <p className="text-sm text-gray-500 mt-1">Try adjusting your search or filters</p>
-                  </div>
-                )}
-              </Card>
-            </div>
-          )}
-
-          {/* Placeholder sections */}
-          {activeSection !== 'overview' && (
-            <div className="p-8">
-              <Card shadow="md" rounded="lg" padding="lg">
-                <div className="text-center py-16">
-                  <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                    {activeSection === 'post' && 'Post New Internship'}
-                    {activeSection === 'search' && 'Search Candidates'}
-                    {activeSection === 'applications' && 'Applications'}
-                    {activeSection === 'messages' && 'Messages'}
-                  </h2>
-                  <p className="text-gray-600">
-                    This section is coming soon. Regular dashboard content will appear
-                    here.
-                  </p>
-                </div>
-              </Card>
-            </div>
-          )}
-        </main>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <Search className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+            <p className="text-gray-600 font-medium">No positions found</p>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
 export default EmployerDashboard;
-

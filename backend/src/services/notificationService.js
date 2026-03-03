@@ -1,0 +1,149 @@
+const nodemailer = require('nodemailer');
+const Notification = require('../models/Notification');
+const NotificationSettings = require('../models/NotificationSettings');
+const User = require('../models/User');
+
+// Configure Nodemailer transporter (using fallbacks for local dev if env missing)
+const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST || 'smtp.mailtrap.io',
+    port: process.env.SMTP_PORT || 2525,
+    auth: {
+        user: process.env.SMTP_USER || 'testuser',
+        pass: process.env.SMTP_PASS || 'testpass'
+    }
+});
+
+/**
+ * Generates an HTML template for email notifications
+ */
+const generateEmailTemplate = (type, message, link) => {
+    let title = 'InternMatch Notification';
+
+    // Customize abstract title slightly based on type
+    if (type === 'NEW_MATCH') title = 'New Internship Match!';
+    else if (type === 'APPLICATION_STATUS') title = 'Application Update';
+    else if (type === 'NEW_MESSAGE') title = 'New Message Received';
+    else if (type === 'INTERVIEW_SCHEDULED') title = 'Interview Scheduled';
+
+    const targetUrl = link && link.startsWith('/')
+        ? `${process.env.FRONTEND_URL || 'http://localhost:3000'}${link}`
+        : link;
+
+    return `
+    <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; background-color: #ffffff;">
+      <div style="background: linear-gradient(to right, #4f46e5, #9333ea); padding: 24px; text-align: center;">
+        <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 900;">InternMatch.</h1>
+      </div>
+      <div style="padding: 32px;">
+        <h2 style="color: #111827; font-size: 20px; font-weight: 700; margin-top: 0;">${title}</h2>
+        <p style="color: #4b5563; font-size: 16px; line-height: 1.5;">${message}</p>
+        
+        ${targetUrl ? `
+        <div style="margin-top: 32px; text-align: center;">
+          <a href="${targetUrl}" style="display: inline-block; background-color: #4f46e5; color: #ffffff; font-weight: 600; text-decoration: none; padding: 12px 24px; border-radius: 8px;">
+            View Details
+          </a>
+        </div>
+        ` : ''}
+      </div>
+      <div style="background-color: #f9fafb; padding: 24px; text-align: center; border-top: 1px solid #e5e7eb;">
+        <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+          You received this email because you opted into notifications on InternMatch.<br/>
+          You can update your communication preferences in your Account Settings.
+        </p>
+      </div>
+    </div>
+  `;
+};
+
+/**
+ * Helper to send email with automatic retries on failure
+ */
+const sendEmailWithRetry = async (to, subject, html, retries = 3) => {
+    for (let i = 0; i < retries; i++) {
+        try {
+            await transporter.sendMail({
+                from: process.env.SMTP_FROM || '"InternMatch" <noreply@internmatch.com>',
+                to,
+                subject,
+                html
+            });
+            console.log(`[Email Service] Sent successful email to ${to}`);
+            return true;
+        } catch (error) {
+            console.error(`[Email Service] Attempt ${i + 1} to send email failed:`, error.message);
+            if (i === retries - 1) throw error;
+            // Exponential backoff
+            await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, i)));
+        }
+    }
+    return false;
+};
+
+/**
+ * Main function to create in-app notification and dispatch email if permitted
+ */
+const send = async ({ userId, type, message, link, sendEmail = true, subject }) => {
+    try {
+        // 1. Create In-App Notification Record
+        const notification = await Notification.create({
+            userId,
+            type,
+            message,
+            link
+        });
+
+        // 2. Resolve if email should be sent
+        if (sendEmail) {
+            const user = await User.findById(userId);
+            if (!user) return notification;
+
+            // Extract email (Student/Admin vs Employer)
+            const emailAddress = user.email || (user.contactInfo && user.contactInfo.email);
+
+            let shouldSendEmail = true;
+
+            // Check User Settings
+            const settings = await NotificationSettings.findOne({ userId });
+            if (settings) {
+                if (!settings.emailEnabled) {
+                    shouldSendEmail = false;
+                } else if (settings.preferences) {
+                    if (type === 'NEW_MATCH' && !settings.preferences.onMatch) shouldSendEmail = false;
+                    if (type === 'APPLICATION_STATUS' && !settings.preferences.onStatusChange) shouldSendEmail = false;
+                    if (type === 'NEW_MESSAGE' && !settings.preferences.onMessage) shouldSendEmail = false;
+                }
+            }
+
+            if (shouldSendEmail && emailAddress) {
+                // Set Subject
+                let finalSubject = subject || 'New Notification from InternMatch';
+                if (!subject) {
+                    if (type === 'NEW_MATCH') finalSubject = 'New Internship Match Recommended!';
+                    else if (type === 'APPLICATION_STATUS') finalSubject = 'Update on Your Internship Application';
+                    else if (type === 'NEW_MESSAGE') finalSubject = 'You have a new message on InternMatch';
+                    else if (type === 'INTERVIEW_SCHEDULED') finalSubject = 'An Interview has been Scheduled';
+                    else if (type === 'APPLICATION_RECEIVED') finalSubject = 'New Application Received';
+                }
+
+                const html = generateEmailTemplate(type, message, link);
+
+                // Dispatched asynchronously (fire-and-forget) to not block the calling request
+                sendEmailWithRetry(emailAddress, finalSubject, html).catch(err => {
+                    console.error('[Email Service] Final failure sending email:', err.message);
+                });
+            }
+        }
+
+        return notification;
+    } catch (error) {
+        console.error('[Notification Service Error]', error);
+        throw error;
+    }
+};
+
+module.exports = {
+    send,
+    sendEmailWithRetry,
+    generateEmailTemplate
+};

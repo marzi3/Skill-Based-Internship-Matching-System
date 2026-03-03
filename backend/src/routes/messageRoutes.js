@@ -1,13 +1,17 @@
 const express = require('express');
 const router = express.Router();
+const { getMessagesByApplication, sendMessage, markMessageAsRead } = require('../controllers/messageController');
+const { protect } = require('../middleware/auth');
 
-// Message routes
-router.get('/', (req, res) => {
-  res.json({ message: 'Get all messages' });
-});
+router.use(protect);
 
-router.post('/', (req, res) => {
-  res.json({ message: 'Send message' });
-});
+router.route('/')
+  .post(sendMessage);
+
+router.route('/:applicationId')
+  .get(getMessagesByApplication);
+
+router.route('/:id/read')
+  .patch(markMessageAsRead);
 
 module.exports = router;

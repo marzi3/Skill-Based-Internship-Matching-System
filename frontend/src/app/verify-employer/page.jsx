@@ -31,8 +31,9 @@ export default function VerifyEmployer() {
         data.append('businessDocument', file);
 
         try {
-            await axios.post('/api/verification/employer', data, {
-                headers: { 'Content-Type': 'multipart/form-data' },
+            const token = localStorage.getItem('token');
+            await axios.post('http://localhost:5001/api/verification/employer', data, {
+                headers: { Authorization: `Bearer ${token}` },
             });
             window.location.reload();
         } catch (error) {

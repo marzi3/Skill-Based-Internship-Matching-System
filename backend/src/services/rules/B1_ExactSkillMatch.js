@@ -28,13 +28,15 @@ const rule = {
             return false;
         }
 
-        const studentSkillNames = studentSkills.map(s =>
-            (typeof s === 'string' ? s : s.name).toLowerCase()
-        );
+        const studentSkillNames = studentSkills.map(s => {
+            const name = typeof s === 'string' ? s : s?.name;
+            return (name || '').toLowerCase();
+        });
 
-        const requiredSkillNames = requiredSkills.map(s =>
-            (typeof s === 'string' ? s : s.name).toLowerCase()
-        );
+        const requiredSkillNames = requiredSkills.map(s => {
+            const name = typeof s === 'string' ? s : s?.name;
+            return (name || '').toLowerCase();
+        });
 
         return requiredSkillNames.some(skill => studentSkillNames.includes(skill));
     },
@@ -53,16 +55,17 @@ const rule = {
         const requiredSkills = internship?.requiredSkills || [];
         const studentSkills = student?.skills || [];
 
-        const studentSkillNames = studentSkills.map(s =>
-            (typeof s === 'string' ? s : s.name).toLowerCase()
-        );
+        const studentSkillNames = studentSkills.map(s => {
+            const name = typeof s === 'string' ? s : s?.name;
+            return (name || '').toLowerCase();
+        });
 
         let totalScore = 0;
         const explanations = [];
 
         requiredSkills.forEach(req => {
-            const reqName = typeof req === 'string' ? req : req.name;
-            if (studentSkillNames.includes(reqName.toLowerCase())) {
+            const reqName = typeof req === 'string' ? req : req?.name;
+            if (reqName && studentSkillNames.includes(reqName.toLowerCase())) {
                 totalScore += 15;
                 explanations.push(`Exact skill match: ${reqName}`);
             }

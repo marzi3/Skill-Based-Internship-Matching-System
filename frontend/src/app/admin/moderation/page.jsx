@@ -1,0 +1,177 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import Cookies from 'js-cookie';
+import { ShieldAlert, Trash2, CheckCircle, Clock } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+export default function ContentModeration() {
+    const [flaggedListings, setFlaggedListings] = useState([]);
+    const [reports, setReports] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+
+    const fetchModerationItems = async () => {
+        setLoading(true);
+        try {
+            const token = Cookies.get('token') || localStorage.getItem('token');
+            const res = await axios.get('http://localhost:5001/api/admin/moderation', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setFlaggedListings(res.data.data.flaggedListings || []);
+            setReports(res.data.data.reports || []);
+        } catch (err) {
+            setError(err.response?.data?.message || err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchModerationItems();
+    }, []);
+
+    const handleRemoveListing = async (id) => {
+        if (!confirm('Are you sure you want to remove this listing?')) return;
+        try {
+            const token = Cookies.get('token') || localStorage.getItem('token');
+            await axios.delete(`http://localhost:5001/api/admin/listings/${id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            fetchModerationItems();
+        } catch (err) {
+            alert(err.response?.data?.message || 'Failed to remove listing');
+        }
+    };
+
+    const handleResolveReport = async (id, status) => {
+        try {
+            const token = Cookies.get('token') || localStorage.getItem('token');
+            await axios.patch(`http://localhost:5001/api/admin/moderation/reports/${id}`,
+                { status },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            fetchModerationItems();
+        } catch (err) {
+            alert(err.response?.data?.message || 'Failed to resolve report');
+        }
+    };
+
+    return (
+        <div className="w-full h-full">
+            <div className="mb-8 flex justify-between items-center">
+                <div>
+                    <h1 className="text-3xl font-black text-gray-900 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">Content Moderation</h1>
+                    <p className="text-gray-500 mt-1">Review flagged listings and handle user reports</p>
+                </div>
+            </div>
+
+            <div className="space-y-8">
+                {/* Flagged Listings */}
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="glass p-6 rounded-2xl">
+                    <div className="flex items-center gap-3 mb-6 border-b border-gray-100 pb-4">
+                        <ShieldAlert className="text-red-500" size={24} />
+                        <h2 className="text-xl font-bold text-gray-900">Flagged Internship Postings</h2>
+                        <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold">{flaggedListings.length} pending</span>
+                    </div>
+
+                    <div className="overflow-x-auto overflow-y-auto max-h-[40vh] border border-gray-100 rounded-xl relative">
+                        <table className="w-full text-left">
+                            <thead className="bg-gray-50/90 backdrop-blur-sm sticky top-0 z-10 shadow-sm">
+                                <tr>
+                                    <th className="px-4 py-3 text-xs font-black text-gray-500 uppercase">Position & Company</th>
+                                    <th className="px-4 py-3 text-xs font-black text-gray-500 uppercase">Reason for Flag</th>
+                                    <th className="px-4 py-3 text-xs font-black text-gray-500 uppercase">Date</th>
+                                    <th className="px-4 py-3 text-right text-xs font-black text-gray-500 uppercase">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {loading ? (
+                                    <tr><td colSpan="4" className="text-center py-6 text-gray-500">Loading...</td></tr>
+                                ) : flaggedListings.length === 0 ? (
+                                    <tr><td colSpan="4" className="text-center py-6 text-gray-500">No flagged listings currently.</td></tr>
+                                ) : (
+                                    flaggedListings.map(listing => (
+                                        <tr key={listing._id} className="hover:bg-gray-50/50">
+                                            <td className="px-4 py-3">
+                                                <div className="font-bold text-gray-900 text-sm">{listing.positionTitle}</div>
+                                                <div className="text-xs text-gray-500">{listing.company || listing.employer?.companyName}</div>
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <div className="text-red-600 font-medium text-xs">{listing.flagReason || 'Reported by users'}</div>
+                                            </td>
+                                            <td className="px-4 py-3 text-xs text-gray-500">
+                                                {new Date(listing.updatedAt).toLocaleDateString()}
+                                            </td>
+                                            <td className="px-4 py-3 text-right">
+                                                <button
+                                                    onClick={(e) => {
+                                                        const btn = e.currentTarget;
+                                                        btn.innerHTML = '<div class="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>';
+                                                        handleRemoveListing(listing._id);
+                                                    }}
+                                                    className="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg font-semibold text-xs transition-colors flex items-center justify-center gap-2 w-full max-w-[100px] ml-auto h-8"
+                                                >
+                                                    <Trash2 size={14} /> Remove
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </motion.div>
+
+                {/* User Reports */}
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="glass p-6 rounded-2xl">
+                    <div className="flex items-center gap-3 mb-6 border-b border-gray-100 pb-4">
+                        <Clock className="text-orange-500" size={24} />
+                        <h2 className="text-xl font-bold text-gray-900">User Reports</h2>
+                        <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold">{reports.length} pending</span>
+                    </div>
+
+                    <div className="grid gap-4">
+                        {loading ? (
+                            <div className="text-center py-6 text-gray-500">Loading...</div>
+                        ) : reports.length === 0 ? (
+                            <div className="text-center py-6 text-gray-500 bg-gray-50 rounded-xl">No pending reports.</div>
+                        ) : (
+                            reports.map(report => (
+                                <div key={report._id} className="bg-white border border-gray-100 p-5 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Report ID: {report._id.toString().substring(18)}</span>
+                                            <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-full">{report.reportedEntity}</span>
+                                        </div>
+                                        <p className="text-gray-900 font-medium mb-1">
+                                            <span className="text-gray-500">Reporter:</span> {report.reporterId?.name} ({report.reporterId?.email})
+                                        </p>
+                                        <p className="text-red-600 font-medium bg-red-50 p-3 rounded-lg mt-3 text-sm border border-red-100">
+                                            "{report.reason}"
+                                        </p>
+                                    </div>
+                                    <div className="flex flex-col sm:flex-row w-full md:w-auto gap-2 mt-4 md:mt-0">
+                                        <button
+                                            onClick={() => handleResolveReport(report._id, 'dismissed')}
+                                            className="px-4 py-2 border border-blue-200 text-blue-600 hover:bg-blue-50 rounded-lg font-semibold text-sm transition-colors"
+                                        >
+                                            Dismiss Report
+                                        </button>
+                                        <button
+                                            onClick={() => handleResolveReport(report._id, 'resolved')}
+                                            className="px-4 py-2 bg-green-50 text-green-700 hover:bg-green-100 rounded-lg font-semibold text-sm transition-colors flex items-center justify-center gap-2"
+                                        >
+                                            <CheckCircle size={16} /> Mark Resolved
+                                        </button>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </motion.div>
+            </div>
+        </div>
+    );
+}

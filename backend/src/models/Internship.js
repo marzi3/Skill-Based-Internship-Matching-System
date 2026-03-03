@@ -72,6 +72,14 @@ const internshipSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    flagged: {
+        type: Boolean,
+        default: false
+    },
+    flagReason: {
+        type: String,
+        trim: true
+    },
     educationRequirements: {
         type: String,
         trim: true

@@ -13,7 +13,8 @@ const {
   updateProfile,
   updatePassword,
   getStudents,
-  getEmployerPublicProfile
+  getEmployerPublicProfile,
+  getStudentPublicProfile
 } = require('../controllers/authController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -25,6 +26,7 @@ router.get('/me', protect, getMe);
 router.put('/profile', protect, updateProfile);
 router.put('/password', protect, updatePassword);
 router.get('/students', protect, authorize('employer', 'admin'), getStudents);
+router.get('/students/:id', getStudentPublicProfile);
 router.get('/employers/:id', getEmployerPublicProfile);
 router.post('/forgotpassword', forgotPassword);
 router.put('/resetpassword/:resettoken', resetPassword);

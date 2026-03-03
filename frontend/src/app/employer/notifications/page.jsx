@@ -1,85 +1,165 @@
 'use client';
 
-import { Bell, Zap, Info, CheckCircle2, AlertTriangle, Clock } from 'lucide-react';
-import Card from '@/components/common/Card';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import axios from 'axios';
+import Cookies from 'js-cookie';
+import { Bell, Zap, CheckCircle2, AlertTriangle, Clock, ArrowLeft, Loader2, Check, Trash2, Info } from 'lucide-react';
+import { motion } from 'framer-motion';
 
+/**
+ * Employer Notifications — live data from the notifications API.
+ * Supports mark-as-read and delete actions.
+ */
 const NotificationsPage = () => {
-    const notifications = [
-        {
-            id: 1,
-            type: 'match',
-            title: 'New High-Score Match',
-            message: 'Alex Chen matches 95% of your React Developer requirements.',
-            time: '15 mins ago',
-            icon: Zap,
-            color: 'text-emerald-500',
-            bg: 'bg-emerald-50'
-        },
-        {
-            id: 2,
-            type: 'system',
-            title: 'Posting Expiring Soon',
-            message: 'Your Backend Engineer posting will expire in 48 hours.',
-            time: '2 hours ago',
-            icon: AlertTriangle,
-            color: 'text-amber-500',
-            bg: 'bg-amber-50'
-        },
-        {
-            id: 3,
-            type: 'success',
-            title: 'Interview Confirmed',
-            message: 'Jordan Smith confirmed the interview for Feb 22nd.',
-            time: '4 hours ago',
-            icon: CheckCircle2,
-            color: 'text-sky-500',
-            bg: 'bg-sky-50'
-        },
-    ];
+    const router = useRouter();
+    const [notifications, setNotifications] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchNotifications();
+    }, []);
+
+    const fetchNotifications = async () => {
+        try {
+            const token = Cookies.get('token') || localStorage.getItem('token');
+            const res = await axios.get('http://localhost:5001/api/notifications', {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setNotifications(res.data.data || res.data.notifications || []);
+        } catch (err) {
+            console.error('Failed to fetch notifications:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const markAsRead = async (id) => {
+        try {
+            const token = Cookies.get('token') || localStorage.getItem('token');
+            await axios.patch(`http://localhost:5001/api/notifications/${id}/read`, {}, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
+        } catch (err) {
+            console.error('Failed to mark as read:', err);
+        }
+    };
+
+    const deleteNotification = async (id) => {
+        try {
+            const token = Cookies.get('token') || localStorage.getItem('token');
+            await axios.delete(`http://localhost:5001/api/notifications/${id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setNotifications(prev => prev.filter(n => n._id !== id));
+        } catch (err) {
+            console.error('Failed to delete notification:', err);
+        }
+    };
+
+    const markAllAsRead = async () => {
+        const unread = notifications.filter(n => !n.isRead);
+        for (const n of unread) {
+            await markAsRead(n._id);
+        }
+    };
+
+    const getNotifStyle = (type) => {
+        const styles = {
+            NEW_MATCH: { icon: Zap, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+            APPLICATION_STATUS: { icon: CheckCircle2, color: 'text-sky-500', bg: 'bg-sky-50' },
+            NEW_APPLICATION: { icon: Bell, color: 'text-indigo-500', bg: 'bg-indigo-50' },
+            ACCOUNT_STATUS: { icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-50' },
+        };
+        return styles[type] || { icon: Bell, color: 'text-gray-500', bg: 'bg-gray-50' };
+    };
 
     return (
-        <div className="p-8 space-y-8">
+        <div className="space-y-6">
+            {/* Header */}
             <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Intelligence Feed</h1>
-                    <p className="text-gray-600">Real-time status synchronizations and protocol alerts</p>
+                <div className="flex items-center gap-4">
+                    <button onClick={() => router.push('/employer/dashboard')} className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600 transition-all">
+                        <ArrowLeft className="w-4 h-4" />
+                    </button>
+                    <div>
+                        <h1 className="text-2xl font-black text-gray-900">Notifications</h1>
+                        <p className="text-sm text-gray-500">Stay updated with matches, applications, and system alerts</p>
+                    </div>
                 </div>
-                <button className="text-xs font-black uppercase tracking-widest text-primary-600 hover:text-primary-800 transition-colors">
-                    Mark all as synchronized
-                </button>
+                {notifications.some(n => !n.isRead) && (
+                    <button
+                        onClick={markAllAsRead}
+                        className="text-xs font-bold uppercase tracking-wide text-indigo-600 hover:text-indigo-800 transition-colors"
+                    >
+                        Mark all as read
+                    </button>
+                )}
             </div>
 
-            <div className="max-w-4xl space-y-4">
-                {notifications.map((notif) => {
-                    const Icon = notif.icon;
-                    return (
-                        <Card key={notif.id} shadow="sm" rounded="lg" padding="md" className="hover:shadow-md transition-all border border-gray-100 group">
-                            <div className="flex items-start gap-5">
-                                <div className={`p-4 rounded-2xl ${notif.bg} ${notif.color} transition-transform group-hover:scale-110 duration-300`}>
-                                    <Icon size={24} />
-                                </div>
-                                <div className="flex-1 space-y-1">
-                                    <div className="flex items-center justify-between">
-                                        <h3 className="font-black text-gray-900 tracking-tight">{notif.title}</h3>
-                                        <div className="flex items-center gap-1 text-[10px] font-black uppercase text-gray-400">
-                                            <Clock size={12} />
-                                            {notif.time}
+            {/* Notifications List */}
+            {loading ? (
+                <div className="flex items-center justify-center py-20">
+                    <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                </div>
+            ) : notifications.length === 0 ? (
+                <div className="text-center py-20">
+                    <Bell className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                    <p className="font-bold text-gray-600">All caught up!</p>
+                    <p className="text-sm text-gray-400 mt-1">No notifications at this time.</p>
+                </div>
+            ) : (
+                <div className="max-w-4xl space-y-3">
+                    {notifications.map((notif, idx) => {
+                        const style = getNotifStyle(notif.type);
+                        const Icon = style.icon;
+                        return (
+                            <motion.div
+                                key={notif._id || idx}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: idx * 0.05 }}
+                                className={`bg-white rounded-2xl border shadow-sm p-5 hover:shadow-md transition-all group ${notif.isRead ? 'border-gray-100 opacity-70' : 'border-indigo-100'
+                                    }`}
+                            >
+                                <div className="flex items-start gap-4">
+                                    <div className={`p-3 rounded-xl ${style.bg} ${style.color} flex-shrink-0`}>
+                                        <Icon size={20} />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div>
+                                                <h3 className="font-bold text-gray-900 text-sm">{notif.type?.replace(/_/g, ' ') || 'Notification'}</h3>
+                                                <p className="text-gray-600 text-sm mt-0.5 leading-relaxed">{notif.message}</p>
+                                            </div>
+                                            <div className="flex items-center gap-1 flex-shrink-0">
+                                                <span className="text-[10px] font-bold text-gray-400 uppercase flex items-center gap-1">
+                                                    <Clock size={10} />
+                                                    {notif.createdAt ? new Date(notif.createdAt).toLocaleDateString() : ''}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2 mt-3">
+                                            {!notif.isRead && (
+                                                <button onClick={() => markAsRead(notif._id)}
+                                                    className="flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors">
+                                                    <Check size={12} /> Mark as read
+                                                </button>
+                                            )}
+                                            <button onClick={() => deleteNotification(notif._id)}
+                                                className="flex items-center gap-1 text-xs font-bold text-gray-400 hover:text-red-600 transition-colors">
+                                                <Trash2 size={12} /> Delete
+                                            </button>
                                         </div>
                                     </div>
-                                    <p className="text-gray-600 text-sm font-medium leading-relaxed">{notif.message}</p>
+                                    {!notif.isRead && <div className="w-2 h-2 rounded-full bg-indigo-500 flex-shrink-0 mt-2" />}
                                 </div>
-                            </div>
-                        </Card>
-                    );
-                })}
-            </div>
-
-            <div className="pt-12 flex justify-center">
-                <div className="bg-gray-50 border border-gray-200 px-8 py-4 rounded-3xl flex items-center gap-3">
-                    <Info size={16} className="text-gray-400" />
-                    <span className="text-xs font-bold text-gray-500 italic">No further transmissions detected in the current cycle.</span>
+                            </motion.div>
+                        );
+                    })}
                 </div>
-            </div>
+            )}
         </div>
     );
 };

@@ -1,12 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { User as UserIcon, Building, Mail, Phone, MapPin, Globe, Edit3, Save, X, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { User as UserIcon, Building, Mail, Phone, MapPin, Globe, Edit3, Save, X, Loader2, ArrowLeft } from 'lucide-react';
 import Card from '@/components/common/Card';
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
 
 const ProfilePage = () => {
+    const router = useRouter();
     const { user, setUser } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -61,9 +63,14 @@ const ProfilePage = () => {
     return (
         <div className="p-8 space-y-8">
             <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Employer Profile</h1>
-                    <p className="text-gray-600">View and manage your company profile information</p>
+                <div className="flex items-center gap-4">
+                    <button onClick={() => router.push('/employer/dashboard')} className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600 transition-all">
+                        <ArrowLeft className="w-4 h-4" />
+                    </button>
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900">Employer Profile</h1>
+                        <p className="text-gray-600">View and manage your company profile information</p>
+                    </div>
                 </div>
                 {!isEditing ? (
                     <button

@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 
+import NotificationBell from '../notifications/NotificationBell';
+
 // Main Navbar Component
 const Navbar = ({
   brand = 'InternMatch',
@@ -225,43 +227,7 @@ export const SearchBar = ({ placeholder = 'Search...', onSearch = null, variant 
   );
 };
 
-// Notification Bell Component
-export const NotificationBell = ({ count = 0, onClick = null }) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <div className="relative">
-      <button
-        onClick={() => {
-          setIsOpen(!isOpen);
-          if (onClick) onClick(!isOpen);
-        }}
-        className="relative p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition duration-300"
-      >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-        </svg>
-        {count > 0 && (
-          <span className="absolute top-1 right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
-            {count > 99 ? '99+' : count}
-          </span>
-        )}
-      </button>
-
-      {/* Dropdown */}
-      {isOpen && (
-        <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
-          <div className="p-4 border-b border-gray-200">
-            <h3 className="font-bold text-gray-900">Notifications</h3>
-          </div>
-          <div className="p-4 text-center text-gray-500">
-            <p>No new notifications</p>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
+// Using imported NotificationBell instead
 
 // User Menu Component
 export const UserMenu = ({ user = null, onLogout = null }) => {

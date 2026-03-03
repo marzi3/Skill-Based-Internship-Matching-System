@@ -1,12 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FileText, Search, Filter, Calendar, CheckCircle2, Clock, XCircle, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { FileText, Search, Filter, Calendar, CheckCircle2, Clock, XCircle, Loader2, ArrowLeft } from 'lucide-react';
 import axios from 'axios';
 import Card from '@/components/common/Card';
 import Badge from '@/components/common/Badge';
+import Link from 'next/link';
 
 const ApplicationsPage = () => {
+    const router = useRouter();
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -14,7 +17,9 @@ const ApplicationsPage = () => {
     useEffect(() => {
         const fetchApplications = async () => {
             try {
-                const res = await axios.get('/api/applications/employer');
+                const res = await axios.get('http://localhost:5001/api/applications/employer', {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token') || document.cookie.replace(/(?:(?:^|.*;\s*)token\s*\=\s*([^;]*).*$)|^.*$/, "$1")}` }
+                });
                 if (res.data.success) {
                     setApplications(res.data.data || []);
                 }
@@ -45,7 +50,9 @@ const ApplicationsPage = () => {
 
     const updateStatus = async (id, newStatus) => {
         try {
-            const res = await axios.patch(`/api/applications/${id}/status`, { status: newStatus });
+            const res = await axios.patch(`http://localhost:5001/api/applications/${id}/status`, { status: newStatus }, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token') || document.cookie.replace(/(?:(?:^|.*;\s*)token\s*\=\s*([^;]*).*$)|^.*$/, "$1")}` }
+            });
             if (res.data.success) {
                 setApplications(applications.map(app =>
                     app._id === id ? { ...app, status: newStatus } : app
@@ -59,9 +66,14 @@ const ApplicationsPage = () => {
     return (
         <div className="p-8 space-y-8">
             <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Applications Pipeline</h1>
-                    <p className="text-gray-600">Track and manage candidate submissions through the matching funnel</p>
+                <div className="flex items-center gap-4">
+                    <button onClick={() => router.push('/employer/dashboard')} className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600 transition-all">
+                        <ArrowLeft className="w-4 h-4" />
+                    </button>
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900">Applications Pipeline</h1>
+                        <p className="text-gray-600">Track and manage candidate submissions through the matching funnel</p>
+                    </div>
                 </div>
                 <div className="flex gap-4">
                     <div className="relative">
@@ -136,9 +148,9 @@ const ApplicationsPage = () => {
                                         {new Date(app.appliedDate).toLocaleDateString()}
                                     </td>
                                     <td className="px-6 py-5">
-                                        <button className="text-xs font-black uppercase tracking-[0.2em] text-primary-600 hover:text-primary-800 transition-colors">
+                                        <Link href={`/students/${app.student?._id}`} className="text-xs font-black uppercase tracking-[0.2em] text-primary-600 hover:text-primary-800 transition-colors">
                                             View Profile
-                                        </button>
+                                        </Link>
                                     </td>
                                 </tr>
                             ))}

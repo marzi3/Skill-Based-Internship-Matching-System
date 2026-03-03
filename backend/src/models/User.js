@@ -36,6 +36,11 @@ const userSchema = new mongoose.Schema({
     enum: ['student', 'employer', 'admin'],
     default: 'student',
   },
+  status: {
+    type: String,
+    enum: ['pending', 'approved', 'suspended'],
+    default: 'pending',
+  },
   oauthProvider: {
     type: String,
     enum: ['google', 'linkedin', null],

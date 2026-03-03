@@ -5,13 +5,15 @@ const {
   applyToInternship,
   getEmployerApplications,
   updateApplicationStatus,
-  getStudentStats
+  getStudentStats,
+  getStudentApplications
 } = require('../controllers/applicationController');
 
 // All application routes are protected
 router.use(protect);
 
 // Student routes
+router.get('/student', authorize('student'), getStudentApplications);
 router.get('/student/stats', authorize('student'), getStudentStats);
 router.post('/apply/:id', authorize('student'), applyToInternship);
 

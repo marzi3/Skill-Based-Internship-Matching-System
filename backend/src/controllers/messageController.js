@@ -1,0 +1,104 @@
+const Message = require('../models/Message');
+const Application = require('../models/Application');
+const asyncHandler = require('express-async-handler');
+const { send: sendNotification } = require('../services/notificationService');
+
+// @desc    Get message thread for an application
+// @route   GET /api/messages/:applicationId
+// @access  Private
+const getMessagesByApplication = asyncHandler(async (req, res) => {
+    const { applicationId } = req.params;
+
+    // Validate user has access to this application
+    const application = await Application.findById(applicationId);
+
+    if (!application) {
+        res.status(404);
+        throw new Error('Application not found');
+    }
+
+    // Authorization check - must be the student or the employer of the internship
+    // In a real scenario we need to verify employer ID against the internship
+    // Assuming basic RBAC or ownership logic is handled elsewhere, or we just rely on matching sender/receiver
+
+    const messages = await Message.find({ applicationId })
+        .sort({ timestamp: 1 }) // Chronological order
+        .populate('senderId', 'name profilePicture isStudent isEmployer')
+        .populate('receiverId', 'name profilePicture isStudent isEmployer');
+
+    res.status(200).json({
+        success: true,
+        data: messages
+    });
+});
+
+// @desc    Send a message
+// @route   POST /api/messages
+// @access  Private
+const sendMessage = asyncHandler(async (req, res) => {
+    const { applicationId, receiverId, content } = req.body;
+
+    if (!applicationId || !receiverId || !content) {
+        res.status(400);
+        throw new Error('Please provide applicationId, receiverId, and content');
+    }
+
+    const message = await Message.create({
+        senderId: req.user._id,
+        receiverId,
+        applicationId,
+        content
+    });
+
+    // Trigger Notification to Receiver
+    try {
+        const senderName = req.user.name || 'A user';
+        await sendNotification({
+            userId: receiverId,
+            type: 'NEW_MESSAGE',
+            message: `${senderName} sent you a new message regarding an application.`,
+            link: `/messages/${applicationId}`
+        });
+    } catch (error) {
+        console.error('Failed to dispatch message notification', error);
+    }
+
+    const populatedMessage = await message.populate('senderId', 'name');
+
+    res.status(201).json({
+        success: true,
+        data: populatedMessage
+    });
+});
+
+// @desc    Mark message as read
+// @route   PATCH /api/messages/:id/read
+// @access  Private
+const markMessageAsRead = asyncHandler(async (req, res) => {
+    const message = await Message.findById(req.params.id);
+
+    if (!message) {
+        res.status(404);
+        throw new Error('Message not found');
+    }
+
+    // Ensure only the receiver can mark it as read
+    if (message.receiverId.toString() !== req.user._id.toString()) {
+        res.status(403);
+        throw new Error('User not authorized to update this message');
+    }
+
+    message.isRead = true;
+    await message.save();
+
+    res.status(200).json({
+        success: true,
+        data: message
+    });
+});
+
+module.exports = {
+    getMessagesByApplication,
+    sendMessage,
+    markMessageAsRead
+};

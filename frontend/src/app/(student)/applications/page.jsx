@@ -9,11 +9,11 @@ import {
     Clock,
     CheckCircle2,
     XCircle,
-    Loader,
     ArrowRight
 } from 'lucide-react';
 import Card from '@/components/common/Card';
 import Badge from '@/components/common/Badge';
+import Link from 'next/link';
 
 export default function StudentApplications() {
     const [applications, setApplications] = useState([]);
@@ -22,7 +22,9 @@ export default function StudentApplications() {
     useEffect(() => {
         const fetchApplications = async () => {
             try {
-                const res = await axios.get('/api/students/applications');
+                const res = await axios.get('http://localhost:5001/api/applications/student', {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token') || document.cookie.replace(/(?:(?:^|.*;\s*)token\s*\=\s*([^;]*).*$)|^.*$/, "$1")}` }
+                });
                 setApplications(res.data.data || []);
                 setLoading(false);
             } catch (err) {
@@ -78,9 +80,9 @@ export default function StudentApplications() {
                                 </div>
 
                                 <div className="flex items-center gap-4">
-                                    <button className="px-6 py-2 text-primary-600 font-black uppercase text-[10px] tracking-widest hover:underline transition-all">
+                                    <Link href={`/internships/${app.internship?._id}`} className="px-6 py-2 text-primary-600 font-black uppercase text-[10px] tracking-widest hover:underline transition-all">
                                         View Spec
-                                    </button>
+                                    </Link>
                                     <button className="p-3 bg-gray-900 text-white rounded-xl hover:bg-black transition-all shadow-lg">
                                         <ArrowRight size={18} />
                                     </button>
