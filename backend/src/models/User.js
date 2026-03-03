@@ -1,39 +1,152 @@
+const crypto = require('crypto');
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, 'Name is required'],
     trim: true,
-    minlength: [2, 'Name must be at least 2 characters long'],
-    maxlength: [100, 'Name cannot exceed 100 characters']
   },
-  age: {
-    type: Number,
-    required: [true, 'Age is required'],
-    min: [0, 'Age must be a positive number'],
-    max: [150, 'Age must be realistic']
-  }
+  email: {
+    type: String,
+    required: [true, 'Email is required'],
+    unique: true,
+    lowercase: true,
+    trim: true,
+    match: [/^\S+@\S+\.\S+$/, 'Please use a valid email address'],
+  },
+  password: {
+    type: String,
+    required: function () { return !this.oauthProvider; }, // Password required only if not OAuth
+    select: false,
+    minlength: [8, 'Password must be at least 8 characters long'],
+    validate: {
+      validator: function (v) {
+        // Skip validation if oauthProvider is present and password is not set
+        if (this.oauthProvider && !v) return true;
+        // Require at least one number and one special character
+        return /^(?=.*[0-9])(?=.*[!@#$%^&*])/.test(v);
+      },
+      message: 'Password must contain at least one number and one special character (!@#$%^&*)'
+    }
+  },
+  role: {
+    type: String,
+    enum: ['student', 'employer', 'admin'],
+    default: 'student',
+  },
+  oauthProvider: {
+    type: String,
+    enum: ['google', 'linkedin', null],
+    default: null,
+  },
+  providerId: {
+    type: String,
+    default: null,
+  },
+  profilePicture: {
+    type: String,
+    default: '',
+  },
+
+  // Verification Status
+  isVerified: {
+    type: Boolean,
+    default: false,
+  },
+  verificationStatus: {
+    type: String,
+    enum: ['none', 'pending', 'approved', 'rejected'],
+    default: 'none',
+  },
+
+  // Student Specific
+  studentId: {
+    type: String,
+    trim: true,
+  },
+  studentIdImage: {
+    type: String, // Path to uploaded image
+  },
+  savedInternships: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Internship'
+  }],
+
+  // Employer Specific
+  companyName: {
+    type: String,
+    trim: true,
+  },
+  businessRegistrationNumber: {
+    type: String,
+    trim: true,
+  },
+  businessDocument: {
+    type: String, // Path to uploaded PDF
+  },
+  companyDescription: {
+    type: String,
+    trim: true,
+  },
+  positionInCompany: {
+    type: String,
+    trim: true,
+  },
+  website: {
+    type: String,
+    trim: true,
+  },
+  resetPasswordToken: String,
+  resetPasswordExpire: Date,
 }, {
-  timestamps: true, // Automatically adds createdAt and updatedAt fields
-  versionKey: false
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
-// Virtual field for id (MongoDB uses _id by default)
-userSchema.virtual('id').get(function() {
-  return this._id.toHexString();
-});
+// Hash password before saving
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password') || !this.password) return next();
 
-// Ensure virtual fields are serialized
-userSchema.set('toJSON', {
-  virtuals: true,
-  transform: function(doc, ret) {
-    ret.id = ret._id.toHexString();
-    delete ret._id;
-    return ret;
+  try {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error);
   }
 });
+
+// Compare password method
+userSchema.methods.comparePassword = async function (candidatePassword) {
+  if (!this.password) return false;
+  return await bcrypt.compare(candidatePassword, this.password);
+};
+
+// Check if user is fully verified
+userSchema.methods.canAccessPlatform = function () {
+  if (this.role === 'admin') return true;
+  return this.isVerified && this.verificationStatus === 'approved';
+};
+
+// Generate and hash password reset token
+userSchema.methods.getResetPasswordToken = function () {
+  // Generate token
+  const resetToken = crypto.randomBytes(20).toString('hex');
+
+  // Hash token and set to resetPasswordToken field
+  this.resetPasswordToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  // Set expire time (10 minutes)
+  this.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+
+  return resetToken;
+};
 
 const User = mongoose.model('User', userSchema);
-
 module.exports = User;

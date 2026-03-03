@@ -1,381 +1,136 @@
 'use client';
-
-import { useState } from 'react';
-import Header from '../components/common/Header';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { ArrowRight, CheckCircle, Search, Users, Building, ShieldCheck } from 'lucide-react';
 
 export default function Home() {
-  const [theme, setTheme] = useState('light');
-  const [email, setEmail] = useState('');
-  const [message, setMessage] = useState('');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   return (
-    <>
-      <Header />
-      <main className="min-h-screen p-8 md:p-12 transition-colors duration-300 bg-gradient-to-br from-primary-50 via-secondary-50 to-primary-100 text-gray-900" data-theme={theme === 'dark' ? 'dark' : 'light'}>
-      
-      {/* Theme Switcher */}
-      <div className="fixed top-4 right-4 flex gap-3 z-50 p-3 rounded-lg shadow-md" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-        <button
-          onClick={() => setTheme('light')}
-          className={`px-4 py-2 rounded-md font-medium text-sm transition-all ${theme === 'light' ? 'shadow-md' : ''}`}
-          style={{ 
-            backgroundColor: theme === 'light' ? 'var(--primary-color)' : 'var(--bg-tertiary)',
-            color: theme === 'light' ? 'var(--text-white)' : 'var(--text-secondary)'
-          }}
-        >
-          ☀️ Light
-        </button>
-        <button
-          onClick={() => setTheme('dark')}
-          className={`px-4 py-2 rounded-md font-medium text-sm transition-all ${theme === 'dark' ? 'shadow-md' : ''}`}
-          style={{ 
-            backgroundColor: theme === 'dark' ? 'var(--primary-color)' : 'var(--bg-tertiary)',
-            color: theme === 'dark' ? 'var(--text-white)' : 'var(--text-secondary)'
-          }}
-        >
-          🌙 Dark
-        </button>
-      </div>
+    <div className="min-h-screen bg-white text-gray-900">
 
-      {/* Dashboard Navigation Cards */}
-      <section className="mb-12">
-        <h2 className="text-2xl font-bold text-center mb-8" style={{ color: 'var(--text-primary)' }}>Choose Your Dashboard</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-          <a href="/student/dashboard" className="flex flex-col items-center justify-center p-8 rounded-lg shadow-sm border-2 transition-all duration-300 hover:-translate-y-2 hover:shadow-lg no-underline" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}>
-            <div className="text-5xl mb-4">👨‍🎓</div>
-            <h3 className="text-xl font-bold mb-2 text-center" style={{ color: 'var(--text-primary)' }}>Student Dashboard</h3>
-            <p className="text-center mb-0" style={{ color: 'var(--text-secondary)' }}>Find and apply for internship opportunities</p>
-          </a>
-          <a href="/employer/dashboard" className="flex flex-col items-center justify-center p-8 rounded-lg shadow-sm border-2 transition-all duration-300 hover:-translate-y-2 hover:shadow-lg no-underline" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}>
-            <div className="text-5xl mb-4">💼</div>
-            <h3 className="text-xl font-bold mb-2 text-center" style={{ color: 'var(--text-primary)' }}>Employer Dashboard</h3>
-            <p className="text-center mb-0" style={{ color: 'var(--text-secondary)' }}>Post internships and manage applications</p>
-          </a>
-          <a href="/admin/dashboard" className="flex flex-col items-center justify-center p-8 rounded-lg shadow-sm border-2 transition-all duration-300 hover:-translate-y-2 hover:shadow-lg no-underline" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}>
-            <div className="text-5xl mb-4">👨‍💼</div>
-            <h3 className="text-xl font-bold mb-2 text-center" style={{ color: 'var(--text-primary)' }}>Admin Dashboard</h3>
-            <p className="text-center mb-0" style={{ color: 'var(--text-secondary)' }}>Manage platform and users</p>
-          </a>
-        </div>
-      </section>
-
-      {/* Color Palette Preview */}
-      <section className="mb-12 p-8 rounded-lg border" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}>
-        <h2 className="text-2xl font-bold mb-8" style={{ color: 'var(--text-primary)' }}>Theme Colors</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-full h-24 rounded-lg shadow-md border transition-transform hover:scale-105" style={{ backgroundColor: 'var(--primary-color)', borderColor: 'var(--border-color)' }}></div>
-            <span className="font-medium text-center text-sm" style={{ color: 'var(--text-primary)' }}>Primary</span>
-          </div>
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-full h-24 rounded-lg shadow-md border transition-transform hover:scale-105" style={{ backgroundColor: 'var(--secondary-color)', borderColor: 'var(--border-color)' }}></div>
-            <span className="font-medium text-center text-sm" style={{ color: 'var(--text-primary)' }}>Secondary</span>
-          </div>
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-full h-24 rounded-lg shadow-md border transition-transform hover:scale-105" style={{ backgroundColor: 'var(--accent-color)', borderColor: 'var(--border-color)' }}></div>
-            <span className="font-medium text-center text-sm" style={{ color: 'var(--text-primary)' }}>Accent</span>
-          </div>
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-full h-24 rounded-lg shadow-md border transition-transform hover:scale-105" style={{ backgroundColor: 'var(--success-color)', borderColor: 'var(--border-color)' }}></div>
-            <span className="font-medium text-center text-sm" style={{ color: 'var(--text-primary)' }}>Success</span>
-          </div>
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-full h-24 rounded-lg shadow-md border transition-transform hover:scale-105" style={{ backgroundColor: 'var(--warning-color)', borderColor: 'var(--border-color)' }}></div>
-            <span className="font-medium text-center text-sm" style={{ color: 'var(--text-primary)' }}>Warning</span>
-          </div>
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-full h-24 rounded-lg shadow-md border transition-transform hover:scale-105" style={{ backgroundColor: 'var(--danger-color)', borderColor: 'var(--border-color)' }}></div>
-            <span className="font-medium text-center text-sm" style={{ color: 'var(--text-primary)' }}>Danger</span>
-          </div>
-        </div>
-      </section>
-
-      {/* Button Styles Preview */}
-      <section className="mb-12 p-8 rounded-lg border" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}>
-        <h2 className="text-2xl font-bold mb-8" style={{ color: 'var(--text-primary)' }}>Button Styles</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          <button className="btn-primary w-full">Primary Button</button>
-          <button className="btn-secondary w-full">Secondary Button</button>
-          <button className="btn-success w-full">Success Button</button>
-          <button className="btn-danger w-full">Danger Button</button>
-          <button className="btn-outline w-full">Outline Button</button>
-        </div>
-      </section>
-
-      {/* Status Colors Preview */}
-      <section className="mb-12 p-8 rounded-lg border" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}>
-        <h2 className="text-2xl font-bold mb-8" style={{ color: 'var(--text-primary)' }}>Status Messages</h2>
-        <div className="grid gap-4">
-          <div className="p-4 rounded-md border-l-4" style={{ backgroundColor: 'var(--bg-primary)', borderLeftColor: 'var(--primary-color)' }}>
-            <p className="text-success mb-0 font-medium">✓ Success: Application submitted successfully</p>
-          </div>
-          <div className="p-4 rounded-md border-l-4" style={{ backgroundColor: 'var(--bg-primary)', borderLeftColor: 'var(--primary-color)' }}>
-            <p className="text-warning mb-0 font-medium">⚠ Warning: Deadline approaching soon</p>
-          </div>
-          <div className="p-4 rounded-md border-l-4" style={{ backgroundColor: 'var(--bg-primary)', borderLeftColor: 'var(--primary-color)' }}>
-            <p className="text-danger mb-0 font-medium">✕ Error: Please fill all required fields</p>
-          </div>
-          <div className="p-4 rounded-md border-l-4" style={{ backgroundColor: 'var(--bg-primary)', borderLeftColor: 'var(--primary-color)' }}>
-            <p className="text-info mb-0 font-medium">ℹ Info: New internship opportunities available</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Typography Section */}
-      <section className="mb-12 p-8 rounded-lg border" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}>
-        <h2 className="text-2xl font-bold mb-8" style={{ color: 'var(--text-primary)' }}>Typography Styles</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <div className="p-4 rounded-md border" style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-color)' }}>
-            <h1 className="mb-3 mt-0 text-3xl font-bold">Heading 1 (H1)</h1>
-            <p className="text-xs mb-0" style={{ color: 'var(--text-tertiary)' }}>30px, Bold, Primary color</p>
-          </div>
-          <div className="p-4 rounded-md border" style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-color)' }}>
-            <h2 className="mb-3 mt-0 text-2xl font-bold">Heading 2 (H2)</h2>
-            <p className="text-xs mb-0" style={{ color: 'var(--text-tertiary)' }}>24px, Bold, Primary text</p>
-          </div>
-          <div className="p-4 rounded-md border" style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-color)' }}>
-            <h3 className="mb-3 mt-0 text-xl font-bold">Heading 3 (H3)</h3>
-            <p className="text-xs mb-0" style={{ color: 'var(--text-tertiary)' }}>20px, Bold, Primary text</p>
-          </div>
-          <div className="p-4 rounded-md border" style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-color)' }}>
-            <p className="text-base mb-3" style={{ color: 'var(--text-secondary)' }}>Body text (16px)</p>
-            <p className="text-xs mb-0" style={{ color: 'var(--text-tertiary)' }}>Regular weight, secondary color</p>
-          </div>
-          <div className="p-4 rounded-md border" style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-color)' }}>
-            <p className="text-sm mb-3" style={{ color: 'var(--text-tertiary)' }}>Small text (14px)</p>
-            <p className="text-xs mb-0" style={{ color: 'var(--text-tertiary)' }}>Regular weight, tertiary color</p>
-          </div>
-          <div className="p-4 rounded-md border" style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-color)' }}>
-            <a href="#" className="text-base no-underline transition-colors hover:underline mb-3 block" style={{ color: 'var(--primary-color)' }}>Link text (16px)</a>
-            <p className="text-xs mb-0" style={{ color: 'var(--text-tertiary)' }}>Primary color, underline on hover</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Spacing System */}
-      <section className="mb-12 p-8 rounded-lg border" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}>
-        <h2 className="text-2xl font-bold mb-8" style={{ color: 'var(--text-primary)' }}>Spacing System</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="rounded-md overflow-hidden" style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-color)' }}>
-            <div className="flex items-center justify-center min-h-[80px]" style={{ backgroundColor: 'var(--primary-color)', color: 'var(--text-white)', padding: 'var(--spacing-sm)' }}>
-              <p className="m-0 font-medium">--spacing-sm (8px)</p>
+      {/* Navbar */}
+      <nav className="fixed w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <Link href="/" className="flex items-center gap-2">
+                <img src="/images/logo.png" alt="InternMatch Logo" className="h-12 w-auto object-contain" />
+                <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 hidden sm:inline">
+                  InternMatch
+                </span>
+              </Link>
             </div>
-          </div>
-          <div className="rounded-md overflow-hidden" style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-color)' }}>
-            <div className="flex items-center justify-center min-h-[80px]" style={{ backgroundColor: 'var(--primary-color)', color: 'var(--text-white)', padding: 'var(--spacing-md)' }}>
-              <p className="m-0 font-medium">--spacing-md (12px)</p>
-            </div>
-          </div>
-          <div className="rounded-md overflow-hidden" style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-color)' }}>
-            <div className="flex items-center justify-center min-h-[80px]" style={{ backgroundColor: 'var(--primary-color)', color: 'var(--text-white)', padding: 'var(--spacing-lg)' }}>
-              <p className="m-0 font-medium">--spacing-lg (16px)</p>
-            </div>
-          </div>
-          <div className="rounded-md overflow-hidden" style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-color)' }}>
-            <div className="flex items-center justify-center min-h-[80px]" style={{ backgroundColor: 'var(--primary-color)', color: 'var(--text-white)', padding: 'var(--spacing-xl)' }}>
-              <p className="m-0 font-medium">--spacing-xl (24px)</p>
+            <div className="hidden md:flex items-center space-x-8">
+              <Link href="/find-internships" className="text-gray-600 hover:text-indigo-600 transition-colors">Find Internships</Link>
+              <Link href="/employers" className="text-gray-600 hover:text-indigo-600 transition-colors">For Employers</Link>
+              <Link href="/login" className="text-gray-900 font-medium hover:text-indigo-600 transition-colors">Sign In</Link>
+              <Link href="/register" className="px-5 py-2.5 rounded-full bg-gray-900 text-white font-medium hover:bg-black transition-all shadow-lg shadow-gray-200">
+                Get Started
+              </Link>
             </div>
           </div>
         </div>
-      </section>
+      </nav>
 
-      {/* Forms Section */}
-      <section className="mb-12 p-8 rounded-lg border" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}>
-        <h2 className="text-2xl font-bold mb-8" style={{ color: 'var(--text-primary)' }}>Form Elements</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="flex flex-col gap-2">
-            <label htmlFor="email" className="font-medium">Email Input</label>
-            <input
-              id="email"
-              type="email"
-              placeholder="Enter your email..."
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full"
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <label htmlFor="message" className="font-medium">Text Area</label>
-            <textarea
-              id="message"
-              placeholder="Enter your message..."
-              rows="4"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              className="w-full"
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <label htmlFor="select" className="font-medium">Select Dropdown</label>
-            <select id="select" className="w-full">
-              <option>Choose an option</option>
-              <option>Option 1</option>
-              <option>Option 2</option>
-              <option>Option 3</option>
-            </select>
-          </div>
-        </div>
-      </section>
+      {/* Hero Section */}
+      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-indigo-50/50 to-white -z-10"></div>
+        <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-purple-200/30 rounded-full blur-3xl animate-blob"></div>
+        <div className="absolute top-[20%] left-[-10%] w-[40%] h-[40%] bg-indigo-200/30 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
 
-      {/* Cards Showcase */}
-      <section className="mb-12 p-8 rounded-lg border" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}>
-        <h2 className="text-2xl font-bold mb-8" style={{ color: 'var(--text-primary)' }}>Card Variations</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="card">
-            <h3>Basic Card</h3>
-            <p>This is a basic card with default styling using the card class.</p>
-          </div>
-          <div className="card" style={{ borderLeft: '4px solid var(--primary-color)' }}>
-            <h3>Primary Card</h3>
-            <p>This is a card with a primary color accent on the left.</p>
-          </div>
-          <div className="card" style={{ borderLeft: '4px solid var(--success-color)' }}>
-            <h3>Success Card</h3>
-            <p>This is a card with a success color accent on the left.</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Shadows & Effects */}
-      <section className="mb-12 p-8 rounded-lg border" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}>
-        <h2 className="text-2xl font-bold mb-8" style={{ color: 'var(--text-primary)' }}>Shadow Levels</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-8 rounded-lg text-center border transition-transform hover:-translate-y-1" style={{ boxShadow: 'var(--shadow-sm)', backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-color)' }}>
-            <p className="m-0 font-medium" style={{ color: 'var(--text-primary)' }}>Small Shadow</p>
-          </div>
-          <div className="p-8 rounded-lg text-center border transition-transform hover:-translate-y-1" style={{ boxShadow: 'var(--shadow-md)', backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-color)' }}>
-            <p className="m-0 font-medium" style={{ color: 'var(--text-primary)' }}>Medium Shadow</p>
-          </div>
-          <div className="p-8 rounded-lg text-center border transition-transform hover:-translate-y-1" style={{ boxShadow: 'var(--shadow-lg)', backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-color)' }}>
-            <p className="m-0 font-medium" style={{ color: 'var(--text-primary)' }}>Large Shadow</p>
-          </div>
-          <div className="p-8 rounded-lg text-center border transition-transform hover:-translate-y-1" style={{ boxShadow: 'var(--shadow-xl)', backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-color)' }}>
-            <p className="m-0 font-medium" style={{ color: 'var(--text-primary)' }}>Extra Large Shadow</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Border Radius */}
-      <section className="mb-12 p-8 rounded-lg border" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}>
-        <h2 className="text-2xl font-bold mb-8" style={{ color: 'var(--text-primary)' }}>Border Radius Variants</h2>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <div className="h-28 flex items-center justify-center font-bold border" style={{ borderRadius: 'var(--radius-sm)', background: 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))', color: 'var(--text-white)', borderColor: 'var(--border-color)' }}>
-            <p className="m-0">4px</p>
-          </div>
-          <div className="h-28 flex items-center justify-center font-bold border" style={{ borderRadius: 'var(--radius-md)', background: 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))', color: 'var(--text-white)', borderColor: 'var(--border-color)' }}>
-            <p className="m-0">8px</p>
-          </div>
-          <div className="h-28 flex items-center justify-center font-bold border" style={{ borderRadius: 'var(--radius-lg)', background: 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))', color: 'var(--text-white)', borderColor: 'var(--border-color)' }}>
-            <p className="m-0">12px</p>
-          </div>
-          <div className="h-28 flex items-center justify-center font-bold border" style={{ borderRadius: 'var(--radius-xl)', background: 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))', color: 'var(--text-white)', borderColor: 'var(--border-color)' }}>
-            <p className="m-0">16px</p>
-          </div>
-          <div className="h-28 flex items-center justify-center font-bold border" style={{ borderRadius: 'var(--radius-full)', background: 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))', color: 'var(--text-white)', borderColor: 'var(--border-color)' }}>
-            <p className="m-0">Full</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Full Color Grid */}
-      <section className="mb-12 p-8 rounded-lg border" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}>
-        <h2 className="text-2xl font-bold mb-8" style={{ color: 'var(--text-primary)' }}>Complete Color Palette</h2>
-        <div className="grid gap-8">
-          {/* Primary Colors */}
-          <div className="p-4 rounded-md border" style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-color)' }}>
-            <h4 className="m-0 mb-4 text-base" style={{ color: 'var(--text-primary)' }}>Primary Colors</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="h-24 rounded-md flex items-center justify-center font-bold text-sm border" style={{ backgroundColor: 'var(--primary-dark)', color: 'var(--text-white)', textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)', borderColor: 'var(--border-color)' }}>
-                <span>Dark</span>
-              </div>
-              <div className="h-24 rounded-md flex items-center justify-center font-bold text-sm border" style={{ backgroundColor: 'var(--primary-color)', color: 'var(--text-white)', textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)', borderColor: 'var(--border-color)' }}>
-                <span>Primary</span>
-              </div>
-              <div className="h-24 rounded-md flex items-center justify-center font-bold text-sm border" style={{ backgroundColor: 'var(--primary-light)', color: 'var(--text-white)', textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)', borderColor: 'var(--border-color)' }}>
-                <span>Light</span>
-              </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="inline-flex items-center px-4 py-2 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 text-sm font-medium mb-8">
+              <span className="flex h-2 w-2 rounded-full bg-indigo-600 mr-2"></span>
+              The #1 Platform for Verified Student Internships
             </div>
-          </div>
-
-          {/* Status Colors */}
-          <div className="p-4 rounded-md border" style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-color)' }}>
-            <h4 className="m-0 mb-4 text-base" style={{ color: 'var(--text-primary)' }}>Status Colors</h4>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-              <div className="h-24 rounded-md flex items-center justify-center font-bold text-sm border" style={{ backgroundColor: 'var(--success-color)', color: 'var(--text-white)', textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)', borderColor: 'var(--border-color)' }}>
-                <span>Success</span>
-              </div>
-              <div className="h-24 rounded-md flex items-center justify-center font-bold text-sm border" style={{ backgroundColor: 'var(--warning-color)', color: 'var(--text-white)', textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)', borderColor: 'var(--border-color)' }}>
-                <span>Warning</span>
-              </div>
-              <div className="h-24 rounded-md flex items-center justify-center font-bold text-sm border" style={{ backgroundColor: 'var(--danger-color)', color: 'var(--text-white)', textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)', borderColor: 'var(--border-color)' }}>
-                <span>Danger</span>
-              </div>
-              <div className="h-24 rounded-md flex items-center justify-center font-bold text-sm border" style={{ backgroundColor: 'var(--info-color)', color: 'var(--text-white)', textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)', borderColor: 'var(--border-color)' }}>
-                <span>Info</span>
-              </div>
+            <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-gray-900 mb-6">
+              Launch your career with <br />
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">verified skills.</span>
+            </h1>
+            <p className="text-xl text-gray-500 max-w-2xl mx-auto mb-10 leading-relaxed">
+              Connect with top employers who value your real abilities.
+              Our skill-based matching system ensures you find the perfect internship fit.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link href="/register" className="w-full sm:w-auto px-8 py-4 rounded-full bg-indigo-600 text-white font-bold text-lg hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-200 flex items-center justify-center">
+                Start Your Journey <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+              <Link href="/login" className="w-full sm:w-auto px-8 py-4 rounded-full bg-white text-gray-700 font-bold text-lg border border-gray-200 hover:bg-gray-50 transition-all flex items-center justify-center">
+                Employer Login
+              </Link>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Neutral Colors */}
-          <div className="p-4 rounded-md border" style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-color)' }}>
-            <h4 className="m-0 mb-4 text-base" style={{ color: 'var(--text-primary)' }}>Neutral / Background</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="h-24 rounded-md flex items-center justify-center font-bold text-sm border" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', borderColor: 'var(--border-color)' }}>
-                <span>Primary</span>
-              </div>
-              <div className="h-24 rounded-md flex items-center justify-center font-bold text-sm border" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', borderColor: 'var(--border-color)' }}>
-                <span>Secondary</span>
-              </div>
-              <div className="h-24 rounded-md flex items-center justify-center font-bold text-sm border" style={{ backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-primary)', borderColor: 'var(--border-color)' }}>
-                <span>Tertiary</span>
-              </div>
-            </div>
+          {/* Stats/Social Proof */}
+          <div className="mt-20 pt-10 border-t border-gray-100 grid grid-cols-2 md:grid-cols-4 gap-8 opacity-70 grayscale hover:grayscale-0 transition-all duration-500">
+            {['Google', 'Microsoft', 'Spotify', 'Airbnb'].map((brand) => (
+              <div key={brand} className="flex items-center justify-center text-xl font-bold text-gray-400">{brand}</div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Font Weights */}
-      <section className="mb-12 p-8 rounded-lg border" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}>
-        <h2 className="text-2xl font-bold mb-8" style={{ color: 'var(--text-primary)' }}>Font Weights</h2>
-        <div className="grid gap-4 p-4 rounded-md border" style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-color)' }}>
-          <p className="m-0 text-lg" style={{ fontWeight: 'var(--font-weight-light)', color: 'var(--text-primary)' }}>Light (300) - The quick brown fox</p>
-          <p className="m-0 text-lg" style={{ fontWeight: 'var(--font-weight-normal)', color: 'var(--text-primary)' }}>Normal (400) - The quick brown fox</p>
-          <p className="m-0 text-lg" style={{ fontWeight: 'var(--font-weight-medium)', color: 'var(--text-primary)' }}>Medium (500) - The quick brown fox</p>
-          <p className="m-0 text-lg" style={{ fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-primary)' }}>Semibold (600) - The quick brown fox</p>
-          <p className="m-0 text-lg" style={{ fontWeight: 'var(--font-weight-bold)', color: 'var(--text-primary)' }}>Bold (700) - The quick brown fox</p>
-        </div>
-      </section>
+      {/* Features Grid */}
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Why choose InternMatch?</h2>
+            <p className="text-gray-500 max-w-2xl mx-auto">We're revolutionizing the internship market by prioritizing verified skills over connections.</p>
+          </div>
 
-      {/* Code Block / Variables Reference */}
-      <section className="mb-12 p-8 rounded-lg border" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}>
-        <h2 className="text-2xl font-bold mb-8" style={{ color: 'var(--text-primary)' }}>Quick Variable Reference</h2>
-        <div className="p-4 rounded-md border mb-4" style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-color)' }}>
-          <h4 className="mt-0 mb-3 text-base" style={{ color: 'var(--text-primary)' }}>Primary Colors</h4>
-          <code className="block px-3 py-2 mb-2 rounded text-sm font-mono" style={{ backgroundColor: 'var(--bg-tertiary)', borderLeft: '3px solid var(--primary-color)', color: 'var(--primary-dark)' }}>var(--primary-color): #6366f1</code>
-          <code className="block px-3 py-2 mb-2 rounded text-sm font-mono" style={{ backgroundColor: 'var(--bg-tertiary)', borderLeft: '3px solid var(--primary-color)', color: 'var(--primary-dark)' }}>var(--primary-light): #818cf8</code>
-          <code className="block px-3 py-2 rounded text-sm font-mono" style={{ backgroundColor: 'var(--bg-tertiary)', borderLeft: '3px solid var(--primary-color)', color: 'var(--primary-dark)' }}>var(--primary-dark): #4f46e5</code>
-        </div>
-        <div className="p-4 rounded-md border mb-4" style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-color)' }}>
-          <h4 className="mt-0 mb-3 text-base" style={{ color: 'var(--text-primary)' }}>Spacing (Base 4px)</h4>
-          <code className="block px-3 py-2 mb-2 rounded text-sm font-mono" style={{ backgroundColor: 'var(--bg-tertiary)', borderLeft: '3px solid var(--primary-color)', color: 'var(--primary-dark)' }}>var(--spacing-sm): 8px</code>
-          <code className="block px-3 py-2 mb-2 rounded text-sm font-mono" style={{ backgroundColor: 'var(--bg-tertiary)', borderLeft: '3px solid var(--primary-color)', color: 'var(--primary-dark)' }}>var(--spacing-md): 12px</code>
-          <code className="block px-3 py-2 mb-2 rounded text-sm font-mono" style={{ backgroundColor: 'var(--bg-tertiary)', borderLeft: '3px solid var(--primary-color)', color: 'var(--primary-dark)' }}>var(--spacing-lg): 16px</code>
-          <code className="block px-3 py-2 rounded text-sm font-mono" style={{ backgroundColor: 'var(--bg-tertiary)', borderLeft: '3px solid var(--primary-color)', color: 'var(--primary-dark)' }}>var(--spacing-xl): 24px</code>
-        </div>
-        <div className="p-4 rounded-md border" style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-color)' }}>
-          <h4 className="mt-0 mb-3 text-base" style={{ color: 'var(--text-primary)' }}>Border Radius</h4>
-          <code className="block px-3 py-2 mb-2 rounded text-sm font-mono" style={{ backgroundColor: 'var(--bg-tertiary)', borderLeft: '3px solid var(--primary-color)', color: 'var(--primary-dark)' }}>var(--radius-sm): 4px</code>
-          <code className="block px-3 py-2 mb-2 rounded text-sm font-mono" style={{ backgroundColor: 'var(--bg-tertiary)', borderLeft: '3px solid var(--primary-color)', color: 'var(--primary-dark)' }}>var(--radius-md): 8px</code>
-          <code className="block px-3 py-2 rounded text-sm font-mono" style={{ backgroundColor: 'var(--bg-tertiary)', borderLeft: '3px solid var(--primary-color)', color: 'var(--primary-dark)' }}>var(--radius-lg): 12px</code>
+          <div className="grid md:grid-cols-3 gap-12">
+            {[
+              { icon: ShieldCheck, title: "Verified Identity", desc: "Every student and employer is verified to ensure a safe, scam-free environment." },
+              { icon: Search, title: "Smart Matching", desc: "Our algorithm matches you with roles that fit your specific skill set and career goals." },
+              { icon: Building, title: "Top Companies", desc: "Access opportunities from verified startups to Fortune 500 companies." }
+            ].map((feature, i) => (
+              <motion.div
+                whileHover={{ y: -10 }}
+                key={i}
+                className="p-8 rounded-3xl bg-gray-50 border border-gray-100 hover:bg-white hover:shadow-xl transition-all duration-300"
+              >
+                <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center mb-6 shadow-lg shadow-indigo-200">
+                  <feature.icon size={28} />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">{feature.title}</h3>
+                <p className="text-gray-500 leading-relaxed">{feature.desc}</p>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="mt-12 pt-8 border-t-2 text-center" style={{ borderTopColor: 'var(--border-color)', color: 'var(--text-secondary)' }}>
-        <p className="mb-3">All colors, spacing, and styles are defined in <code className="px-1.5 py-0.5 rounded text-sm font-mono" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--primary-color)' }}>src/styles/globals.css</code></p>
-        <p>Team members can import and use variables from <code className="px-1.5 py-0.5 rounded text-sm font-mono" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--primary-color)' }}>src/styles/variables.css</code></p>
+      <footer className="bg-gray-900 text-white py-12 border-t border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
+          <div className="mb-8 md:mb-0">
+            <div className="flex items-center gap-3">
+              <img src="/images/logo.png" alt="InternMatch Logo" className="h-10 w-auto grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all duration-300" />
+              <span className="text-2xl font-bold">InternMatch</span>
+            </div>
+            <p className="text-gray-400 text-sm mt-2">© 2026 InternMatch Inc. All rights reserved.</p>
+          </div>
+          <div className="flex space-x-8">
+            <a href="#" className="text-gray-400 hover:text-white transition-colors">Privacy</a>
+            <a href="#" className="text-gray-400 hover:text-white transition-colors">Terms</a>
+            <a href="#" className="text-gray-400 hover:text-white transition-colors">Contact</a>
+          </div>
+        </div>
       </footer>
-    </main>
-    </>
+
+    </div>
   );
 }

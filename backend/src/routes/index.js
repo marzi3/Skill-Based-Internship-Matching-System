@@ -10,9 +10,13 @@ const messageRoutes = require('./messageRoutes');
 const notificationRoutes = require('./notificationRoutes');
 const searchRoutes = require('./searchRoutes');
 const adminRoutes = require('./adminRoutes');
+const verificationRoutes = require('./verificationRoutes');
 
 // Route registration
 router.use('/auth', authRoutes);
+// Verification routes (new)
+router.use('/verification', verificationRoutes);
+
 router.use('/students', studentRoutes);
 router.use('/internships', internshipRoutes);
 router.use('/applications', applicationRoutes);

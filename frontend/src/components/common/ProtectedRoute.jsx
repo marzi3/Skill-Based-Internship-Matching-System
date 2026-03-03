@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { PageLoader } from './Loader';
 
-// Protected Route Component - Checks authentication
+// Protected Route Component - Checks authentication via AuthContext
 export const ProtectedRoute = ({
   children,
   requiredRole = null,
@@ -15,39 +15,40 @@ export const ProtectedRoute = ({
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
-    const checkAuth = async () => {
+    const checkAuth = () => {
       try {
-        // Check if token exists in localStorage
-        const token = localStorage.getItem('authToken');
-        const user = localStorage.getItem('user');
+        // Check localStorage (synced by AuthContext)
+        const storedUser = localStorage.getItem('user');
 
-        if (!token || !user) {
+        if (!storedUser) {
           setIsAuthenticated(false);
           setIsLoading(false);
           router.push(redirectTo);
           return;
         }
 
-        // Parse user data
-        const userData = JSON.parse(user);
-        setUserRole(userData?.role);
+        const userData = JSON.parse(storedUser);
 
         // Check if user has required role
         if (requiredRole && userData?.role !== requiredRole) {
           setIsAuthenticated(false);
           setIsLoading(false);
-          router.push('/unauthorized');
+
+          // Redirect to their correct dashboard based on role
+          const getRoleDashboard = (role) => {
+            switch (role) {
+              case 'employer': return '/employer/dashboard';
+              case 'admin': return '/admin/admin-dashboard';
+              case 'student':
+              default: return '/student-dashboard';
+            }
+          };
+
+          router.push(getRoleDashboard(userData?.role));
           return;
         }
-
-        // Verify token validity (optional - call your backend)
-        // const response = await fetch('/api/auth/verify', {
-        //   headers: { Authorization: `Bearer ${token}` }
-        // });
-        // if (!response.ok) throw new Error('Invalid token');
 
         setIsAuthenticated(true);
         setIsLoading(false);
@@ -207,7 +208,7 @@ export const SessionTimeout = ({
     warningRef.current = setTimeout(() => {
       setShowWarning(true);
       if (onWarning) onWarning();
-      
+
       // Count down from warning time
       activityRef.current = setInterval(() => {
         setTimeRemaining((prev) => {

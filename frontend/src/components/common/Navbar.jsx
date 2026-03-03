@@ -7,7 +7,7 @@ import { useRouter, usePathname } from 'next/navigation';
 // Main Navbar Component
 const Navbar = ({
   brand = 'InternMatch',
-  logo = null,
+  logo = '/images/logo.png',
   items = [],
   rightItems = [],
   sticky = true,
@@ -51,17 +51,7 @@ const Navbar = ({
             {logo ? (
               <img src={logo} alt={brand} className="h-8" />
             ) : (
-              <div className={`
-                flex items-center justify-center w-10 h-10 rounded-lg
-                ${variant === 'light' ? 'bg-blue-600' : 'bg-white'}
-              `}>
-                <span className={`
-                  font-bold text-lg
-                  ${variant === 'light' ? 'text-white' : 'text-blue-600'}
-                `}>
-                  IM
-                </span>
-              </div>
+              <img src="/images/logo.png" alt={brand} className="h-10 w-auto object-contain" />
             )}
             <Link href="/" className={`text-xl font-bold hidden sm:block`}>
               {brand}
@@ -77,11 +67,11 @@ const Navbar = ({
                     <button
                       className={`
                         px-3 py-2 rounded-md text-sm font-medium transition duration-300
-                        ${isActive(item.href) 
+                        ${isActive(item.href)
                           ? 'bg-blue-100 text-blue-600'
                           : variant === 'light'
-                          ? 'text-gray-700 hover:bg-gray-100'
-                          : 'text-gray-300 hover:bg-gray-800'
+                            ? 'text-gray-700 hover:bg-gray-100'
+                            : 'text-gray-300 hover:bg-gray-800'
                         }
                       `}
                     >
@@ -112,8 +102,8 @@ const Navbar = ({
                       ${isActive(item.href)
                         ? 'bg-blue-100 text-blue-600'
                         : variant === 'light'
-                        ? 'text-gray-700 hover:bg-gray-100'
-                        : 'text-gray-300 hover:bg-gray-800'
+                          ? 'text-gray-700 hover:bg-gray-100'
+                          : 'text-gray-300 hover:bg-gray-800'
                       }
                     `}
                   >
@@ -135,28 +125,24 @@ const Navbar = ({
             className="md:hidden flex flex-col space-y-1"
           >
             <span
-              className={`block w-6 h-0.5 bg-current transition-all ${
-                isMenuOpen ? 'rotate-45 translate-y-2' : ''
-              }`}
+              className={`block w-6 h-0.5 bg-current transition-all ${isMenuOpen ? 'rotate-45 translate-y-2' : ''
+                }`}
             ></span>
             <span
-              className={`block w-6 h-0.5 bg-current transition-all ${
-                isMenuOpen ? 'opacity-0' : ''
-              }`}
+              className={`block w-6 h-0.5 bg-current transition-all ${isMenuOpen ? 'opacity-0' : ''
+                }`}
             ></span>
             <span
-              className={`block w-6 h-0.5 bg-current transition-all ${
-                isMenuOpen ? '-rotate-45 -translate-y-2' : ''
-              }`}
+              className={`block w-6 h-0.5 bg-current transition-all ${isMenuOpen ? '-rotate-45 -translate-y-2' : ''
+                }`}
             ></span>
           </button>
         </div>
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className={`md:hidden pb-4 space-y-2 ${
-            variant === 'light' ? 'bg-gray-50' : 'bg-gray-800'
-          }`}>
+          <div className={`md:hidden pb-4 space-y-2 ${variant === 'light' ? 'bg-gray-50' : 'bg-gray-800'
+            }`}>
             {items.map((item, index) => (
               <div key={index}>
                 <Link
@@ -166,8 +152,8 @@ const Navbar = ({
                     ${isActive(item.href)
                       ? 'bg-blue-100 text-blue-600'
                       : variant === 'light'
-                      ? 'text-gray-700 hover:bg-gray-100'
-                      : 'text-gray-300 hover:bg-gray-700'
+                        ? 'text-gray-700 hover:bg-gray-100'
+                        : 'text-gray-300 hover:bg-gray-700'
                     }
                   `}
                 >
