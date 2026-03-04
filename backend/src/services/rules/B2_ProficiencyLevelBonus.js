@@ -24,16 +24,14 @@ const rule = {
         const requiredSkills = internship?.requiredSkills || [];
         const studentSkills = student?.skills || [];
 
-        // Find required skills that actually prefer senior candidates
-        const seniorRequiredSkills = requiredSkills.filter(req => req.prefersSenior);
-
-        if (seniorRequiredSkills.length === 0 || studentSkills.length === 0) {
+        // All required skills are eligible for the proficiency bonus
+        if (requiredSkills.length === 0 || studentSkills.length === 0) {
             return [];
         }
 
         const qualifyingSkills = [];
 
-        seniorRequiredSkills.forEach(reqSkill => {
+        requiredSkills.forEach(reqSkill => {
             const reqName = typeof reqSkill === 'string' ? reqSkill : reqSkill.name;
 
             const match = studentSkills.find(studentSkill => {
@@ -56,7 +54,6 @@ const rule = {
 
     /**
      * Evaluates if there are matched skills where student is ADVANCED/EXPERT 
-     * and internship prefers senior candidates.
      * 
      * @param {Object} facts - The facts base containing student and internship data.
      * @returns {boolean} True if condition met.

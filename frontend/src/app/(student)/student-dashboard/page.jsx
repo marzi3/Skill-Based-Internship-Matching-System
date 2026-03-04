@@ -219,7 +219,7 @@ export default function StudentDashboard() {
                             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                                 <Zap className="text-primary-600" size={20} fill="currentColor" /> Recommended for You
                             </h2>
-                            <Link href="/student/matches" className="text-sm font-bold text-primary-600 hover:underline">View All Matches</Link>
+                            <Link href="/matches" className="text-sm font-bold text-primary-600 hover:underline">View All Matches</Link>
                         </div>
 
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

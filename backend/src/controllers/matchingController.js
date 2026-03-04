@@ -232,14 +232,47 @@ exports.matchStudentsForInternship = async (req, res) => {
         // Filter out explicit disqualifications
         candidates = candidates.filter(c => c.tier !== 'DISQUALIFIED');
 
-        if (limit) {
-            candidates = candidates.slice(0, Number(limit));
-        }
+        // 5. Format response for frontend compatibility - enrich with full student data
+        const formattedCandidates = candidates.map(candidate => {
+            const fullStudent = students.find(stu => {
+                const searchId = candidate.studentId?.toString();
+                return (stu._id && stu._id.toString() === searchId) ||
+                    (stu.id && stu.id.toString() === searchId);
+            });
+
+            // Extract matched skills from the explanation log (B1 rule)
+            const matchedSkills = [];
+            if (candidate.explanation) {
+                candidate.explanation.forEach(exp => {
+                    // Check if it's a B1 exact skill match or B3 partial match
+                    if (exp.rule === 'B1_ExactSkillMatch' || exp.rule === 'B3_PartialSkillCoverage') {
+                        // Extract skill name from detail string (e.g., "Student has essential skill: React")
+                        const match = exp.detail.match(/skill:\s*([^.]+)/i) || exp.detail.match(/matched:\s*([^.]+)/i);
+                        if (match && match[1]) {
+                            matchedSkills.push(match[1].trim());
+                        }
+                    }
+                });
+            }
+
+            return {
+                studentId: candidate.studentId,
+                studentName: fullStudent?.personalInfo?.fullName || fullStudent?.name || candidate.studentName || 'Unknown Student',
+                fieldOfStudy: fullStudent?.education?.[0]?.field || 'Student',
+                gpa: fullStudent?.personalInfo?.gpa || 'N/A',
+                finalScore: candidate.normalizedScore || (candidate.tier === 'EXCELLENT' ? 90 :
+                    candidate.tier === 'GOOD' ? 75 :
+                        candidate.tier === 'FAIR' ? 60 : 45),
+                tier: candidate.tier,
+                matchedSkills: [...new Set(matchedSkills)], // Remove duplicates
+                reasons: candidate.explanation?.map(e => e.detail) || []
+            };
+        });
 
         return res.status(200).json({
             success: true,
             internshipId: internship._id,
-            candidates
+            candidates: formattedCandidates
         });
 
     } catch (error) {
