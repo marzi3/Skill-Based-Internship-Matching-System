@@ -112,8 +112,11 @@ const internshipSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// Index for search
+// Index for search and common queries
 internshipSchema.index({ positionTitle: 'text', description: 'text', company: 'text', domain: 'text' });
+// Compound Indexes for query performance
+internshipSchema.index({ status: 1, employer: 1, isDeleted: 1 });
+internshipSchema.index({ status: 1, domain: 1, isDeleted: 1 });
 
 const Internship = mongoose.model('Internship', internshipSchema);
 module.exports = Internship;

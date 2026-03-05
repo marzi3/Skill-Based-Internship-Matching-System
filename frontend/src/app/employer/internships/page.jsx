@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import axios from 'axios';
+import axios from '@/services/apiClient';
 import {
     Search, Edit3, Trash2, Eye, Users, Calendar,
     ArrowLeft, Loader2, AlertCircle, Power,

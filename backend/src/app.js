@@ -2,23 +2,49 @@ const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
+const RedisStore = require('connect-redis').default || require('connect-redis');
+const redisClient = require('./config/redis');
+const helmet = require('helmet');
 const passport = require('./config/passport'); // Import passport config
+const { globalLimiter } = require('./middleware/rateLimiter');
 require('dotenv').config();
 
+const { initSentry, Sentry } = require('./config/sentry');
 const app = express();
 
+// Initialize Sentry BEFORE any other middleware
+initSentry(app);
+
+// Sentry RequestHandler creates a separate execution context to track transactions
+app.use(Sentry.Handlers.requestHandler());
+// TracingHandler creates a trace for every incoming request
+app.use(Sentry.Handlers.tracingHandler());
+
 // Middleware
+// Set security HTTP headers
+app.use(helmet());
+
+// Apply global rate limiting
+app.use(globalLimiter);
+
 app.use(cors({
-  origin: function(origin, callback) {
+  origin: function (origin, callback) {
     const allowedOrigins = [
       'http://localhost:3000',
       'http://localhost:3001',
       process.env.FRONTEND_URL
-    ];
-    if (!origin || allowedOrigins.includes(origin)) {
+    ].filter(Boolean); // Remove undefined
+
+    // Allow requests with no origin (like mobile apps or curl requests) only in development, 
+    // or strictly check against allowedOrigins in production
+    if (process.env.NODE_ENV !== 'production' && !origin) {
+      return callback(null, true);
+    }
+
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error('Strict CORS policy: Origin not allowed'));
     }
   },
   credentials: true
@@ -26,11 +52,26 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser()); // Parse cookies
+// Configure session store
+let sessionStore;
+if (process.env.NODE_ENV === 'test') {
+  // Use MemoryStore for testing to avoid Redis connection issues
+  sessionStore = new session.MemoryStore();
+} else {
+  // For connect-redis v7+, it exports RedisStore directly or under .default
+  const Store = typeof RedisStore === 'function' ? RedisStore : RedisStore.RedisStore;
+  sessionStore = new Store({ client: redisClient });
+}
+
 app.use(session({
-  secret: process.env.JWT_SECRET || 'secret',
+  store: sessionStore,
+  secret: process.env.JWT_SECRET, // Throws error later if missing due to previous configs
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: process.env.NODE_ENV === 'production' }
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+  }
 }));
 app.use(passport.initialize()); // Init passport
 app.use(passport.session()); // Passport session support
@@ -40,7 +81,7 @@ app.use('/uploads', express.static('uploads'));
 
 // Routes
 const routes = require('./routes/index');
-app.use('/api', routes); // Use the index router which includes auth & verification
+app.use('/api/v1', routes); // Use the index router which includes auth & verification
 
 // Health check
 app.get('/health', (req, res) => {
@@ -52,7 +93,10 @@ app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
 
-// Error handler
+// The error handler must be before any other error middleware and after all controllers
+app.use(Sentry.Handlers.errorHandler());
+
+// Custom Error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ message: err.message || 'Internal server error' });

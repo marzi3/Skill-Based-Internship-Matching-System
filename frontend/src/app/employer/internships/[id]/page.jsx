@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import axios from '@/services/apiClient';
 import {
     ArrowLeft,
     MapPin,

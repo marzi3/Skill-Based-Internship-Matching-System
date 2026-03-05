@@ -4,7 +4,7 @@
 // Student dashboard Page
 
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '@/services/apiClient';
 import {
     Zap,
     Search,
@@ -87,9 +87,9 @@ export default function StudentDashboard() {
     }, [user]);
 
     return (
-        <div className="flex h-screen bg-gray-50">
-            {/* Sidebar */}
-            <aside className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-white border-r border-gray-200 hidden md:flex flex-col transition-all duration-300 ease-in-out`}>
+        <div className="flex flex-col md:flex-row h-screen bg-gray-50 overflow-hidden">
+            {/* Sidebar / Bottom Nav */}
+            <aside className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-white border-r border-gray-200 hidden md:flex flex-col transition-all duration-300 ease-in-out z-20`}>
                 <div className={`p-6 flex items-center ${isSidebarOpen ? 'justify-between' : 'justify-center'}`}>
                     {isSidebarOpen && <h2 className="text-2xl font-black text-primary-600 tracking-tighter">InternMatch</h2>}
                     <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 transition-colors">
@@ -130,20 +130,44 @@ export default function StudentDashboard() {
                 </div>
             </aside>
 
+            {/* Mobile Bottom Navigation */}
+            <nav className="md:hidden fixed bottom-0 w-full bg-white border-t border-gray-200 flex justify-around p-3 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+                <Link href="/student-dashboard" className="flex flex-col items-center text-primary-600">
+                    <LayoutDashboard size={24} />
+                    <span className="text-[10px] font-bold mt-1">Home</span>
+                </Link>
+                <Link href="/find-internships" className="flex flex-col items-center text-gray-400 hover:text-primary-600 transition-colors">
+                    <Search size={24} />
+                    <span className="text-[10px] mt-1">Search</span>
+                </Link>
+                <Link href="/matches" className="flex flex-col items-center text-gray-400 hover:text-primary-600 transition-colors">
+                    <Zap size={24} />
+                    <span className="text-[10px] mt-1">Matches</span>
+                </Link>
+                <Link href="/applications" className="flex flex-col items-center text-gray-400 hover:text-primary-600 transition-colors">
+                    <Briefcase size={24} />
+                    <span className="text-[10px] mt-1">Apps</span>
+                </Link>
+                <Link href="/student-profile" className="flex flex-col items-center text-gray-400 hover:text-primary-600 transition-colors">
+                    <Settings size={24} />
+                    <span className="text-[10px] mt-1">Profile</span>
+                </Link>
+            </nav>
+
             {/* Main Content */}
-            <main className="flex-1 overflow-y-auto">
-                <header className="bg-white border-b border-gray-100 px-8 py-6 flex items-center justify-between sticky top-0 z-10">
+            <main className="flex-1 overflow-y-auto pb-24 md:pb-0">
+                <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 px-4 md:px-8 py-4 md:py-6 flex items-center justify-between sticky top-0 z-10 transition-all">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-                        <p className="text-sm text-gray-500 font-medium">Welcome back, {user?.name}</p>
+                        <h1 className="text-xl md:text-2xl font-bold text-gray-900">Dashboard</h1>
+                        <p className="text-xs md:text-sm text-gray-500 font-medium">Welcome back, {user?.name}</p>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 md:gap-4">
                         <NotificationBell />
                         <Avatar name={user?.name} src={user?.profilePicture} size="md" />
                     </div>
                 </header>
 
-                <div className="p-8 space-y-8">
+                <div className="p-4 md:p-8 space-y-6 md:space-y-8">
                     {/* Stats Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <Card className="bg-gradient-to-br from-indigo-500 to-indigo-600 text-white p-6 relative overflow-hidden group">
@@ -191,17 +215,17 @@ export default function StudentDashboard() {
                                 <div className="py-10 text-center"><Loader size={32} className="animate-spin mx-auto text-primary-600" /></div>
                             ) : applications.length > 0 ? (
                                 applications.map((app) => (
-                                    <Card key={app._id} className="p-4 flex items-center justify-between hover:shadow-md transition-all border border-gray-100">
+                                    <Card key={app._id} className="p-4 flex flex-col md:flex-row md:items-center justify-between hover:shadow-md transition-all border border-gray-100 gap-4 md:gap-0">
                                         <div className="flex items-center gap-4">
                                             <Avatar name={app.employer?.companyName} src={app.employer?.profilePicture} size="md" />
                                             <div>
-                                                <h3 className="font-bold text-gray-900">{app.internship?.positionTitle || 'Unknown Position'}</h3>
-                                                <p className="text-sm text-gray-500">{app.employer?.companyName || 'Unknown Company'}</p>
+                                                <h3 className="font-bold text-gray-900 line-clamp-1">{app.internship?.positionTitle || 'Unknown Position'}</h3>
+                                                <p className="text-sm text-gray-500 line-clamp-1">{app.employer?.companyName || 'Unknown Company'}</p>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-4">
+                                        <div className="flex items-center justify-between md:justify-end w-full md:w-auto gap-4 mt-2 md:mt-0">
                                             <Badge variant={app.status === 'Applied' ? 'secondary' : app.status === 'Selected' ? 'success' : 'primary'}>{app.status}</Badge>
-                                            <Link href={`/internships/${app.internship?._id}`} className="text-gray-400 hover:text-primary-600"><ChevronRight size={20} /></Link>
+                                            <Link href={`/internships/${app.internship?._id}`} className="text-gray-400 hover:text-primary-600 flex bg-gray-50 p-2 rounded-lg md:bg-transparent"><ChevronRight size={20} /></Link>
                                         </div>
                                     </Card>
                                 ))

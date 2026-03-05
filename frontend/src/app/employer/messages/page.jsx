@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
+import axios from '@/services/apiClient';
 import Cookies from 'js-cookie';
 import { ArrowLeft, MessageSquare, Send, Loader2, User } from 'lucide-react';
 import Avatar from '@/components/common/Avatar';

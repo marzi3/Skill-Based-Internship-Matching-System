@@ -1,9 +1,15 @@
+const logger = require('../utils/logger');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const User = require('../models/User');
+const sendEmail = require('../utils/sendEmail');
 
 // Helper to generate JWT
 const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET || 'secret', {
+    if (!process.env.JWT_SECRET) {
+        throw new Error('JWT_SECRET is not defined in environment variables');
+    }
+    return jwt.sign({ id }, process.env.JWT_SECRET, {
         expiresIn: '30d',
     });
 };
@@ -12,14 +18,14 @@ const generateToken = (id) => {
 // @route   POST /api/auth/register
 // @access  Public
 const registerUser = async (req, res) => {
-    console.log('Register request body:', req.body); // Debug log
+    logger.info('Register request body:', req.body); // Debug log
     const { name, email, password, role } = req.body;
 
     try {
         const userExists = await User.findOne({ email });
 
         if (userExists) {
-            console.log('User already exists:', email); // Debug log
+            logger.info('User already exists:', email); // Debug log
             return res.status(400).json({ message: 'User already exists' });
         }
 
@@ -30,9 +36,39 @@ const registerUser = async (req, res) => {
             role: role || 'student',
         });
 
-        console.log('User created:', user._id); // Debug log
+        logger.info('User created:', user._id); // Debug log
 
         if (user) {
+            // Generate Email Verification Token
+            const verificationToken = user.getEmailVerificationToken();
+            await user.save({ validateBeforeSave: false });
+
+            // Create verification URL
+            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+            const verificationUrl = `${frontendUrl}/verify-email/${verificationToken}`;
+
+            const message = `Welcome to InternMatch! Please verify your email by clicking the following link: \n\n ${verificationUrl}`;
+
+            try {
+                await sendEmail({
+                    email: user.email,
+                    subject: 'Email Verification - InternMatch',
+                    message,
+                    html: `
+                        <h1>Welcome to InternMatch!</h1>
+                        <p>Thank you for registering. Please click the link below to verify your email address:</p>
+                        <a href="${verificationUrl}" clicktracking=off>Verify Email Address</a>
+                    `
+                });
+                logger.info(`Verification email sent to ${user.email}`);
+            } catch (err) {
+                logger.error('Failed to send verification email:', err);
+                user.emailVerificationToken = undefined;
+                user.emailVerificationExpire = undefined;
+                await user.save({ validateBeforeSave: false });
+                // We don't crash the registration, but we log the failure. User can request a new token later.
+            }
+
             const token = generateToken(user._id);
             res.cookie('jwt', token, {
                 httpOnly: true,
@@ -49,12 +85,49 @@ const registerUser = async (req, res) => {
                 token,
             });
         } else {
-            console.log('Invalid user data'); // Debug log
+            logger.info('Invalid user data'); // Debug log
             res.status(400).json({ message: 'Invalid user data' });
         }
     } catch (error) {
-        console.error('Registration error:', error); // Debug log
+        logger.error('Registration error:', error); // Debug log
         res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Verify Email
+// @route   GET /api/v1/auth/verifyemail/:token
+// @access  Public
+const verifyEmail = async (req, res) => {
+    try {
+        // Get hashed token
+        const emailVerificationToken = crypto
+            .createHash('sha256')
+            .update(req.params.token)
+            .digest('hex');
+
+        const user = await User.findOne({
+            emailVerificationToken,
+            emailVerificationExpire: { $gt: Date.now() },
+        });
+
+        if (!user) {
+            return res.status(400).json({ success: false, message: 'Invalid or expired verification token' });
+        }
+
+        // Set user to verified
+        user.isVerified = true;
+        user.emailVerificationToken = undefined;
+        user.emailVerificationExpire = undefined;
+
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Email successfully verified'
+        });
+    } catch (err) {
+        logger.error('Email verification error:', err);
+        res.status(500).json({ message: 'Server error during email verification' });
     }
 };
 
@@ -150,9 +223,6 @@ const linkedinAuthCallback = (req, res) => {
     res.redirect(`${frontendUrl}${getRoleDashboard(req.user.role)}`);
 };
 
-const crypto = require('crypto');
-const sendEmail = require('../utils/sendEmail');
-
 // @desc    Forgot Password
 // @route   POST /api/auth/forgotpassword
 // @access  Public
@@ -190,7 +260,7 @@ const forgotPassword = async (req, res) => {
 
             res.status(200).json({ success: true, data: 'Email sent' });
         } catch (err) {
-            console.log(err);
+            logger.info(err);
             user.resetPasswordToken = undefined;
             user.resetPasswordExpire = undefined;
 
@@ -402,6 +472,7 @@ module.exports = {
     linkedinAuthCallback,
     forgotPassword,
     resetPassword,
+    verifyEmail,
     updateProfile,
     updatePassword,
     getStudents,

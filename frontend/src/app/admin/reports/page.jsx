@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '@/services/apiClient';
 import Cookies from 'js-cookie';
 import { Download, FileText, FileSpreadsheet, BarChart2 } from 'lucide-react';
 import { jsPDF } from 'jspdf';

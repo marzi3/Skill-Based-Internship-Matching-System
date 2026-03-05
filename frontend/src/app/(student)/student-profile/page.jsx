@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
+import axios from '@/services/apiClient';
 import Link from 'next/link';
 import { useAuth } from '../../../context/AuthContext';
 import Input from '../../../components/common/Input';

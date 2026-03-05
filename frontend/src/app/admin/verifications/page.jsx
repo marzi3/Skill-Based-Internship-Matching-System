@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '@/services/apiClient';
 import { useAuth } from '@/context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, X, User, Building, FileText, ExternalLink, Calendar, Search } from 'lucide-react';

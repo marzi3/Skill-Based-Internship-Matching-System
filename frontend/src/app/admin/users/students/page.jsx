@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '@/services/apiClient';
 import Cookies from 'js-cookie';
 import { Search, MoreVertical, Trash2, Ban, CheckCircle, AlertCircle, RefreshCw, Loader2, UserX } from 'lucide-react';
 import Badge from '@/components/common/Badge';

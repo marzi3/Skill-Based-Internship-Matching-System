@@ -1,3 +1,4 @@
+const logger = require('../utils/logger');
 const nodemailer = require('nodemailer');
 const Notification = require('../models/Notification');
 const NotificationSettings = require('../models/NotificationSettings');
@@ -68,10 +69,10 @@ const sendEmailWithRetry = async (to, subject, html, retries = 3) => {
                 subject,
                 html
             });
-            console.log(`[Email Service] Sent successful email to ${to}`);
+            logger.info(`[Email Service] Sent successful email to ${to}`);
             return true;
         } catch (error) {
-            console.error(`[Email Service] Attempt ${i + 1} to send email failed:`, error.message);
+            logger.error(`[Email Service] Attempt ${i + 1} to send email failed:`, error.message);
             if (i === retries - 1) throw error;
             // Exponential backoff
             await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, i)));
@@ -130,14 +131,14 @@ const send = async ({ userId, type, message, link, sendEmail = true, subject }) 
 
                 // Dispatched asynchronously (fire-and-forget) to not block the calling request
                 sendEmailWithRetry(emailAddress, finalSubject, html).catch(err => {
-                    console.error('[Email Service] Final failure sending email:', err.message);
+                    logger.error('[Email Service] Final failure sending email:', err.message);
                 });
             }
         }
 
         return notification;
     } catch (error) {
-        console.error('[Notification Service Error]', error);
+        logger.error('[Notification Service Error]', error);
         throw error;
     }
 };

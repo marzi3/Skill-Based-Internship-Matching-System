@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, MapPin, Star, SlidersHorizontal, Zap, Loader2, ArrowLeft, X, ChevronDown, GraduationCap } from 'lucide-react';
-import axios from 'axios';
+import axios from '@/services/apiClient';
 import Cookies from 'js-cookie';
 import Card from '@/components/common/Card';
 import Avatar from '@/components/common/Avatar';

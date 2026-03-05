@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
+import axios from '@/services/apiClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     ArrowLeft, Building, MapPin, Clock, Calendar,

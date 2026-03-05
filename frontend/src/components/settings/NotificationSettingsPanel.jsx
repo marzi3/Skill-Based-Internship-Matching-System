@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '@/services/apiClient';
 import Cookies from 'js-cookie';
 import { Mail, Bell, MessageSquare, Briefcase, Zap } from 'lucide-react';
 

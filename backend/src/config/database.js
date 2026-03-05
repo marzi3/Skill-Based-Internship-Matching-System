@@ -1,3 +1,4 @@
+const logger = require('../utils/logger');
 const mongoose = require('mongoose');
 
 const connectDB = async () => {
@@ -10,7 +11,7 @@ const connectDB = async () => {
     
     return conn;
   } catch (error) {
-    console.error(`✗ Error connecting to MongoDB: ${error.message}`);
+    logger.error(`✗ Error connecting to MongoDB: ${error.message}`);
     process.exit(1);
   }
 };
@@ -28,7 +29,7 @@ const initializeDatabase = async () => {
       await db.createCollection('users');
     }
   } catch (error) {
-    console.error('✗ Error initializing database:', error.message);
+    logger.error('✗ Error initializing database:', error.message);
     throw error;
   }
 };

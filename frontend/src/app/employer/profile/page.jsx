@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { User as UserIcon, Building, Mail, Phone, MapPin, Globe, Edit3, Save, X, Loader2, ArrowLeft } from 'lucide-react';
 import Card from '@/components/common/Card';
 import { useAuth } from '@/context/AuthContext';
-import axios from 'axios';
+import axios from '@/services/apiClient';
 
 const ProfilePage = () => {
     const router = useRouter();

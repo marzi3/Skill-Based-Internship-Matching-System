@@ -1,3 +1,4 @@
+const logger = require('../utils/logger');
 const Student = require('../models/Student');
 const User = require('../models/User');
 const Internship = require('../models/Internship');
@@ -127,7 +128,7 @@ exports.saveEducation = asyncHandler(async (req, res, next) => {
   try {
     const { institution, degree, field, degreeLevel, startDate, endDate, isCurrentlyStudying } = req.body;
     
-    console.log('Education request data:', { institution, degree, field, degreeLevel, startDate, endDate });
+    logger.info('Education request data:', { institution, degree, field, degreeLevel, startDate, endDate });
 
     // Validation
     if (!institution || !degree || !field || !startDate) {
@@ -192,7 +193,7 @@ exports.saveEducation = asyncHandler(async (req, res, next) => {
       newEducation.degreeLevel = degreeLevel;
     }
 
-    console.log('Processed education:', newEducation);
+    logger.info('Processed education:', newEducation);
 
     // Check if education entry already exists
     const existingIndex = student.education.findIndex(
@@ -215,7 +216,7 @@ exports.saveEducation = asyncHandler(async (req, res, next) => {
       data: student,
     });
   } catch (error) {
-    console.error('Education save error:', error);
+    logger.error('Education save error:', error);
     return next(new ErrorResponse(`Failed to save education: ${error.message}`, 500));
   }
 });

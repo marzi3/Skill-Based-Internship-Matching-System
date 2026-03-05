@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Bell, Check, Trash2, ExternalLink, Settings } from 'lucide-react';
-import axios from 'axios';
+import axios from '@/services/apiClient';
 import Cookies from 'js-cookie';
 import Link from 'next/link';
 import Navbar from '@/components/common/Navbar';

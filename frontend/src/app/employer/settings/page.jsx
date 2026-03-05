@@ -6,7 +6,7 @@ import { Settings as SettingsIcon, Bell, Shield, User, CreditCard, Save, Loader2
 import { useTheme } from 'next-themes';
 import Card from '@/components/common/Card';
 import { useAuth } from '@/context/AuthContext';
-import axios from 'axios';
+import axios from '@/services/apiClient';
 
 const SettingsPage = () => {
     const router = useRouter();

@@ -1,3 +1,4 @@
+const logger = require('../utils/logger');
 const User = require('../models/User');
 const Internship = require('../models/Internship');
 const AuditLog = require('../models/AuditLog');
@@ -18,7 +19,7 @@ const logAdminAction = async (adminId, action, targetEntity, targetId, details =
             details,
         });
     } catch (error) {
-        console.error('Error logging admin action:', error);
+        logger.error('Error logging admin action:', error);
     }
 };
 
@@ -152,7 +153,7 @@ exports.updateEmployerStatus = async (req, res) => {
                 message: `Your account status has been updated to: ${status}.`,
                 link: '/employer/dashboard'
             });
-        } catch (err) { console.error('Notification failed', err); }
+        } catch (err) { logger.error('Notification failed', err); }
 
         res.json({
             success: true,
@@ -469,7 +470,7 @@ exports.updateStudentStatus = async (req, res) => {
                 message: `Your account status has been updated to: ${status}.`,
                 link: '/profile'
             });
-        } catch (err) { console.error('Notification failed', err); }
+        } catch (err) { logger.error('Notification failed', err); }
 
         res.json({
             success: true,

@@ -1,3 +1,4 @@
+const logger = require('../utils/logger');
 const Message = require('../models/Message');
 const Application = require('../models/Application');
 const asyncHandler = require('express-async-handler');
@@ -60,7 +61,7 @@ const sendMessage = asyncHandler(async (req, res) => {
             link: `/messages/${applicationId}`
         });
     } catch (error) {
-        console.error('Failed to dispatch message notification', error);
+        logger.error('Failed to dispatch message notification', error);
     }
 
     const populatedMessage = await message.populate('senderId', 'name');

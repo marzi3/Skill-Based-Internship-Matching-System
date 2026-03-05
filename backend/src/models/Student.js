@@ -240,6 +240,12 @@ const studentSchema = new mongoose.Schema({
   toObject: { virtuals: true },
 });
 
+// Index for search and common queries
+studentSchema.index({ 'personalInfo.fullName': 'text', 'personalInfo.location': 'text' });
+// Compound Indexes for query performance
+studentSchema.index({ status: 1, 'personalInfo.preferredLocation': 1 });
+studentSchema.index({ 'skills.name': 1, 'skills.proficiency': 1 });
+
 // Calculate profile completion
 studentSchema.methods.calculateProfileCompletion = function () {
   try {
@@ -293,12 +299,12 @@ studentSchema.methods.calculateProfileCompletion = function () {
     );
 
     // Update status based on matching readiness
-    if (this.profileCompletion.overall >= 80 && 
-        this.personalInfo?.gpa && 
-        this.personalInfo?.preferredLocation && 
-        this.personalInfo?.industriesOfInterest?.length > 0 &&
-        this.education && this.education.some(edu => edu.degreeLevel) &&
-        this.skills && this.skills.length >= 3) {
+    if (this.profileCompletion.overall >= 80 &&
+      this.personalInfo?.gpa &&
+      this.personalInfo?.preferredLocation &&
+      this.personalInfo?.industriesOfInterest?.length > 0 &&
+      this.education && this.education.some(edu => edu.degreeLevel) &&
+      this.skills && this.skills.length >= 3) {
       this.status = 'complete';
     } else if (this.profileCompletion.overall > 0) {
       this.status = 'incomplete';

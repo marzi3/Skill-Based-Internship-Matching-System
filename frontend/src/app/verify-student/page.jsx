@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '@/services/apiClient';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import { motion } from 'framer-motion';

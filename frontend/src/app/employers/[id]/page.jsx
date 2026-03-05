@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import axios from 'axios';
+import axios from '@/services/apiClient';
 import Navbar from '@/components/common/Navbar';
 import { Building, MapPin, Globe, Briefcase, Calendar, ChevronRight, Loader2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';

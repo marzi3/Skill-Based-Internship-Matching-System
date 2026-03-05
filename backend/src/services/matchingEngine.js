@@ -1,3 +1,4 @@
+const logger = require('../utils/logger');
 /**
  * Rule-Based Expert System: Matching Engine
  * 
@@ -35,9 +36,9 @@ function loadRules() {
         // Sort knowledge base descending by priority to enforce conflict resolution strategy
         knowledgeBase.sort((a, b) => b.priority - a.priority);
 
-        console.log(`[MatchingEngine] Successfully loaded ${knowledgeBase.length} rules.`);
+        logger.info(`[MatchingEngine] Successfully loaded ${knowledgeBase.length} rules.`);
     } catch (error) {
-        console.error('[MatchingEngine] Failed to load rules directory:', error);
+        logger.error('[MatchingEngine] Failed to load rules directory:', error);
         // knowledgeBase remains empty array, engine degrades safely
     }
 }
@@ -124,7 +125,7 @@ function evaluatePair(student, internship) {
                 }
             }
         } catch (error) {
-            console.error(`[MatchingEngine] Rule failed to evaluate: ${rule.name}`, error);
+            logger.error(`[MatchingEngine] Rule failed to evaluate: ${rule.name}`, error);
             // Suppress individual rule failure and continue processing remaining rules
         }
     }

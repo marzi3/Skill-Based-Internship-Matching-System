@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Bell, Check, Trash2, ExternalLink } from 'lucide-react';
-import axios from 'axios';
+import axios from '@/services/apiClient';
 import Cookies from 'js-cookie';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';

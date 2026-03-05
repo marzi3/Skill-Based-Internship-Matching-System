@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
+import axios from '@/services/apiClient';
 import Cookies from 'js-cookie';
 import { Bell, Zap, CheckCircle2, AlertTriangle, Clock, ArrowLeft, Loader2, Check, Trash2, Info } from 'lucide-react';
 import { motion } from 'framer-motion';

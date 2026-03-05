@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FileText, Search, Filter, Calendar, CheckCircle2, Clock, XCircle, Loader2, ArrowLeft } from 'lucide-react';
-import axios from 'axios';
+import axios from '@/services/apiClient';
 import Card from '@/components/common/Card';
 import Badge from '@/components/common/Badge';
 import Link from 'next/link';

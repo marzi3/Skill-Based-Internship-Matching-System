@@ -1,3 +1,4 @@
+const logger = require('../utils/logger');
 const Application = require('../models/Application');
 const Internship = require('../models/Internship');
 const User = require('../models/User');
@@ -48,7 +49,7 @@ exports.applyToInternship = async (req, res) => {
                 message: `You have received a new application for ${internship.positionTitle}.`,
                 link: '/employer/applications' // Or specific URL
             });
-        } catch (err) { console.error('Notification failed', err); }
+        } catch (err) { logger.error('Notification failed', err); }
 
         res.status(201).json({
             success: true,
@@ -108,7 +109,7 @@ exports.updateApplicationStatus = async (req, res) => {
                 message: `Your application status for ${application.internship.positionTitle} has been updated to: ${status}.`,
                 link: '/student/applications'
             });
-        } catch (err) { console.error('Notification failed', err); }
+        } catch (err) { logger.error('Notification failed', err); }
 
         res.status(200).json({
             success: true,

@@ -1,3 +1,4 @@
+const logger = require('../utils/logger');
 const Internship = require('../models/Internship');
 const User = require('../models/User');
 
@@ -303,7 +304,7 @@ exports.getMyInternships = async (req, res) => {
             data: internships
         });
     } catch (error) {
-        console.error('CRITICAL: getMyInternships Failure:', error);
+        logger.error('CRITICAL: getMyInternships Failure:', error);
         res.status(500).json({
             success: false,
             message: `Internal Query Failure: ${error.message}`
@@ -371,7 +372,7 @@ exports.getSkillDemands = async (req, res) => {
             data: result
         });
     } catch (error) {
-        console.error('CRITICAL: getSkillDemands Failure:', error);
+        logger.error('CRITICAL: getSkillDemands Failure:', error);
         res.status(500).json({
             success: false,
             message: `Aggregation Failure: ${error.message}`

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '@/services/apiClient';
 import Cookies from 'js-cookie';
 import { ShieldAlert, Trash2, CheckCircle, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';

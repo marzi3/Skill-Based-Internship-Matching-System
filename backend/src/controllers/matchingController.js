@@ -1,3 +1,4 @@
+const logger = require('../utils/logger');
 const Student = require('../models/Student');
 const Internship = require('../models/Internship');
 const Match = require('../models/Match');
@@ -96,18 +97,18 @@ exports.getBestMatches = async (req, res) => {
 
             // Execute the bulk write asynchronously; don't await so we don't slow down the response
             Match.bulkWrite(bulkOps).catch(err => {
-                console.error('[Matching Controller] Failed to cache matches in DB:', err);
+                logger.error('[Matching Controller] Failed to cache matches in DB:', err);
             });
         }
 
         return res.status(200).json({
             success: true,
-            data: formattedMatches.map(({ rawScore, explanationData, ...rest }) => rest), // Strip sensitive internal details
+            data: formattedMatches.map(({ rawScore, ...rest }) => rest), // Only strip raw score now, keeping explanationData
             totalMatches: formattedMatches.length
         });
 
     } catch (error) {
-        console.error('Error getting best matches:', error);
+        logger.error('Error getting best matches:', error);
         return res.status(500).json({
             success: false,
             message: 'Server error while fetching matches',
@@ -199,7 +200,7 @@ exports.matchInternshipsForStudent = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error matching internships', error);
+        logger.error('Error matching internships', error);
         return res.status(500).json({
             success: false,
             message: 'Failed to process match',
@@ -276,7 +277,7 @@ exports.matchStudentsForInternship = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error generating candidate matches', error);
+        logger.error('Error generating candidate matches', error);
         return res.status(500).json({
             success: false,
             message: 'Failed to generate candidates',
@@ -303,7 +304,7 @@ exports.explainMatch = async (req, res) => {
         const internship = await Internship.findById(internshipId).lean();
 
         if (!student || !internship) {
-            console.log(`[Matching Controller] Explain Match failed: Student: ${!!student}, Internship: ${!!internship}`);
+            logger.info(`[Matching Controller] Explain Match failed: Student: ${!!student}, Internship: ${!!internship}`);
             return res.status(404).json({
                 success: false,
                 message: !student ? 'Student profile not found' : 'Internship listing not found'
@@ -318,7 +319,7 @@ exports.explainMatch = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error generating match explanation', error);
+        logger.error('Error generating match explanation', error);
         return res.status(500).json({
             success: false,
             message: 'Failed to explain match',

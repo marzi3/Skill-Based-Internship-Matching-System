@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import axios from 'axios';
+import axios from '@/services/apiClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     ArrowLeft,

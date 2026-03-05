@@ -7,7 +7,7 @@ const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         // Use different directories based on field name
         let uploadDir = 'uploads/';
-        
+
         if (file.fieldname === 'profileImage') {
             uploadDir = 'uploads/profile-images/';
         } else if (file.fieldname === 'resume') {
@@ -15,7 +15,7 @@ const storage = multer.diskStorage({
         } else if (file.fieldname === 'companyLogo') {
             uploadDir = 'uploads/company-logos/';
         }
-        
+
         // Create directory if it doesn't exist
         if (!fs.existsSync(uploadDir)) {
             fs.mkdirSync(uploadDir, { recursive: true });
@@ -29,17 +29,27 @@ const storage = multer.diskStorage({
 
 // Check file type
 function checkFileType(file, cb) {
-    // Allowed ext
-    const filetypes = /jpeg|jpg|png|pdf/;
+    // Allowed exact MIME types
+    const allowedMimeTypes = [
+        'image/jpeg',
+        'image/png',
+        'image/gif',
+        'application/pdf'
+    ];
+
+    // Allowed extensions
+    const filetypes = /jpeg|jpg|png|gif|pdf/;
+
     // Check ext
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    // Check mime
-    const mimetype = filetypes.test(file.mimetype);
+
+    // Check exact mime
+    const mimetype = allowedMimeTypes.includes(file.mimetype);
 
     if (mimetype && extname) {
         return cb(null, true);
     } else {
-        cb('Error: Images/PDF Only!');
+        cb(new Error('Invalid file type! Only strict images (JPEG, PNG, GIF) and PDFs are allowed.'));
     }
 }
 
