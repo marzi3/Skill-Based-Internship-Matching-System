@@ -34,7 +34,7 @@ const StudentInternshipsPage = () => {
             try {
                 setLoading(true);
                 // Protocol: Fetching personalized matches
-                const response = await axios.post('/api/matching/internships', {
+                const response = await axios.post('/matching/internships', {
                     studentId: user._id
                 });
                 if (response.data.success) {

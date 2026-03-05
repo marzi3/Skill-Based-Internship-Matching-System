@@ -32,7 +32,7 @@ const ProfilePage = () => {
         setIsLoading(true);
         setMessage({ type: '', text: '' });
         try {
-            const res = await axios.put('/api/auth/profile', formData);
+            const res = await axios.put('/auth/profile', formData);
             setUser({ ...user, ...res.data }); // Update context
             setIsEditing(false);
             setMessage({ type: 'success', text: 'Profile updated successfully!' });

@@ -40,7 +40,7 @@ const CandidateSearchPage = () => {
 
     const fetchStudents = async () => {
         try {
-            const res = await axios.get('http://localhost:5001/api/auth/students');
+            const res = await axios.get('/auth/students');
             if (res.data.success) setCandidates(res.data.data || []);
         } catch (err) {
             console.error('Failed to fetch students:', err);
@@ -51,7 +51,7 @@ const CandidateSearchPage = () => {
 
     const fetchMyInternships = async () => {
         try {
-            const res = await axios.get('/api/internships/my-postings');
+            const res = await axios.get('/internships/my-postings');
             setInternships(res.data.data || []);
         } catch { /* silent */ }
     };
@@ -64,7 +64,7 @@ const CandidateSearchPage = () => {
         }
         setRapidMatchLoading(true);
         try {
-            const res = await axios.post('http://localhost:5001/api/matching/students', {
+            const res = await axios.post('/matching/students', {
                 internshipId,
                 limit: 20,
             });

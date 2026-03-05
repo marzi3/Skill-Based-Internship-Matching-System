@@ -25,7 +25,7 @@ export default function EmployersManagement() {
         setLoading(true);
         try {
             const token = Cookies.get('token') || localStorage.getItem('token');
-            const res = await axios.get('http://localhost:5001/api/admin/employers', {
+            const res = await axios.get('/admin/employers', {
                 headers: { Authorization: `Bearer ${token}` },
                 params: { search: searchTerm, status: statusFilter, page, limit: 10 }
             });
@@ -49,7 +49,7 @@ export default function EmployersManagement() {
     const handleUpdateStatus = async (id, newStatus) => {
         try {
             const token = Cookies.get('token') || localStorage.getItem('token');
-            await axios.patch(`http://localhost:5001/api/admin/employers/${id}/status`,
+            await axios.patch(`/admin/employers/${id}/status`,
                 { status: newStatus },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -71,7 +71,7 @@ export default function EmployersManagement() {
         setActionLoading(id);
         try {
             const token = Cookies.get('token') || localStorage.getItem('token');
-            await axios.delete(`http://localhost:5001/api/admin/users/${id}`, {
+            await axios.delete(`/admin/users/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setEmployers(employers.filter(e => e._id !== id));

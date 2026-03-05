@@ -33,12 +33,12 @@ export default function InternshipDetailPage({ params }) {
                 setLoading(true);
 
                 // 1. Fetch Job Details
-                const jobRes = await axios.get(`/api/internships/${id}`);
+                const jobRes = await axios.get(`/internships/${id}`);
                 if (!jobRes.data.success) throw new Error('Failed to load internship details');
                 setInternship(jobRes.data.data);
 
                 // 2. Fetch Match Analysis
-                const matchRes = await axios.get(`/api/matching/explain/${user._id}/${id}`);
+                const matchRes = await axios.get(`/matching/explain/${user._id}/${id}`);
                 if (matchRes.data.success) {
                     setAnalysis(matchRes.data.analysis);
                 }
@@ -61,7 +61,7 @@ export default function InternshipDetailPage({ params }) {
     const handleApply = async () => {
         try {
             setApplying(true);
-            const res = await axios.post(`/api/applications/apply/${id}`);
+            const res = await axios.post(`/applications/apply/${id}`);
             if (res.data.success) {
                 setApplied(true);
             }

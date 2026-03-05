@@ -34,7 +34,7 @@ export default function InternshipSearch() {
     const fetchInternships = async () => {
         try {
             setLoading(true);
-            const res = await axios.get('/api/internships', {
+            const res = await axios.get('/internships', {
                 params: { q: searchQuery, ...filters }
             });
             setInternships(res.data.data || []);

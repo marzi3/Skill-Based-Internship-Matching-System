@@ -50,7 +50,7 @@ function FindInternshipsContent() {
                     headers: { Authorization: `Bearer ${token}` }
                 };
 
-                const res = await axios.get(`${API_URL}/api/matching/best-matches`, config);
+                const res = await axios.get(`/matching/best-matches`);
                 if (res.data.success && res.data.data) {
                     const matchedInternships = res.data.data.map(m => ({
                         ...m.internship,
@@ -70,7 +70,7 @@ function FindInternshipsContent() {
             if (sort && sort !== 'Best Matches') params.sort = sort;
             if (sort === 'Best Matches') params.sort = 'Best Matches';
 
-            const res = await axios.get(`${API_URL}/api/internships`, { params });
+            const res = await axios.get(`/internships`, { params });
             setInternships(res.data.data || []);
         } catch (err) {
             console.error('Failed to fetch internships:', err);

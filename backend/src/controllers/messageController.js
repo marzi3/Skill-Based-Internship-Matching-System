@@ -3,6 +3,7 @@ const Message = require('../models/Message');
 const Application = require('../models/Application');
 const asyncHandler = require('express-async-handler');
 const { send: sendNotification } = require('../services/notificationService');
+const { emitToUser } = require('../config/socket');
 
 // @desc    Get message thread for an application
 // @route   GET /api/messages/:applicationId
@@ -51,6 +52,12 @@ const sendMessage = asyncHandler(async (req, res) => {
         content
     });
 
+    // Populate sender details for real-time pushing and immediate response
+    const populatedMessage = await message.populate('senderId', 'name profilePicture isStudent isEmployer');
+
+    // Emit real-time message event via WebSocket
+    emitToUser(receiverId, 'receiveMessage', populatedMessage);
+
     // Trigger Notification to Receiver
     try {
         const senderName = req.user.name || 'A user';
@@ -63,8 +70,6 @@ const sendMessage = asyncHandler(async (req, res) => {
     } catch (error) {
         logger.error('Failed to dispatch message notification', error);
     }
-
-    const populatedMessage = await message.populate('senderId', 'name');
 
     res.status(201).json({
         success: true,

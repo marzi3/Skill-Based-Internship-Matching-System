@@ -9,7 +9,8 @@ import {
     Clock,
     CheckCircle2,
     XCircle,
-    ArrowRight
+    ArrowRight,
+    Loader
 } from 'lucide-react';
 import Card from '@/components/common/Card';
 import Badge from '@/components/common/Badge';
@@ -22,7 +23,7 @@ export default function StudentApplications() {
     useEffect(() => {
         const fetchApplications = async () => {
             try {
-                const res = await axios.get('http://localhost:5001/api/applications/student', {
+                const res = await axios.get('/applications/student', {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token') || document.cookie.replace(/(?:(?:^|.*;\s*)token\s*\=\s*([^;]*).*$)|^.*$/, "$1")}` }
                 });
                 setApplications(res.data.data || []);

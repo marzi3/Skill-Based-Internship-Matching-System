@@ -16,7 +16,7 @@ export default function ContentModeration() {
         setLoading(true);
         try {
             const token = Cookies.get('token') || localStorage.getItem('token');
-            const res = await axios.get('http://localhost:5001/api/admin/moderation', {
+            const res = await axios.get('/admin/moderation', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setFlaggedListings(res.data.data.flaggedListings || []);
@@ -36,7 +36,7 @@ export default function ContentModeration() {
         if (!confirm('Are you sure you want to remove this listing?')) return;
         try {
             const token = Cookies.get('token') || localStorage.getItem('token');
-            await axios.delete(`http://localhost:5001/api/admin/listings/${id}`, {
+            await axios.delete(`/admin/listings/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             fetchModerationItems();
@@ -48,7 +48,7 @@ export default function ContentModeration() {
     const handleResolveReport = async (id, status) => {
         try {
             const token = Cookies.get('token') || localStorage.getItem('token');
-            await axios.patch(`http://localhost:5001/api/admin/moderation/reports/${id}`,
+            await axios.patch(`/admin/moderation/reports/${id}`,
                 { status },
                 { headers: { Authorization: `Bearer ${token}` } }
             );

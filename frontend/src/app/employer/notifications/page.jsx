@@ -23,7 +23,7 @@ const NotificationsPage = () => {
     const fetchNotifications = async () => {
         try {
             const token = Cookies.get('token') || localStorage.getItem('token');
-            const res = await axios.get('http://localhost:5001/api/notifications', {
+            const res = await axios.get('/notifications', {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setNotifications(res.data.data || res.data.notifications || []);
@@ -37,7 +37,7 @@ const NotificationsPage = () => {
     const markAsRead = async (id) => {
         try {
             const token = Cookies.get('token') || localStorage.getItem('token');
-            await axios.patch(`http://localhost:5001/api/notifications/${id}/read`, {}, {
+            await axios.patch(`/notifications/${id}/read`, {}, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
@@ -49,7 +49,7 @@ const NotificationsPage = () => {
     const deleteNotification = async (id) => {
         try {
             const token = Cookies.get('token') || localStorage.getItem('token');
-            await axios.delete(`http://localhost:5001/api/notifications/${id}`, {
+            await axios.delete(`/notifications/${id}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setNotifications(prev => prev.filter(n => n._id !== id));

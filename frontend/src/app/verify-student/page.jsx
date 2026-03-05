@@ -30,7 +30,7 @@ export default function VerifyStudent() {
         setUploading(true);
         try {
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:5001/api/verification/student', formData, {
+            await axios.post('/verification/student', formData, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 },

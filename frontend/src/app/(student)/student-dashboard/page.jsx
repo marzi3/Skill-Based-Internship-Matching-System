@@ -33,6 +33,7 @@ import Avatar from '@/components/common/Avatar';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import NotificationBell from '@/components/notifications/NotificationBell';
+import RecommendedInternships from '@/components/matching/RecommendedInternships';
 
 export default function StudentDashboard() {
     const { user, logout } = useAuth();
@@ -50,19 +51,10 @@ export default function StudentDashboard() {
         const fetchDashboardData = async () => {
             try {
                 setLoading(true);
-                const token = localStorage.getItem('token');
-                const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
-
-                const config = {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                };
-
                 const [matchesRes, statsRes, appsRes] = await Promise.all([
-                    axios.get(`${API_URL}/api/matching/best-matches`, config),
-                    axios.get(`${API_URL}/api/applications/student/stats`, config),
-                    axios.get(`${API_URL}/api/applications/student`, config)
+                    axios.get(`/matching/best-matches`),
+                    axios.get(`/applications/student/stats`),
+                    axios.get(`/applications/student`)
                 ]);
 
                 if (matchesRes.data.success) {
@@ -208,7 +200,7 @@ export default function StudentDashboard() {
                             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                                 <Briefcase className="text-primary-600" size={20} fill="currentColor" /> Recent Applications
                             </h2>
-                            <Link href="/student/applications" className="text-sm font-bold text-primary-600 hover:underline">View All</Link>
+                            <Link href="/applications" className="text-sm font-bold text-primary-600 hover:underline">View All</Link>
                         </div>
                         <div className="space-y-4">
                             {loading ? (
@@ -247,45 +239,7 @@ export default function StudentDashboard() {
                         </div>
 
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            {loading ? (
-                                <div className="col-span-full py-20 text-center"><Loader size={32} className="animate-spin mx-auto text-primary-600" /></div>
-                            ) : matches.length > 0 ? (
-                                matches.map((match) => (
-                                    <Card key={match.internship._id} padding="lg" className="hover:shadow-xl transition-all border border-gray-100 group">
-                                        <div className="space-y-4">
-                                            <div className="flex justify-between items-start">
-                                                <div className="bg-gray-100 p-3 rounded-2xl"><Briefcase size={24} className="text-gray-600" /></div>
-                                                <div className="flex flex-col items-end">
-                                                    <div className="bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-xs font-black border border-emerald-100 flex items-center gap-1">
-                                                        <Star size={12} fill="currentColor" /> {Math.round(match.score)}% Match
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <h3 className="font-bold text-gray-900 group-hover:text-primary-600 transition-colors">{match.internship.positionTitle}</h3>
-                                                <p className="text-gray-500 text-sm font-medium">{match.internship.employer?.companyName || match.internship.company}</p>
-                                            </div>
-                                            <div className="flex flex-wrap gap-2 pt-2">
-                                                {(match.internship.requiredSkills || []).slice(0, 3).map(skill => (
-                                                    <Badge key={typeof skill === 'string' ? skill : skill.name} variant="secondary" size="sm">
-                                                        {typeof skill === 'string' ? skill : skill.name}
-                                                    </Badge>
-                                                ))}
-                                            </div>
-                                            <button
-                                                onClick={() => window.location.href = `/internships/${match.internship._id}`}
-                                                className="w-full mt-4 py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-black transition-all flex items-center justify-center gap-2 group/btn"
-                                            >
-                                                Launch Protocol <ChevronRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
-                                            </button>
-                                        </div>
-                                    </Card>
-                                ))
-                            ) : (
-                                <div className="col-span-full py-20 bg-white rounded-2xl border border-dashed border-gray-200 text-center">
-                                    <p className="text-gray-400 font-bold">No high-probability matches detected yet.</p>
-                                </div>
-                            )}
+                            <RecommendedInternships matches={matches} />
                         </div>
                     </div>
                 </div>

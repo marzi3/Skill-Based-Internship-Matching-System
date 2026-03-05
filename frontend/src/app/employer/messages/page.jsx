@@ -29,7 +29,7 @@ const EmployerMessagesPage = () => {
     const fetchApplications = async () => {
         try {
             const token = Cookies.get('token') || localStorage.getItem('token');
-            const res = await axios.get('http://localhost:5001/api/applications/employer', {
+            const res = await axios.get('/applications/employer', {
                 headers: { Authorization: `Bearer ${token}` },
             });
             const apps = res.data.data || res.data.applications || [];
@@ -46,7 +46,7 @@ const EmployerMessagesPage = () => {
         setMsgLoading(true);
         try {
             const token = Cookies.get('token') || localStorage.getItem('token');
-            const res = await axios.get(`http://localhost:5001/api/messages/${app._id}`, {
+            const res = await axios.get(`/messages/${app._id}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setMessages(res.data.data || res.data.messages || []);
@@ -65,7 +65,7 @@ const EmployerMessagesPage = () => {
         setSendLoading(true);
         try {
             const token = Cookies.get('token') || localStorage.getItem('token');
-            const res = await axios.post('http://localhost:5001/api/messages', {
+            const res = await axios.post('/messages', {
                 applicationId: selectedApp._id,
                 content: newMessage.trim(),
                 receiverId: selectedApp.student?._id || selectedApp.student,

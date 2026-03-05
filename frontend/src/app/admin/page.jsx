@@ -23,8 +23,8 @@ export default function AdminDashboard() {
 
                 // Fetch stats and reports concurrently
                 const [statsRes, reportsRes] = await Promise.all([
-                    axios.get('http://localhost:5001/api/admin/dashboard', config),
-                    axios.get('http://localhost:5001/api/admin/reports', config)
+                    axios.get('/admin/dashboard'),
+                    axios.get('/admin/reports')
                 ]);
 
                 setStats(statsRes.data.data);

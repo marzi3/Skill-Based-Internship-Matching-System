@@ -45,7 +45,7 @@ export default function MyPostingsPage() {
     const fetchMyInternships = async () => {
         setLoading(true);
         try {
-            const res = await axios.get('/api/internships/my-postings');
+            const res = await axios.get('/internships/my-postings');
             setInternships(res.data.data || []);
         } catch (e) {
             setError(e.response?.data?.message || 'Failed to load postings.');
@@ -56,7 +56,7 @@ export default function MyPostingsPage() {
 
     const toggleStatus = async (id) => {
         try {
-            const res = await axios.patch(`/api/internships/${id}/status`);
+            const res = await axios.patch(`/internships/${id}/status`);
             if (res.data.success) {
                 setInternships(p => p.map(i => i._id === id ? { ...i, status: res.data.data.status } : i));
                 showToast('success', 'Status Updated', `Posting is now ${res.data.data.status}.`);
@@ -70,7 +70,7 @@ export default function MyPostingsPage() {
     const confirmDelete = async () => {
         setDeleteLoading(true);
         try {
-            await axios.delete(`/api/internships/${deleteModal.id}`);
+            await axios.delete(`/internships/${deleteModal.id}`);
             const t = deleteModal.title;
             setInternships(p => p.filter(i => i._id !== deleteModal.id));
             closeDel();

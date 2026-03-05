@@ -32,10 +32,11 @@ const seedData = async () => {
 
         console.log('----------------------------------------------------');
         console.log('0. Creating Admin...');
-        await User.create({
-            name: 'System Admin', email: 'admin@test.com', password: TEST_PASSWORD,
-            role: 'admin', status: 'approved', isVerified: true, verificationStatus: 'approved'
-        });
+        await User.findOneAndUpdate(
+            { email: 'admin@test.com' },
+            { name: 'System Admin', password: TEST_PASSWORD, role: 'admin', status: 'approved', isVerified: true, verificationStatus: 'approved' },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
 
         console.log('----------------------------------------------------');
         console.log('1. Creating Employers...');

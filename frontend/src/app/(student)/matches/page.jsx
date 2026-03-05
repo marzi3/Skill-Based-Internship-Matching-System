@@ -54,7 +54,7 @@ export default function BestMatchesPage() {
                     }
                 };
 
-                const matchesRes = await axios.get(`${API_URL}/api/matching/best-matches?limit=20`, config);
+                const matchesRes = await axios.get(`/matching/best-matches?limit=20`);
 
                 if (matchesRes.data.success) {
                     setMatches(matchesRes.data.data || []);

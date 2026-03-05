@@ -18,7 +18,7 @@ export default function StudentPublicProfile() {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const res = await axios.get(`http://localhost:5001/api/auth/students/${params.id}`);
+                const res = await axios.get(`/auth/students/${params.id}`);
                 setStudentData(res.data.data);
             } catch (err) {
                 setError(err.response?.data?.message || 'Failed to load student profile');

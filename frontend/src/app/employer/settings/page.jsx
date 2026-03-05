@@ -42,7 +42,7 @@ const SettingsPage = () => {
         e.preventDefault();
         setIsLoading(true);
         try {
-            const res = await axios.put('/api/auth/profile', profileData);
+            const res = await axios.put('/auth/profile', profileData);
             setUser({ ...user, ...res.data });
             showMessage('success', 'Profile updated successfully.');
         } catch (error) {
@@ -63,7 +63,7 @@ const SettingsPage = () => {
 
         setIsLoading(true);
         try {
-            await axios.put('/api/auth/password', {
+            await axios.put('/auth/password', {
                 currentPassword: passwordData.currentPassword,
                 newPassword: passwordData.newPassword
             });

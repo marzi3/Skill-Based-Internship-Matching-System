@@ -17,7 +17,7 @@ export default function AdminVerifications() {
 
     const fetchVerifications = async () => {
         try {
-            const { data } = await axios.get('/api/verification/pending');
+            const { data } = await axios.get('/verification/pending');
             setVerifications(data);
         } catch (err) {
             console.error(err);
@@ -27,7 +27,7 @@ export default function AdminVerifications() {
     const handleAction = async (id, action) => {
         if (action === 'reject' && !confirm('Reject this user?')) return;
         try {
-            await axios.put(`/api/verification/${id}/${action}`);
+            await axios.put(`/verification/${id}/${action}`);
             setVerifications(prev => prev.filter(v => v._id !== id));
         } catch (err) {
             alert(`Failed to ${action}`);

@@ -280,7 +280,7 @@ const CreateInternshipPage = () => {
       };
 
       // 2. Transmit protocol to backend API
-      const response = await axios.post('/api/internships/create', payload);
+      const response = await axios.post('/api/v1/internships/create', payload);
 
       if (response.data.success) {
         setSuccessMessage('Internship protocol successfully deployed! Redirecting to Dashboard...');

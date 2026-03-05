@@ -19,7 +19,7 @@ export default function EmployerPublicProfile() {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const res = await axios.get(`/api/auth/employers/${params.id}`);
+                const res = await axios.get(`/auth/employers/${params.id}`);
                 setEmployer(res.data.data.employer);
                 setInternships(res.data.data.internships);
             } catch (err) {

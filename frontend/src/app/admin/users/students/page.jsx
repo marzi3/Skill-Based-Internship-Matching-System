@@ -35,7 +35,7 @@ export default function StudentManagement() {
         setLoading(true);
         try {
             const token = Cookies.get('token') || localStorage.getItem('token');
-            const res = await axios.get('http://localhost:5001/api/admin/students', {
+            const res = await axios.get('/admin/students', {
                 params: { page, limit: 12, search, status: statusFilter },
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -54,7 +54,7 @@ export default function StudentManagement() {
         setActionLoading(id);
         try {
             const token = Cookies.get('token') || localStorage.getItem('token');
-            await axios.patch(`http://localhost:5001/api/admin/students/${id}/status`,
+            await axios.patch(`/admin/students/${id}/status`,
                 { status: newStatus },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -73,7 +73,7 @@ export default function StudentManagement() {
         setActionLoading(id);
         try {
             const token = Cookies.get('token') || localStorage.getItem('token');
-            await axios.delete(`http://localhost:5001/api/admin/users/${id}`, {
+            await axios.delete(`/admin/users/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setStudents(students.filter(s => s._id !== id));

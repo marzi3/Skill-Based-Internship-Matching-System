@@ -21,7 +21,7 @@ export default function NotificationsPage() {
         try {
             setLoading(true);
             const token = Cookies.get('token') || localStorage.getItem('token');
-            const res = await axios.get('http://localhost:5001/api/notifications', {
+            const res = await axios.get('/notifications', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (res.data.success) {
@@ -37,7 +37,7 @@ export default function NotificationsPage() {
     const markAsRead = async (id) => {
         try {
             const token = Cookies.get('token') || localStorage.getItem('token');
-            await axios.patch(`http://localhost:5001/api/notifications/${id}/read`, {}, {
+            await axios.patch(`/notifications/${id}/read`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setNotifications(notifications.map(n => n._id === id ? { ...n, isRead: true } : n));
@@ -50,7 +50,7 @@ export default function NotificationsPage() {
         if (e) e.stopPropagation();
         try {
             const token = Cookies.get('token') || localStorage.getItem('token');
-            await axios.delete(`http://localhost:5001/api/notifications/${id}`, {
+            await axios.delete(`/notifications/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setNotifications(notifications.filter(n => n._id !== id));

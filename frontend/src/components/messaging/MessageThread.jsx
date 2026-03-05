@@ -5,18 +5,35 @@ import axios from '@/services/apiClient';
 import Cookies from 'js-cookie';
 import { Send, User as UserIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useSocket } from '@/context/SocketContext';
 
 export default function MessageThread({ applicationId, receiverId, currentUserId }) {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [loading, setLoading] = useState(true);
     const messagesEndRef = useRef(null);
+    const { socket } = useSocket();
 
     useEffect(() => {
         fetchMessages();
-        const interval = setInterval(fetchMessages, 10000); // 10s polling for simplicity
-        return () => clearInterval(interval);
     }, [applicationId]);
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleReceiveMessage = (incomingMsg) => {
+            // Only append if it belongs to this conversation
+            if (incomingMsg.applicationId === applicationId) {
+                setMessages((prev) => [...prev, incomingMsg]);
+            }
+        };
+
+        socket.on('receiveMessage', handleReceiveMessage);
+
+        return () => {
+            socket.off('receiveMessage', handleReceiveMessage);
+        };
+    }, [socket, applicationId]);
 
     useEffect(() => {
         scrollToBottom();
@@ -29,7 +46,7 @@ export default function MessageThread({ applicationId, receiverId, currentUserId
     const fetchMessages = async () => {
         try {
             const token = Cookies.get('token') || localStorage.getItem('token');
-            const res = await axios.get(`http://localhost:5001/api/messages/${applicationId}`, {
+            const res = await axios.get(`/messages/${applicationId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (res.data.success) {
@@ -48,7 +65,7 @@ export default function MessageThread({ applicationId, receiverId, currentUserId
 
         try {
             const token = Cookies.get('token') || localStorage.getItem('token');
-            const res = await axios.post(`http://localhost:5001/api/messages`, {
+            const res = await axios.post(`/messages`, {
                 applicationId,
                 receiverId,
                 content: newMessage

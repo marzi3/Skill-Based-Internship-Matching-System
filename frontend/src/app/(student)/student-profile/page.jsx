@@ -164,7 +164,7 @@ export default function StudentProfile() {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await axios.get(`${apiUrl}/api/students/profile`, {
+      const response = await axios.get(`/students/profile`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -286,7 +286,7 @@ export default function StudentProfile() {
       }
 
       const response = await axios.post(
-        `${apiUrl}/api/students/profile/certification`,
+        `/students/profile/certification`,
         newCertification,
         { headers: { Authorization: `Bearer ${authToken}` } }
       );
@@ -326,7 +326,7 @@ export default function StudentProfile() {
       formData.append('resume', file);
 
       const response = await axios.post(
-        `${apiUrl}/api/students/profile/resume`,
+        `/students/profile/resume`,
         formData,
         {
           headers: {
@@ -373,7 +373,7 @@ export default function StudentProfile() {
       }
 
       const response = await axios.delete(
-        `${apiUrl}/api/students/profile/certification/${certificationId}`,
+        `/students/profile/certification/${certificationId}`,
         { headers: { Authorization: `Bearer ${authToken}` } }
       );
 
@@ -440,7 +440,7 @@ export default function StudentProfile() {
       }
 
       const response = await axios.delete(
-        `${apiUrl}/api/students/profile/reset`,
+        `/students/profile/reset`,
         {
           headers: {
             'Authorization': `Bearer ${authToken}`
@@ -499,7 +499,7 @@ export default function StudentProfile() {
       }
 
       const response = await axios.post(
-        `${apiUrl}/api/students/profile/personal`,
+        `/students/profile/personal`,
         personalInfo,
         {
           headers: {
@@ -549,7 +549,7 @@ export default function StudentProfile() {
       }
 
       const response = await axios.post(
-        `${apiUrl}/api/students/profile/education`,
+        `/students/profile/education`,
         newEducation,
         { headers: { Authorization: `Bearer ${authToken}` } }
       );
@@ -584,7 +584,7 @@ export default function StudentProfile() {
       }
 
       const response = await axios.delete(
-        `${apiUrl}/api/students/profile/education/${educationId}`,
+        `/students/profile/education/${educationId}`,
         { headers: { 'Authorization': `Bearer ${authToken}` } }
       );
 
@@ -616,7 +616,7 @@ export default function StudentProfile() {
       }
 
       const response = await axios.post(
-        `${apiUrl}/api/students/profile/skill`,
+        `/students/profile/skill`,
         { name: newSkill, proficiency },
         { headers: { Authorization: `Bearer ${authToken}` } }
       );
@@ -646,7 +646,7 @@ export default function StudentProfile() {
       }
 
       const response = await axios.delete(
-        `${apiUrl}/api/students/profile/skill/${skillId}`,
+        `/students/profile/skill/${skillId}`,
         { headers: { Authorization: `Bearer ${authToken}` } }
       );
 
@@ -948,7 +948,7 @@ export default function StudentProfile() {
       formData.append('profileImage', profileImage);
 
       const response = await axios.post(
-        `${apiUrl}/api/students/profile/image`,
+        `/students/profile/image`,
         formData,
         {
           headers: {
@@ -1031,7 +1031,7 @@ export default function StudentProfile() {
       formData.append('coverImage', coverImage);
 
       const response = await axios.post(
-        `${apiUrl}/api/students/profile/cover`,
+        `/students/profile/cover`,
         formData,
         {
           headers: {

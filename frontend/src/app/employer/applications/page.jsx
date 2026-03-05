@@ -17,9 +17,7 @@ const ApplicationsPage = () => {
     useEffect(() => {
         const fetchApplications = async () => {
             try {
-                const res = await axios.get('http://localhost:5001/api/applications/employer', {
-                    headers: { Authorization: `Bearer ${localStorage.getItem('token') || document.cookie.replace(/(?:(?:^|.*;\s*)token\s*\=\s*([^;]*).*$)|^.*$/, "$1")}` }
-                });
+                const res = await axios.get('/applications/employer');
                 if (res.data.success) {
                     setApplications(res.data.data || []);
                 }
@@ -50,9 +48,7 @@ const ApplicationsPage = () => {
 
     const updateStatus = async (id, newStatus) => {
         try {
-            const res = await axios.patch(`http://localhost:5001/api/applications/${id}/status`, { status: newStatus }, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token') || document.cookie.replace(/(?:(?:^|.*;\s*)token\s*\=\s*([^;]*).*$)|^.*$/, "$1")}` }
-            });
+            const res = await axios.patch(`/applications/${id}/status`, { status: newStatus });
             if (res.data.success) {
                 setApplications(applications.map(app =>
                     app._id === id ? { ...app, status: newStatus } : app

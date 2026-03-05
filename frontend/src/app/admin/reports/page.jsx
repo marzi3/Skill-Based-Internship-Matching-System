@@ -22,7 +22,7 @@ export default function ReportsAnalytics() {
         setLoading(true);
         try {
             const token = Cookies.get('token') || localStorage.getItem('token');
-            const res = await axios.get('http://localhost:5001/api/admin/reports/export', {
+            const res = await axios.get('/admin/reports/export', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setReportData(res.data.data || []);

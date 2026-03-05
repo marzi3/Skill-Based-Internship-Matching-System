@@ -97,7 +97,7 @@ const EditInternshipPage = () => {
         const fetchInternship = async () => {
             try {
                 setFetching(true);
-                const response = await axios.get(`/api/internships/${id}`);
+                const response = await axios.get(`/internships/${id}`);
                 const data = response.data.data;
 
                 setFormData({
@@ -270,7 +270,7 @@ const EditInternshipPage = () => {
                 perks: formData.perks
             };
 
-            const response = await axios.put(`/api/internships/${id}`, payload);
+            const response = await axios.put(`/internships/${id}`, payload);
 
             if (response.data.success) {
                 setSuccessMessage('Internship protocol successfully updated. Synchronizing dashboard...');

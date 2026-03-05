@@ -18,6 +18,7 @@ import Button from '@/components/common/Button';
 import Badge from '@/components/common/Badge';
 import Avatar from '@/components/common/Avatar';
 import { useAuth } from '@/context/AuthContext';
+import RecommendedCandidates from '@/components/matching/RecommendedCandidates';
 
 /**
  * Employer Dashboard — main overview page.
@@ -60,14 +61,12 @@ const EmployerDashboard = () => {
     try {
       setLoading(true);
       setError(null);
-      const token = Cookies.get('token') || localStorage.getItem('token');
-      const config = { headers: { Authorization: `Bearer ${token}` } };
 
       // Fetch postings, skill analytics, and notifications in parallel
       const [postingsRes, skillsRes, notifsRes] = await Promise.allSettled([
-        axios.get('/api/internships/my-postings'),
-        axios.get('/api/internships/skill-demands'),
-        axios.get('http://localhost:5001/api/notifications', config),
+        axios.get('/internships/my-postings'),
+        axios.get('/internships/skill-demands'),
+        axios.get('/notifications'),
       ]);
 
       const internships = postingsRes.status === 'fulfilled' ? (postingsRes.value.data.data || []) : [];
@@ -92,7 +91,7 @@ const EmployerDashboard = () => {
       // Fetch best matched candidates using matching engine
       if (internships.length > 0) {
         try {
-          const matchRes = await axios.post('http://localhost:5001/api/matching/students', {
+          const matchRes = await axios.post('/matching/students', {
             internshipId: internships[0]._id,
             limit: 5,
           });
@@ -117,7 +116,7 @@ const EmployerDashboard = () => {
 
   const toggleStatus = async (id) => {
     try {
-      const resp = await axios.patch(`/api/internships/${id}/status`);
+      const resp = await axios.patch(`/internships/${id}/status`);
       if (resp.data.success) {
         setApiInternships(prev => prev.map(i => i._id === id ? { ...i, status: resp.data.data.status } : i));
       }
@@ -127,7 +126,7 @@ const EmployerDashboard = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Permanently delete this internship?')) {
       try {
-        await axios.delete(`/api/internships/${id}`);
+        await axios.delete(`/internships/${id}`);
         setApiInternships(prev => prev.filter(i => i._id !== id));
       } catch { /* silent */ }
     }
@@ -303,43 +302,7 @@ const EmployerDashboard = () => {
               <p className="text-sm text-gray-500">Top candidates from the matching engine based on skill alignment</p>
             </div>
             <div className="space-y-4">
-              {topCandidates.length === 0 ? (
-                <div className="text-center py-8 text-gray-500 text-sm">No matched candidates yet. Create a posting to get matches.</div>
-              ) : topCandidates.map((c, idx) => (
-                <div key={c.studentId || idx} className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-all">
-                  <div className="flex items-start gap-4">
-                    <Avatar
-                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${c.studentName || 'user'}`}
-                      name={c.studentName || 'Candidate'}
-                      size="lg"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="font-bold text-gray-900">{c.studentName || 'Unknown Student'}</h3>
-                          <p className="text-xs text-gray-500">{c.fieldOfStudy || 'Student'} • GPA: {c.gpa || 'N/A'}</p>
-                        </div>
-                        <span className={`text-sm font-black px-3 py-1.5 rounded-full border ${getScoreColor(c.finalScore || 0)}`}>
-                          {Math.round(c.finalScore || 0)}%
-                        </span>
-                      </div>
-                      <div className="flex flex-wrap gap-1.5 mt-2">
-                        {(c.matchedSkills || []).slice(0, 4).map((skill, si) => (
-                          <span key={si} className="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-md border border-indigo-100">{skill}</span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-3 pt-3 border-t border-gray-100 flex gap-2">
-                    <Link href={`/students/${c.studentId}`} className="flex-1">
-                      <button className="w-full py-2 text-sm font-bold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">View Profile</button>
-                    </Link>
-                    <Link href="/employer/messages" className="flex-1">
-                      <button className="w-full py-2 text-sm font-bold border border-indigo-600 text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors">Message</button>
-                    </Link>
-                  </div>
-                </div>
-              ))}
+              <RecommendedCandidates candidates={topCandidates} />
             </div>
           </motion.div>
         </div>

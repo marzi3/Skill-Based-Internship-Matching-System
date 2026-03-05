@@ -32,7 +32,7 @@ export default function VerifyEmployer() {
 
         try {
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:5001/api/verification/employer', data, {
+            await axios.post('/verification/employer', data, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             window.location.reload();

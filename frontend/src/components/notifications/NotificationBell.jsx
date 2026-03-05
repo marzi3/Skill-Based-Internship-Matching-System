@@ -34,7 +34,7 @@ export default function NotificationBell() {
             const token = Cookies.get('token') || localStorage.getItem('token');
             if (!token) return;
 
-            const res = await axios.get('http://localhost:5001/api/notifications', {
+            const res = await axios.get('/notifications', {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -50,7 +50,7 @@ export default function NotificationBell() {
     const markAsRead = async (id) => {
         try {
             const token = Cookies.get('token') || localStorage.getItem('token');
-            await axios.patch(`http://localhost:5001/api/notifications/${id}/read`, {}, {
+            await axios.patch(`/notifications/${id}/read`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             // Optimistic upate
@@ -65,7 +65,7 @@ export default function NotificationBell() {
         e.stopPropagation();
         try {
             const token = Cookies.get('token') || localStorage.getItem('token');
-            await axios.delete(`http://localhost:5001/api/notifications/${id}`, {
+            await axios.delete(`/notifications/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             // Optimistic update

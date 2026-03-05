@@ -26,7 +26,7 @@ export default function InternshipDetailsPage() {
     useEffect(() => {
         const fetchInternship = async () => {
             try {
-                const res = await axios.get(`/api/internships/${id}`);
+                const res = await axios.get(`/internships/${id}`);
                 setInternship(res.data.data);
                 setLoading(false);
             } catch (err) {
