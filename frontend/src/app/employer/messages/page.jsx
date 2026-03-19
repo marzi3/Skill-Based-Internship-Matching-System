@@ -7,6 +7,7 @@ import Cookies from 'js-cookie';
 import { ArrowLeft, MessageSquare, Send, Loader2, User } from 'lucide-react';
 import Avatar from '@/components/common/Avatar';
 import { useAuth } from '@/context/AuthContext';
+import { useSocket } from '@/context/SocketContext';
 import { motion } from 'framer-motion';
 
 /**
@@ -15,6 +16,7 @@ import { motion } from 'framer-motion';
 const EmployerMessagesPage = () => {
     const router = useRouter();
     const { user } = useAuth();
+    const { socket } = useSocket();
     const [applications, setApplications] = useState([]);
     const [selectedApp, setSelectedApp] = useState(null);
     const [messages, setMessages] = useState([]);
@@ -23,6 +25,25 @@ const EmployerMessagesPage = () => {
     const [msgLoading, setMsgLoading] = useState(false);
     const [sendLoading, setSendLoading] = useState(false);
     const chatEndRef = useRef(null);
+
+    // Socket.IO Listener for real-time updates
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleNewMessage = (msg) => {
+            // Only add if it's for the currently open conversation
+            if (selectedApp && msg.applicationId === selectedApp._id) {
+                setMessages((prev) => [...prev, msg]);
+                setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+            }
+        };
+
+        socket.on('receiveMessage', handleNewMessage);
+
+        return () => {
+            socket.off('receiveMessage', handleNewMessage);
+        };
+    }, [socket, selectedApp]);
 
     useEffect(() => { fetchApplications(); }, []);
 

@@ -209,7 +209,7 @@ const CreateInternshipPage = () => {
   const validateStep = (step) => {
     const errors = {};
     if (step === 1) {
-      if (!formData.position) errors.position = true;
+      if (!formData.position || formData.position.length > 100) errors.position = true;
       if (!formData.category) errors.category = true;
       if (!formData.locationType) errors.locationType = true;
       if (!formData.duration) errors.duration = true;
@@ -244,8 +244,8 @@ const CreateInternshipPage = () => {
     e.preventDefault();
 
     // Final security check: Ensure description is present before deployment
-    if (!formData.description) {
-      setError('Final clearance failed: INTERNSHIP DESCRIPTION is required.');
+    if (!formData.description || formData.description.length < 20) {
+      setError('Final clearance failed: INTERNSHIP DESCRIPTION must be at least 20 characters.');
       setValidationErrors({ description: true });
       return;
     }
@@ -280,7 +280,7 @@ const CreateInternshipPage = () => {
       };
 
       // 2. Transmit protocol to backend API
-      const response = await axios.post('/api/v1/internships/create', payload);
+      const response = await axios.post('/internships/create', payload);
 
       if (response.data.success) {
         setSuccessMessage('Internship protocol successfully deployed! Redirecting to Dashboard...');

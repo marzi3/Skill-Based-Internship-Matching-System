@@ -15,6 +15,17 @@ export default function Login() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        // Client-side Validation
+        if (!/^\S+@\S+\.\S+$/.test(email)) {
+            setError('Please enter a valid email address.');
+            return;
+        }
+        if (password.length < 8) {
+            setError('Password must be at least 8 characters long.');
+            return;
+        }
+
         setIsLoading(true);
         setError(null);
 

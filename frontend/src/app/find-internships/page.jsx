@@ -92,11 +92,14 @@ function FindInternshipsContent() {
 
     useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
-            updateURL();
             fetchInternships();
         }, 300);
         return () => clearTimeout(delayDebounceFn);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchQuery, locationQuery, filters, sort]);
+
+    // Keep URL in sync without triggering full re-renders if possible
+    useEffect(() => {
+        updateURL();
     }, [searchQuery, locationQuery, filters, sort]);
 
     const handleSearch = (e) => {
@@ -118,8 +121,8 @@ function FindInternshipsContent() {
     // Filters are now handled server-side
     const filtered = internships;
 
-    const jobTypeOptions = ['Full-time Internship', 'Part-time Internship', 'Remote', 'On-site', 'Hybrid'];
-    const industryOptions = ['Technology', 'Finance', 'Design', 'Marketing'];
+    const jobTypeOptions = ['Remote', 'On-site', 'Hybrid'];
+    const industryOptions = ['Technology', 'Finance', 'Design', 'Marketing', 'AI/ML', 'Engineering'];
 
     return (
         <div className="min-h-screen bg-white font-sans">
@@ -200,7 +203,7 @@ function FindInternshipsContent() {
                                 placeholder="Job title, keywords, or company"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none font-medium"
+                                className="w-full py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none font-medium bg-transparent appearance-none"
                             />
                         </div>
                         <div className="hidden sm:flex items-center gap-2 border-l border-gray-100 flex-1 px-4">
@@ -210,7 +213,7 @@ function FindInternshipsContent() {
                                 placeholder="Location or Remote"
                                 value={locationQuery}
                                 onChange={(e) => setLocationQuery(e.target.value)}
-                                className="w-full py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none font-medium"
+                                className="w-full py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none font-medium bg-transparent appearance-none"
                             />
                         </div>
                         <button

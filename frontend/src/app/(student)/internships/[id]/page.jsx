@@ -92,12 +92,19 @@ export default function InternshipDetailPage({ params }) {
     const { tier, normalizedScore, explanation } = analysis || {};
     const isDisqualified = tier === 'DISQUALIFIED';
 
-    // Skill Gap Analysis
-    const userSkillNames = (user.skills || []).map(s => (typeof s === 'string' ? s : s.name).toLowerCase());
+    // Derive matched skill names from the engine's explanation log (reliable source of truth)
+    // The engine emits "Exact skill match: X" for every skill it found in the student's profile.
+    const matchedSkillNames = new Set(
+        (analysis?.explanation || [])
+            .filter(e => e.detail?.startsWith('Exact skill match:'))
+            .map(e => e.detail.replace('Exact skill match: ', '').trim().toLowerCase())
+    );
+
+    // Only flag as missing if the engine did NOT find a match for it
     const missingSkills = (internship.requiredSkills || [])
         .filter(reqSkill => {
-            const reqName = typeof reqSkill === 'string' ? reqSkill : reqSkill.name;
-            return !userSkillNames.includes(reqName.toLowerCase());
+            const reqName = (typeof reqSkill === 'string' ? reqSkill : reqSkill.name).toLowerCase();
+            return !matchedSkillNames.has(reqName);
         })
         .map(reqSkill => typeof reqSkill === 'string' ? { name: reqSkill, mandatory: false } : reqSkill);
 
@@ -234,26 +241,55 @@ export default function InternshipDetailPage({ params }) {
                                     </div>
                                 </div>
 
+                                {/* Match Summary Paragraph */}
+                                <div className="pt-2">
+                                    <p className="text-xs font-bold text-slate-400 leading-relaxed italic">
+                                        {tier === 'EXCELLENT' ? (
+                                            "Your profile is a near-perfect synchronization with this protocol's requirements. High technical overlap and credential verification confirmed."
+                                        ) : tier === 'GOOD' ? (
+                                            "You have a strong foundation for this role. Minor skill gaps or preference mismatches detected, but overall compatibility is high."
+                                        ) : tier === 'FAIR' ? (
+                                            "Your profile meets basic requirements, but significant skill development or profile enhancement is recommended for a competitive edge."
+                                        ) : isDisqualified ? (
+                                            "Critical mismatch detected. Mandatory synchronization requirements (skills or GPA) have not been verified in your current profile."
+                                        ) : (
+                                            "Profile analysis complete. Review the technical breakdown below for specific matching factors."
+                                        )}
+                                    </p>
+                                </div>
+
                                 {/* Rule Breakdown */}
                                 {analysis?.explanation && analysis.explanation.length > 0 && (
-                                    <div className="pt-6 border-t border-white/10 space-y-4">
-                                        <h4 className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500">Evaluation Log</h4>
-                                        <div className="space-y-3 max-h-[200px] overflow-y-auto custom-scrollbar-light pr-2">
-                                            {analysis.explanation.map((item, i) => (
-                                                <div key={i} className="flex gap-3 text-[10px] font-bold">
-                                                    <div>
-                                                        {item.score === -Infinity ? (
-                                                            <XCircle size={14} className="text-rose-500 shrink-0" />
-                                                        ) : item.score > 0 ? (
-                                                            <div className="w-3.5 h-3.5 bg-emerald-500/20 text-emerald-400 rounded-md flex items-center justify-center text-[8px] shrink-0 mt-0.5">+{item.score}</div>
-                                                        ) : (
-                                                            <div className="w-3.5 h-3.5 bg-rose-500/20 text-rose-400 rounded-md flex items-center justify-center text-[8px] shrink-0 mt-0.5">{item.score}</div>
-                                                        )}
+                                    <div className="pt-6 border-t border-white/10 space-y-6">
+                                        <div className="space-y-4">
+                                            <h4 className="text-[9px] font-black uppercase tracking-[0.3em] text-emerald-500">Technical Strengths</h4>
+                                            <div className="space-y-2 max-h-[150px] overflow-y-auto custom-scrollbar-light pr-2">
+                                                {analysis.explanation.filter(item => item.score > 0).map((item, i) => (
+                                                    <div key={i} className="flex gap-3 text-[10px] font-bold">
+                                                        <div className="w-3.5 h-3.5 bg-emerald-500/20 text-emerald-400 rounded-md flex items-center justify-center text-[8px] shrink-0 mt-0.5">+{item.score}</div>
+                                                        <p className="text-slate-300 leading-snug">{item.detail}</p>
                                                     </div>
-                                                    <p className="text-slate-300 leading-snug">{item.detail}</p>
-                                                </div>
-                                            ))}
+                                                ))}
+                                            </div>
                                         </div>
+
+                                        {analysis.explanation.some(item => item.score <= 0) && (
+                                            <div className="space-y-4">
+                                                <h4 className="text-[9px] font-black uppercase tracking-[0.3em] text-rose-500">Optimization Gaps</h4>
+                                                <div className="space-y-2 max-h-[150px] overflow-y-auto custom-scrollbar-light pr-2">
+                                                    {analysis.explanation.filter(item => item.score <= 0).map((item, i) => (
+                                                        <div key={i} className="flex gap-3 text-[10px] font-bold">
+                                                            {item.score === -Infinity ? (
+                                                                <XCircle size={14} className="text-rose-500 shrink-0" />
+                                                            ) : (
+                                                                <div className="w-3.5 h-3.5 bg-rose-500/20 text-rose-400 rounded-md flex items-center justify-center text-[8px] shrink-0 mt-0.5">{item.score}</div>
+                                                            )}
+                                                            <p className="text-slate-400 leading-snug">{item.detail}</p>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -306,7 +342,7 @@ export default function InternshipDetailPage({ params }) {
                                     <p className="text-xs font-bold text-emerald-700 leading-relaxed">
                                         Your credentials have been submitted. The industrial partner will review your protocol shortly.
                                     </p>
-                                    <Link href="/student/applications" className="block text-center text-[10px] font-black text-[#6366F1] uppercase tracking-widest hover:underline mt-4">
+                                    <Link href="/applications" className="block text-center text-[10px] font-black text-[#6366F1] uppercase tracking-widest hover:underline mt-4">
                                         View All Applications
                                     </Link>
                                 </div>

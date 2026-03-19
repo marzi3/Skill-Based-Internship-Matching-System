@@ -1078,7 +1078,7 @@ export default function StudentProfile() {
           <Link href="/find-internships" className="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-bold transition-all">
             <Search size={20} /> Browse Jobs
           </Link>
-          <Link href="/student/applications" className="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-bold transition-all">
+          <Link href="/applications" className="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-bold transition-all">
             <Briefcase size={20} /> My Applications
           </Link>
           <Link href="/student/matches" className="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-bold transition-all">

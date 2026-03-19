@@ -2,6 +2,8 @@ const logger = require('../utils/logger');
 const Application = require('../models/Application');
 const Internship = require('../models/Internship');
 const User = require('../models/User');
+const Student = require('../models/Student');
+const Match = require('../models/Match');
 const { send: sendNotification } = require('../services/notificationService');
 
 // @desc    Apply to an internship
@@ -29,13 +31,36 @@ exports.applyToInternship = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Already applied to this internship' });
         }
 
+        // Get student record first (ID mapping fix)
+        const student = await Student.findOne({ userId: req.user.id });
+        if (!student) {
+            return res.status(404).json({ success: false, message: 'Student profile not found. Please complete your profile.' });
+        }
+
+        // Find relevant match for score injection
+        const match = await Match.findOne({ student: student._id, internship: req.params.id });
+
         const application = await Application.create({
             student: req.user.id,
             internship: req.params.id,
             employer: internship.employer,
             resume: req.body.resume,
-            answers: req.body.answers
+            answers: req.body.answers,
+            matchScore: match ? match.normalizedScore : 0
         });
+
+        // Update Match status using correct Student ID
+        if (match) {
+            match.status = 'Applied';
+            await match.save();
+        } else {
+            // Check if maybe it was saved with User ID by mistake alternatively or just skip
+            await Match.findOneAndUpdate(
+                { student: student._id, internship: req.params.id },
+                { status: 'Applied' },
+                { upsert: false }
+            );
+        }
 
         // Add student to internship applicants list
         internship.applicants.push(req.user.id);
@@ -107,7 +132,7 @@ exports.updateApplicationStatus = async (req, res) => {
                 userId: application.student,
                 type,
                 message: `Your application status for ${application.internship.positionTitle} has been updated to: ${status}.`,
-                link: '/student/applications'
+                link: '/applications'
             });
         } catch (err) { logger.error('Notification failed', err); }
 
@@ -125,14 +150,29 @@ exports.updateApplicationStatus = async (req, res) => {
 exports.getStudentStats = async (req, res) => {
     try {
         const applicationsCount = await Application.countDocuments({ student: req.user.id });
-        // Mocking skill matches and verification points for now since it's complex, 
-        // but applicationsCount is real.
+        
+        const Student = require('../models/Student');
+        const student = await Student.findOne({ userId: req.user.id });
+        
+        // Skill matches = count of skills in profile
+        let skillMatches = student?.skills?.length || 0;
+        
+        // Dynamic verification points calculation
+        let verificationPoints = 0;
+        if (student) {
+            verificationPoints = (student.skills?.length || 0) * 10;
+            if (student.resume?.filePath) verificationPoints += 50;
+            if (student.portfolio?.github || student.portfolio?.linkedin || student.portfolio?.website) verificationPoints += 25;
+            if (student.education?.length > 0) verificationPoints += 25;
+            if (student.profileCompletion?.overall > 80) verificationPoints += 50;
+        }
+
         res.status(200).json({
             success: true,
             data: {
                 applicationsCount,
-                skillMatches: 0,
-                verificationPoints: 0
+                skillMatches,
+                verificationPoints
             }
         });
     } catch (error) {

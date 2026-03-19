@@ -20,6 +20,7 @@ const {
   resetProfile,
 } = require('../controllers/studentController');
 const { protect, authorize } = require('../middleware/auth');
+const { validateStudentProfile } = require('../middleware/validators');
 const upload = require('../config/multer');
 
 // Protect all routes with authentication
@@ -31,7 +32,7 @@ router.post('/profile/init', initializeProfile);
 router.get('/profile/completion', getProfileCompletion);
 
 // Personal information routes
-router.post('/profile/personal', savePersonalInfo);
+router.post('/profile/personal', validateStudentProfile, savePersonalInfo);
 router.post('/profile/image', upload.single('profileImage'), uploadProfileImage);
 router.post('/profile/cover', upload.single('coverImage'), uploadCoverImage);
 

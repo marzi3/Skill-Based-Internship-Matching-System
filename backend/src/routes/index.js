@@ -12,6 +12,8 @@ const searchRoutes = require('./searchRoutes');
 const adminRoutes = require('./adminRoutes');
 const verificationRoutes = require('./verificationRoutes');
 const settingsRoutes = require('./settingsRoutes');
+const analyticsRoutes = require('./analyticsRoutes');
+
 
 // Route registration
 router.use('/auth', authRoutes);
@@ -27,5 +29,7 @@ router.use('/notifications', notificationRoutes);
 router.use('/search', searchRoutes);
 router.use('/admin', adminRoutes);
 router.use('/settings', settingsRoutes);
+router.use('/analytics', analyticsRoutes);
+
 
 module.exports = router;

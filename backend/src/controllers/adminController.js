@@ -34,7 +34,7 @@ exports.getDashboardStats = async (req, res) => {
         const totalEmployers = await User.countDocuments({ role: 'employer' });
         const activeInternships = await Internship.countDocuments({ status: 'Hiring', isDeleted: false });
         const totalApplications = await Application.countDocuments();
-        const acceptedApplications = await Application.countDocuments({ status: 'Accepted' });
+        const acceptedApplications = await Application.countDocuments({ status: 'Selected' });
 
         let matchSuccessRate = 0;
         if (totalApplications > 0) {
@@ -230,12 +230,25 @@ exports.getReports = async (req, res) => {
             { $limit: 10 }
         ]);
 
+        // 4. Overall Match Quality Distribution (EXCELLENT, GOOD, etc.)
+        const Match = require('../models/Match');
+        const matchDistribution = await Match.aggregate([
+            {
+                $group: {
+                    _id: '$tier',
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { count: -1 } }
+        ]);
+
         res.json({
             success: true,
             data: {
                 applicationsTrend,
                 placements,
-                skillsDemand
+                skillsDemand,
+                matchDistribution
             }
         });
     } catch (error) {
@@ -447,8 +460,8 @@ exports.updateStudentStatus = async (req, res) => {
     try {
         const { status } = req.body;
 
-        if (!['active', 'suspended', 'banned'].includes(status)) {
-            return res.status(400).json({ success: false, message: 'Invalid status' });
+        if (!['pending', 'approved', 'suspended'].includes(status)) {
+            return res.status(400).json({ success: false, message: 'Invalid status. Use pending, approved, or suspended.' });
         }
 
         const student = await User.findById(req.params.id);
@@ -460,7 +473,7 @@ exports.updateStudentStatus = async (req, res) => {
         student.status = status;
         await student.save();
 
-        const action = status === 'active' ? 'ACTIVATE_STUDENT' : 'SUSPEND_STUDENT';
+        const action = status === 'approved' ? 'ACTIVATE_STUDENT' : 'SUSPEND_STUDENT';
         await logAdminAction(req.user.id, action, 'User', student._id, `Changed student status to ${status}`);
 
         try {

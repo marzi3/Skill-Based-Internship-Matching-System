@@ -58,6 +58,14 @@ exports.getBestMatches = async (req, res) => {
                     (int.id && int.id.toString() === searchId);
             });
 
+            const tier = match.tier;
+            let summary = '';
+            if (tier === 'EXCELLENT') summary = "This is a world-class match! Your expertise in modern stacks perfectly aligns with the required protocol. You are a top-tier candidate for this synchronization.";
+            else if (tier === 'GOOD') summary = "Strong compatibility detected. You possess the core competencies required, though some specialized skill gaps were identified. Optimizing your profile could elevate this match to Excellent.";
+            else if (tier === 'FAIR' || tier === 'WEAK') summary = "Partial alignment achieved. While you meet some baseline requirements, significant skill gaps remain. Consider acquiring the missing skills listed below to improve your standing.";
+            else if (tier === 'DISQUALIFIED') summary = "Match Protocol Terminated. Critical mandatory requirements are not met. Please review the missing mandatory specifications below.";
+            else summary = "Profile meets baseline internship requirements. Enhance your profile with specific skills to unlock detailed compatibility metrics.";
+
             return {
                 internship: fullInternship || {
                     _id: match.internshipId,
@@ -69,6 +77,7 @@ exports.getBestMatches = async (req, res) => {
                         match.tier === 'FAIR' ? 60 : 45),
                 rawScore: match.rawScore,
                 tier: match.tier,
+                summary,
                 reasons: match.explanation?.map(e => e.detail) || [],
                 explanationData: match.explanation || []
             };
@@ -76,28 +85,45 @@ exports.getBestMatches = async (req, res) => {
 
         // Cache the formatted matches to the DB using bulkWrite
         if (formattedMatches.length > 0) {
-            const bulkOps = formattedMatches.map(matchObj => ({
-                updateOne: {
-                    filter: { student: student._id, internship: matchObj.internship._id },
-                    update: {
-                        $set: {
-                            student: student._id,
-                            internship: matchObj.internship._id,
-                            employer: matchObj.internship.employer,
-                            rawScore: matchObj.rawScore,
-                            normalizedScore: matchObj.score,
-                            tier: matchObj.tier,
-                            explanations: matchObj.explanationData,
-                            status: 'Pending'
-                        }
-                    },
-                    upsert: true
-                }
-            }));
+            // Fetch existing matches to preserve status (e.g. if already 'Applied')
+            const existingMatches = await Match.find({ student: student._id }).lean();
+            const existingStatusMap = new Map();
+            existingMatches.forEach(m => existingStatusMap.set(m.internship.toString(), m.status));
 
-            // Execute the bulk write asynchronously; don't await so we don't slow down the response
+            const bulkOps = formattedMatches.map(matchObj => {
+                const internshipId = matchObj.internship._id.toString();
+                const existingStatus = existingStatusMap.get(internshipId);
+                const statusToSet = (existingStatus && existingStatus !== 'Pending') ? existingStatus : 'Pending';
+
+                return {
+                    updateOne: {
+                        filter: { student: student._id, internship: matchObj.internship._id },
+                        update: {
+                            $set: {
+                                student: student._id,
+                                internship: matchObj.internship._id,
+                                employer: matchObj.internship.employer,
+                                rawScore: matchObj.rawScore,
+                                normalizedScore: matchObj.score,
+                                tier: matchObj.tier,
+                                explanations: matchObj.explanationData,
+                                status: statusToSet
+                            }
+                        },
+                        upsert: true
+                    }
+                };
+            });
+
+            // Execute the bulk write asynchronously
             Match.bulkWrite(bulkOps).catch(err => {
                 logger.error('[Matching Controller] Failed to cache matches in DB:', err);
+            });
+            
+            // Add status to formattedMatches for frontend
+            formattedMatches.forEach(m => {
+                const existingStatus = existingStatusMap.get(m.internship._id.toString());
+                m.status = (existingStatus && existingStatus !== 'Pending') ? existingStatus : 'Pending';
             });
         }
 

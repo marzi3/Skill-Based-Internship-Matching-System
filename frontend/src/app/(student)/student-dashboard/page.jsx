@@ -34,6 +34,7 @@ import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import NotificationBell from '@/components/notifications/NotificationBell';
 import RecommendedInternships from '@/components/matching/RecommendedInternships';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
 export default function StudentDashboard() {
     const { user, logout } = useAuth();
@@ -45,6 +46,7 @@ export default function StudentDashboard() {
         skillMatches: 0,
         verificationPoints: 0
     });
+    const [appStats, setAppStats] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -66,6 +68,14 @@ export default function StudentDashboard() {
                 if (appsRes.data.success) {
                     setApplications(appsRes.data.data?.slice(0, 3) || []);
                 }
+                
+                // Fetch analytic stats
+                try {
+                    const analyticsRes = await axios.get('/analytics/student/applications');
+                    if (analyticsRes.data.success) {
+                        setAppStats(analyticsRes.data.data);
+                    }
+                } catch (e) { console.error('Analytics failed', e); }
             } catch (err) {
                 console.error('Failed to fetch dashboard data:', err);
             } finally {
@@ -194,6 +204,41 @@ export default function StudentDashboard() {
                         </Card>
                     </div>
 
+                    {/* Analytics Section */}
+                    {appStats.length > 0 && (
+                        <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
+                            <Card className="p-6 border border-gray-100">
+                                <h2 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+                                    <TrendingUp className="text-primary-600" size={20} /> Application Funnel
+                                </h2>
+                                <div className="h-[300px] w-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie
+                                                data={appStats}
+                                                cx="50%"
+                                                cy="50%"
+                                                innerRadius={60}
+                                                outerRadius={80}
+                                                paddingAngle={5}
+                                                dataKey="count"
+                                                nameKey="status"
+                                            >
+                                                {appStats.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={['#6366f1', '#10b981', '#f59e0b', '#ef4444'][index % 4]} />
+                                                ))}
+                                            </Pie>
+                                            <Tooltip 
+                                                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                                            />
+                                            <Legend verticalAlign="bottom" height={36}/>
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </Card>
+                        </div>
+                    )}
+
                     {/* Recent Applications Section */}
                     <div className="space-y-6">
                         <div className="flex items-center justify-between">
@@ -207,19 +252,21 @@ export default function StudentDashboard() {
                                 <div className="py-10 text-center"><Loader size={32} className="animate-spin mx-auto text-primary-600" /></div>
                             ) : applications.length > 0 ? (
                                 applications.map((app) => (
-                                    <Card key={app._id} className="p-4 flex flex-col md:flex-row md:items-center justify-between hover:shadow-md transition-all border border-gray-100 gap-4 md:gap-0">
-                                        <div className="flex items-center gap-4">
-                                            <Avatar name={app.employer?.companyName} src={app.employer?.profilePicture} size="md" />
-                                            <div>
-                                                <h3 className="font-bold text-gray-900 line-clamp-1">{app.internship?.positionTitle || 'Unknown Position'}</h3>
-                                                <p className="text-sm text-gray-500 line-clamp-1">{app.employer?.companyName || 'Unknown Company'}</p>
+                                    <Link key={app._id} href={`/internships/${app.internship?._id || ''}`} className="block group">
+                                        <Card className="p-4 flex flex-col md:flex-row md:items-center justify-between hover:shadow-md hover:border-primary-200 transition-all border border-gray-100 gap-4 md:gap-0">
+                                            <div className="flex items-center gap-4">
+                                                <Avatar name={app.employer?.companyName} src={app.employer?.profilePicture} size="md" />
+                                                <div>
+                                                    <h3 className="font-bold text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-1">{app.internship?.positionTitle || 'Unknown Position'}</h3>
+                                                    <p className="text-sm text-gray-500 line-clamp-1">{app.employer?.companyName || 'Unknown Company'}</p>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="flex items-center justify-between md:justify-end w-full md:w-auto gap-4 mt-2 md:mt-0">
-                                            <Badge variant={app.status === 'Applied' ? 'secondary' : app.status === 'Selected' ? 'success' : 'primary'}>{app.status}</Badge>
-                                            <Link href={`/internships/${app.internship?._id}`} className="text-gray-400 hover:text-primary-600 flex bg-gray-50 p-2 rounded-lg md:bg-transparent"><ChevronRight size={20} /></Link>
-                                        </div>
-                                    </Card>
+                                            <div className="flex items-center justify-between md:justify-end w-full md:w-auto gap-4 mt-2 md:mt-0">
+                                                <Badge variant={app.status === 'Applied' ? 'secondary' : app.status === 'Selected' ? 'success' : 'primary'}>{app.status}</Badge>
+                                                <div className="text-gray-400 group-hover:text-primary-600 flex bg-gray-50 p-2 rounded-lg md:bg-transparent group-hover:translate-x-1 transition-all"><ChevronRight size={20} /></div>
+                                            </div>
+                                        </Card>
+                                    </Link>
                                 ))
                             ) : (
                                 <div className="py-10 bg-white rounded-2xl border border-dashed border-gray-200 text-center">
@@ -238,9 +285,7 @@ export default function StudentDashboard() {
                             <Link href="/matches" className="text-sm font-bold text-primary-600 hover:underline">View All Matches</Link>
                         </div>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            <RecommendedInternships matches={matches} />
-                        </div>
+                        <RecommendedInternships matches={matches} />
                     </div>
                 </div>
             </main>

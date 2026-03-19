@@ -9,7 +9,8 @@ const internshipSchema = new mongoose.Schema({
     positionTitle: {
         type: String,
         required: [true, 'Position title is required'],
-        trim: true
+        trim: true,
+        maxlength: [100, 'Position title cannot exceed 100 characters']
     },
     domain: {
         type: String,
@@ -44,7 +45,8 @@ const internshipSchema = new mongoose.Schema({
     },
     company: {
         type: String,
-        required: [true, 'Company name is required']
+        required: [true, 'Company name is required'],
+        maxlength: [150, 'Company name cannot exceed 150 characters']
     },
     status: {
         type: String,

@@ -33,18 +33,12 @@ app.use(cors({
       'http://localhost:3000',
       'http://localhost:3001',
       process.env.FRONTEND_URL
-    ].filter(Boolean); // Remove undefined
+    ].filter(Boolean);
 
-    // Allow requests with no origin (like mobile apps or curl requests) only in development, 
-    // or strictly check against allowedOrigins in production
-    if (process.env.NODE_ENV !== 'production' && !origin) {
-      return callback(null, true);
-    }
-
-    if (allowedOrigins.includes(origin)) {
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Strict CORS policy: Origin not allowed'));
+      callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true
@@ -60,7 +54,15 @@ if (process.env.NODE_ENV === 'test') {
 } else {
   // For connect-redis v7+, it exports RedisStore directly or under .default
   const Store = typeof RedisStore === 'function' ? RedisStore : RedisStore.RedisStore;
-  sessionStore = new Store({ client: redisClient });
+
+  try {
+    sessionStore = new Store({ client: redisClient });
+    // Note: redisClient connection error is handled in config/redis.js, 
+    // but we can also detect if we should fallback here if desired.
+  } catch (err) {
+    console.warn('⚠️ Redis Store initialization failed, falling back to MemoryStore');
+    sessionStore = new session.MemoryStore();
+  }
 }
 
 app.use(session({

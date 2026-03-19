@@ -203,7 +203,7 @@ export default function BestMatchesPage() {
                                                 <div className="flex flex-wrap gap-2">
                                                     {match.internship.requiredSkills?.slice(0, 5).map((skill, idx) => (
                                                         <span key={idx} className="px-2.5 py-1 bg-gray-50 text-gray-600 text-xs font-semibold rounded-lg border border-gray-100">
-                                                            {skill}
+                                                            {typeof skill === 'string' ? skill : skill.name}
                                                         </span>
                                                     ))}
                                                     {match.internship.requiredSkills?.length > 5 && (
@@ -258,12 +258,19 @@ export default function BestMatchesPage() {
                                                 )}
                                             </button>
 
-                                            <Link
-                                                href={`/internships/${match.internship._id}`}
-                                                className="px-5 py-2 bg-gray-900 text-white text-sm font-bold rounded-xl hover:bg-gray-800 transition-all shadow-md flex items-center gap-2"
-                                            >
-                                                Apply Now
-                                            </Link>
+                                            {match.status === 'Applied' ? (
+                                                <div className="px-5 py-2 bg-green-50 text-green-600 text-sm font-bold rounded-xl flex items-center gap-2 border border-green-100">
+                                                    <CheckCircle2 className="w-4 h-4" />
+                                                    Applied
+                                                </div>
+                                            ) : (
+                                                <Link
+                                                    href={`/internships/${match.internship._id}`}
+                                                    className="px-5 py-2 bg-gray-900 text-white text-sm font-bold rounded-xl hover:bg-gray-800 transition-all shadow-md flex items-center gap-2"
+                                                >
+                                                    Apply Now
+                                                </Link>
+                                            )}
                                         </div>
                                     </div>
 
@@ -275,24 +282,33 @@ export default function BestMatchesPage() {
                                                 <div className="flex-1 h-px bg-indigo-200/50"></div>
                                             </h4>
 
-                                            <div className="space-y-3">
-                                                {match.reasons && match.reasons.length > 0 ? (
-                                                    match.reasons.map((reason, idx) => (
-                                                        <div key={idx} className="flex items-start gap-3 bg-white/60 p-3 rounded-lg border border-white shadow-sm">
+                                            <div className="space-y-4">
+                                                {/* Summary Paragraph */}
+                                                <div className="bg-white/80 p-5 rounded-2xl border border-indigo-100 shadow-sm mb-6">
+                                                    <p className="text-gray-800 font-bold leading-relaxed">
+                                                        {match.summary || "Profile meets baseline internship requirements. Enhance your profile with specific skills to unlock detailed compatibility metrics."}
+                                                    </p>
+                                                </div>
+
+                                                <div className="space-y-3">
+                                                    {match.reasons && match.reasons.length > 0 ? (
+                                                        match.reasons.map((reason, idx) => (
+                                                            <div key={idx} className="flex items-start gap-3 bg-white/60 p-3 rounded-lg border border-white shadow-sm">
+                                                                <div className="mt-0.5 w-5 h-5 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
+                                                                    <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600" />
+                                                                </div>
+                                                                <span className="text-sm font-medium text-gray-700 leading-snug">{reason}</span>
+                                                            </div>
+                                                        ))
+                                                    ) : (
+                                                        <div className="flex items-start gap-3 bg-white/60 p-3 rounded-lg border border-white shadow-sm">
                                                             <div className="mt-0.5 w-5 h-5 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
                                                                 <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600" />
                                                             </div>
-                                                            <span className="text-sm font-medium text-gray-700 leading-snug">{reason}</span>
+                                                            <span className="text-sm font-medium text-gray-700 leading-snug">No specific rule traces detected. Match based on aggregate profile score.</span>
                                                         </div>
-                                                    ))
-                                                ) : (
-                                                    <div className="flex items-start gap-3 bg-white/60 p-3 rounded-lg border border-white shadow-sm">
-                                                        <div className="mt-0.5 w-5 h-5 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
-                                                            <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600" />
-                                                        </div>
-                                                        <span className="text-sm font-medium text-gray-700 leading-snug">Profile meets baseline internship requirements. Enhance your profile with specific skills to unlock detailed compatibility metrics.</span>
-                                                    </div>
-                                                )}
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     )}

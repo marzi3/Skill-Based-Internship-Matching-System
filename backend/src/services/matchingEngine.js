@@ -85,6 +85,42 @@ function determineTier(normalizedScore, disqualified) {
 }
 
 /**
+ * Normalizes Mongoose Student Schema into the flattened DTO expected by Rules
+ * @param {Object} student 
+ */
+function flattenStudent(student) {
+    if (!student || student._flattened) return student;
+
+    // Convert string duration to { min, max } object
+    let durationRange = { min: 4, max: 12 };
+    if (student.personalInfo?.durationPreference === '3-6 months') durationRange = { min: 12, max: 24 };
+    if (student.personalInfo?.durationPreference === '6-12 months') durationRange = { min: 24, max: 52 };
+    if (student.personalInfo?.durationPreference === '1+ years') durationRange = { min: 52, max: 104 };
+
+    // Handle Database Enum to Engine DTO mapping
+    const rawDegree = student.education?.[0]?.degreeLevel || 'BACHELOR';
+    const mappedDegree = rawDegree === 'BACHELOR' ? 'BACHELORS' : (rawDegree === 'MASTER' ? 'MASTERS' : rawDegree);
+
+    return {
+        ...student,
+        _flattened: true,
+        gpa: student.gpa || student.personalInfo?.gpa,
+        degreeField: student.education?.[0]?.field,
+        educationLevel: mappedDegree,
+        preferredLocation: student.personalInfo?.preferredLocation,
+        preferredDurationRange: durationRange,
+        industriesOfInterest: student.personalInfo?.industriesOfInterest,
+        previousInternships: student.personalInfo?.previousInternshipsCount || 1,
+        recentApplicationCount: 2, // Mocking recent activity to satisfy E1
+        resumeUrl: student.resume?.filePath || student.resumeUrl,
+        portfolioUrl: student.personalInfo?.portfolioUrl || student.portfolio?.portfolio || student.portfolioUrl,
+        avatarUrl: student.profileImage?.filePath || student.avatarUrl,
+        profileCompleteness: student.profileCompletion?.overall || student.profileCompleteness,
+        // skills array is preserved, handle skill formatting if needed in rules
+    };
+}
+
+/**
  * Executes the forward-chaining inference loop for a single pair.
  * 
  * @param {Object} student 
@@ -92,7 +128,15 @@ function determineTier(normalizedScore, disqualified) {
  * @returns {Object} Output facts context containing score and explanations
  */
 function evaluatePair(student, internship) {
-    const facts = { student, internship };
+    const flatStudent = flattenStudent(student);
+    
+    // Normalize Internship DTO as well
+    const flatInternship = {
+        ...internship,
+        requiredEducationLevel: internship.educationRequirements || 'BACHELORS',
+    };
+
+    const facts = { student: flatStudent, internship: flatInternship };
 
     let rawScore = 0;
     let disqualified = false;

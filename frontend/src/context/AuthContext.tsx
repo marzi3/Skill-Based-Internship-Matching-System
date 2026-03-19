@@ -67,7 +67,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const checkUserLoggedIn = async () => {
         try {
-            const { data } = await apiClient.get<User>('/api/v1/auth/me');
+            const { data } = await apiClient.get<User>('/auth/me');
             setUser(data);
             syncUserToStorage(data);
         } catch (error) {
@@ -84,7 +84,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const login = async (email: string, password: string): Promise<AuthResponse> => {
         try {
-            const { data } = await apiClient.post<User>('/api/v1/auth/login', { email, password });
+            const { data } = await apiClient.post<User>('/auth/login', { email, password });
 
             // Sync immediately before anything else
             if (data.token) {
@@ -103,7 +103,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const register = async (userData: any): Promise<AuthResponse> => {
         try {
-            const { data } = await apiClient.post<User>('/api/v1/auth/register', userData);
+            const { data } = await apiClient.post<User>('/auth/register', userData);
 
             if (data.token) {
                 localStorage.setItem('token', data.token);
@@ -120,7 +120,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const logout = async (): Promise<void> => {
         try {
-            await apiClient.post('/api/v1/auth/logout');
+            await apiClient.post('/auth/logout');
         } catch (error) {
             console.error('Logout API error:', error);
         } finally {
@@ -132,7 +132,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const forgotPassword = async (email: string): Promise<AuthResponse> => {
         try {
-            const { data } = await apiClient.post('/api/v1/auth/forgotpassword', { email });
+            const { data } = await apiClient.post('/auth/forgotpassword', { email });
             return { success: true, data };
         } catch (error: any) {
             return { success: false, error: error.response?.data?.message || 'Email could not be sent' };
@@ -141,7 +141,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const resetPassword = async (token: string, password: string): Promise<AuthResponse> => {
         try {
-            const { data } = await apiClient.put(`/api/v1/auth/resetpassword/${token}`, { password });
+            const { data } = await apiClient.put(`/auth/resetpassword/${token}`, { password });
             return { success: true, data };
         } catch (error: any) {
             return { success: false, error: error.response?.data?.message || 'Password reset failed' };

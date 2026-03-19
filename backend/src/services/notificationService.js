@@ -3,6 +3,7 @@ const nodemailer = require('nodemailer');
 const Notification = require('../models/Notification');
 const NotificationSettings = require('../models/NotificationSettings');
 const User = require('../models/User');
+const { emitToUser } = require('../config/socket');
 
 // Configure Nodemailer transporter (using fallbacks for local dev if env missing)
 const transporter = nodemailer.createTransport({
@@ -93,6 +94,13 @@ const send = async ({ userId, type, message, link, sendEmail = true, subject }) 
             message,
             link
         });
+
+        // 1.5 Emit Socket event for real-time UI update
+        try {
+            emitToUser(userId, 'new_notification', notification);
+        } catch (socketErr) {
+            logger.warn('Socket emission failed in notification service', socketErr);
+        }
 
         // 2. Resolve if email should be sent
         if (sendEmail) {

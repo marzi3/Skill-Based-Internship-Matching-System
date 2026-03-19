@@ -5,11 +5,11 @@ const User = require('../models/User');
 const sendEmail = require('../utils/sendEmail');
 
 // Helper to generate JWT
-const generateToken = (id) => {
+const generateToken = (id, role, isVerified) => {
     if (!process.env.JWT_SECRET) {
         throw new Error('JWT_SECRET is not defined in environment variables');
     }
-    return jwt.sign({ id }, process.env.JWT_SECRET, {
+    return jwt.sign({ id, role, isVerified }, process.env.JWT_SECRET, {
         expiresIn: '30d',
     });
 };
@@ -63,13 +63,15 @@ const registerUser = async (req, res) => {
                 logger.info(`Verification email sent to ${user.email}`);
             } catch (err) {
                 logger.error('Failed to send verification email:', err);
+                if (process.env.NODE_ENV === 'development') {
+                    logger.info('DEVELOPMENT OVERRIDE: Email verification link:', verificationUrl);
+                }
                 user.emailVerificationToken = undefined;
                 user.emailVerificationExpire = undefined;
                 await user.save({ validateBeforeSave: false });
-                // We don't crash the registration, but we log the failure. User can request a new token later.
             }
 
-            const token = generateToken(user._id);
+            const token = generateToken(user._id, user.role, user.isVerified);
             res.cookie('jwt', token, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
@@ -141,7 +143,7 @@ const loginUser = async (req, res) => {
         const user = await User.findOne({ email }).select('+password');
 
         if (user && (await user.comparePassword(password))) {
-            const token = generateToken(user._id);
+            const token = generateToken(user._id, user.role, user.isVerified);
 
             res.cookie('jwt', token, {
                 httpOnly: true,
@@ -202,7 +204,7 @@ const getRoleDashboard = (role) => {
 // @desc    Google OAuth Callback
 // @route   GET /api/auth/google/callback
 const googleAuthCallback = (req, res) => {
-    const token = generateToken(req.user._id);
+    const token = generateToken(req.user._id, req.user.role, req.user.isVerified);
     res.cookie('jwt', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -213,7 +215,7 @@ const googleAuthCallback = (req, res) => {
 };
 
 const linkedinAuthCallback = (req, res) => {
-    const token = generateToken(req.user._id);
+    const token = generateToken(req.user._id, req.user.role, req.user.isVerified);
     res.cookie('jwt', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -246,28 +248,32 @@ const forgotPassword = async (req, res) => {
 
         const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
 
-        try {
-            await sendEmail({
-                email: user.email,
-                subject: 'Password Reset Token',
-                message,
-                html: `
+            try {
+                await sendEmail({
+                    email: user.email,
+                    subject: 'Password Reset Token',
+                    message,
+                    html: `
           <h1>You requested a password reset</h1>
           <p>Please go to this link to reset your password:</p>
           <a href="${resetUrl}" clicktracking=off>${resetUrl}</a>
         `
-            });
+                });
 
-            res.status(200).json({ success: true, data: 'Email sent' });
-        } catch (err) {
-            logger.info(err);
-            user.resetPasswordToken = undefined;
-            user.resetPasswordExpire = undefined;
+                res.status(200).json({ success: true, data: 'Email sent' });
+            } catch (err) {
+                logger.error('Failed to send reset email:', err);
+                if (process.env.NODE_ENV === 'development') {
+                    logger.info('DEVELOPMENT OVERRIDE: Password reset link:', resetUrl);
+                    return res.status(200).json({ success: true, data: 'Email sent (Logged to console in Dev)' });
+                }
+                user.resetPasswordToken = undefined;
+                user.resetPasswordExpire = undefined;
 
-            await user.save({ validateBeforeSave: false });
+                await user.save({ validateBeforeSave: false });
 
-            return res.status(500).json({ message: 'Email could not be sent' });
-        }
+                return res.status(500).json({ message: 'Email could not be sent' });
+            }
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -300,7 +306,7 @@ const resetPassword = async (req, res) => {
 
         await user.save();
 
-        const token = generateToken(user._id);
+        const token = generateToken(user._id, user.role, user.isVerified);
 
         res.status(200).json({
             success: true,
@@ -456,7 +462,7 @@ const updatePassword = async (req, res) => {
         user.password = req.body.newPassword;
         await user.save();
 
-        const token = generateToken(user._id);
+        const token = generateToken(user._id, user.role, user.isVerified);
         res.status(200).json({ success: true, message: 'Password updated successfully', token });
     } catch (error) {
         res.status(500).json({ message: error.message });

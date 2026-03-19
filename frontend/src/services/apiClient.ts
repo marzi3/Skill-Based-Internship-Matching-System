@@ -3,7 +3,7 @@ import axios, { InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'ax
 // Create an Axios instance
 // baseURL is just the origin — callers use full paths like /api/v1/auth/login
 const apiClient = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001',
+    baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api/v1',
     withCredentials: true, // Important for secure cookies if used
 });
 

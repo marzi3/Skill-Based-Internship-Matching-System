@@ -13,6 +13,7 @@ const {
   getInternshipStats
 } = require('../controllers/internshipController');
 const { protect, authorize, verifyStatus } = require('../middleware/auth');
+const { validateInternship } = require('../middleware/validators');
 const mongoose = require('mongoose');
 
 // Middleware to validate :id is a valid ObjectId (prevents catching named routes)
@@ -33,11 +34,11 @@ router.use(authorize('employer', 'admin'));
 
 router.get('/my-postings', getMyInternships);
 router.get('/skill-demands', getSkillDemands);
-router.post('/create', verifyStatus, createInternship);
+router.post('/create', verifyStatus, validateInternship, createInternship);
 router.get('/:id/applicants', getInternshipApplicants);
 router.get('/:id/stats', getInternshipStats);
 router.patch('/:id/status', updateInternshipStatus);
-router.put('/:id', updateInternship);
+router.put('/:id', validateInternship, updateInternship);
 router.delete('/:id', deleteInternship);
 
 module.exports = router;

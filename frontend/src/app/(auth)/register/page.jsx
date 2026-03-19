@@ -43,6 +43,16 @@ export default function Register() {
         e.preventDefault();
         setError(null);
 
+        if (formData.name.trim().length < 2 || formData.name.length > 100) {
+            setError('Name must be between 2 and 100 characters');
+            return;
+        }
+
+        if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
+            setError('Please enter a valid email address');
+            return;
+        }
+
         if (formData.password !== formData.confirmPassword) {
             setError('Passwords do not match');
             return;

@@ -68,24 +68,43 @@ const rule = {
      * @returns {Object} The score adjustment and explanation.
      */
     action: (facts) => {
-        const { ratio, matchedCount, totalCount } = rule._getCoverageData(facts);
+        const { student, internship } = facts;
+        const requiredSkills = internship?.requiredSkills || [];
+        const studentSkills = student?.skills || [];
+        
+        const studentSkillNames = studentSkills.map(s => {
+            const name = typeof s === 'string' ? s : s?.name;
+            return (name || '').toLowerCase();
+        });
 
+        const matchedSkills = [];
+        const missingSkills = [];
+
+        requiredSkills.forEach(req => {
+            const reqName = typeof req === 'string' ? req : req?.name;
+            const displayName = typeof req === 'string' ? req : req?.name;
+            if (reqName && studentSkillNames.includes(reqName.toLowerCase())) {
+                matchedSkills.push(displayName);
+            } else if (reqName) {
+                missingSkills.push(displayName);
+            }
+        });
+
+        const ratio = requiredSkills.length > 0 ? matchedSkills.length / requiredSkills.length : 0;
         let points = 0;
-        let rank = "";
 
-        if (ratio >= 0.75) {
-            points = 20;
-        } else if (ratio >= 0.50) {
-            points = 10;
-        } else if (ratio >= 0.25) {
-            points = 5;
-        }
+        if (ratio >= 0.75) points = 20;
+        else if (ratio >= 0.50) points = 10;
+        else if (ratio >= 0.25) points = 5;
 
         const ratioPercentage = Math.round(ratio * 100);
+        const explanation = missingSkills.length > 0 
+            ? `Skill coverage: ${ratioPercentage}% (${matchedSkills.length} of ${requiredSkills.length} skills). Missing: ${missingSkills.join(', ')}.`
+            : `Perfect skill alignment! You possess all ${requiredSkills.length} required skills.`;
 
         return {
             scoreAdjustment: points,
-            explanation: `Skill coverage: ${ratioPercentage}% (${matchedCount} of ${totalCount} skills)`
+            explanation
         };
     }
 };

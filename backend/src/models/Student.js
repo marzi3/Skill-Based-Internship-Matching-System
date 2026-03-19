@@ -84,11 +84,12 @@ const studentSchema = new mongoose.Schema({
   },
 
   // Personal Information
-  personalInfo: {
-    fullName: {
-      type: String,
-      trim: true,
-    },
+    personalInfo: {
+        fullName: {
+            type: String,
+            trim: true,
+            maxlength: [100, 'Full name cannot exceed 100 characters']
+        },
     designation: {
       type: String,
       trim: true,
@@ -99,8 +100,9 @@ const studentSchema = new mongoose.Schema({
       trim: true,
     },
     phone: {
-      type: String,
-      trim: true,
+        type: String,
+        trim: true,
+        match: [/^\+?[1-9]\d{1,14}$/, 'Please use a valid phone number format (E.164)']
     },
     location: {
       type: String,

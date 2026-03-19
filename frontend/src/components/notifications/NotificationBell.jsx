@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Bell, Check, Trash2, ExternalLink } from 'lucide-react';
+import { useSocket } from '@/context/SocketContext';
 import axios from '@/services/apiClient';
 import Cookies from 'js-cookie';
 import Link from 'next/link';
@@ -11,13 +12,25 @@ export default function NotificationBell() {
     const [isOpen, setIsOpen] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
+    const { socket } = useSocket();
     const dropdownRef = useRef(null);
 
     useEffect(() => {
         fetchNotifications();
-        const interval = setInterval(fetchNotifications, 60000); // refresh every minute
-        return () => clearInterval(interval);
-    }, []);
+        
+        if (socket) {
+            socket.on('new_notification', (newNotif) => {
+                setNotifications(prev => [newNotif, ...prev]);
+                setUnreadCount(prev => prev + 1);
+            });
+        }
+
+        return () => {
+            if (socket) {
+                socket.off('new_notification');
+            }
+        };
+    }, [socket]);
 
     useEffect(() => {
         const handleClickOutside = (event) => {

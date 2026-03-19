@@ -19,6 +19,7 @@ import Badge from '@/components/common/Badge';
 import Avatar from '@/components/common/Avatar';
 import { useAuth } from '@/context/AuthContext';
 import RecommendedCandidates from '@/components/matching/RecommendedCandidates';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 /**
  * Employer Dashboard — main overview page.
@@ -35,6 +36,7 @@ const EmployerDashboard = () => {
   const [skillAnalytics, setSkillAnalytics] = useState([]);
   const [topCandidates, setTopCandidates] = useState([]);
   const [recentActivity, setRecentActivity] = useState([]);
+  const [matchStats, setMatchStats] = useState([]);
   const [stats, setStats] = useState({
     internships: 0,
     applicants: 0,
@@ -87,6 +89,14 @@ const EmployerDashboard = () => {
         const notifs = notifsRes.value.data.data || notifsRes.value.data.notifications || [];
         setRecentActivity(notifs.slice(0, 5));
       }
+
+      // Fetch analytics
+      try {
+        const analyticsRes = await axios.get('/analytics/employer/matches');
+        if (analyticsRes.data.success) {
+          setMatchStats(analyticsRes.data.data);
+        }
+      } catch (e) { console.error('Analytics failed', e); }
 
       // Fetch best matched candidates using matching engine
       if (internships.length > 0) {
@@ -287,6 +297,49 @@ const EmployerDashboard = () => {
           })}
         </div>
       </motion.div>
+
+      {/* Analytics Chart */}
+      {matchStats.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6"
+        >
+          <div className="mb-6">
+            <h2 className="text-lg font-bold text-gray-900">Match Quality Distribution</h2>
+            <p className="text-sm text-gray-500 mt-1">Number of candidates across different match tiers</p>
+          </div>
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={matchStats}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+                <XAxis 
+                  dataKey="tier" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fill: '#9ca3af', fontSize: 12, fontWeight: 600 }}
+                  dy={10}
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fill: '#9ca3af', fontSize: 12, fontWeight: 600 }}
+                />
+                <Tooltip 
+                  cursor={{ fill: '#f9fafb' }}
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                />
+                <Bar dataKey="count" radius={[6, 6, 0, 0]} barSize={40}>
+                  {matchStats.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={['#ef4444', '#f59e0b', '#10b981', '#6366f1'][index % 4]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </motion.div>
+      )}
+
 
       {/* Best Matches + Recent Activity Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

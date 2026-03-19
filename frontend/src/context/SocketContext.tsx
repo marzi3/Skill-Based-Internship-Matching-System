@@ -21,7 +21,10 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
         const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
         if (user && token) {
-            const socketInstance = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001', {
+            // Socket.IO must connect to the root server, not the /api/v1 namespaced path
+            const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL ||
+                (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api/v1').replace('/api/v1', '');
+            const socketInstance = io(socketUrl, {
                 auth: {
                     token
                 },
