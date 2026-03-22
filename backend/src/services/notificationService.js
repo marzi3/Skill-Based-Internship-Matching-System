@@ -26,6 +26,9 @@ const generateEmailTemplate = (type, message, link) => {
     else if (type === 'APPLICATION_STATUS') title = 'Application Update';
     else if (type === 'NEW_MESSAGE') title = 'New Message Received';
     else if (type === 'INTERVIEW_SCHEDULED') title = 'Interview Scheduled';
+    else if (type === 'VERIFICATION_STATUS') title = 'Verification Update';
+    else if (type === 'WELCOME') title = 'Welcome to InternMatch';
+    else if (type === 'PASSWORD_RESET') title = 'Password Reset Request';
 
     const targetUrl = link && link.startsWith('/')
         ? `${process.env.FRONTEND_URL || 'http://localhost:3000'}${link}`

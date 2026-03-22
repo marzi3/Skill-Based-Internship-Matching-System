@@ -25,7 +25,7 @@ export default function StudentApplications() {
     useEffect(() => {
         const fetchApplications = async () => {
             try {
-                const res = await axios.get('/applications/student', {
+                const res = await axios.get('applications/student', {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token') || document.cookie.replace(/(?:(?:^|.*;\s*)token\s*\=\s*([^;]*).*$)|^.*$/, "$1")}` }
                 });
                 setApplications(res.data.data || []);

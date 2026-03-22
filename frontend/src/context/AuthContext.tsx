@@ -111,7 +111,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
             setUser(data);
             syncUserToStorage(data);
-            router.push(getRoleDashboard(data.role));
+            router.push('/verify');
             return { success: true };
         } catch (error: any) {
             return { success: false, error: error.response?.data?.message || 'Registration failed' };

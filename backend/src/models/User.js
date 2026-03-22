@@ -62,8 +62,12 @@ const userSchema = new mongoose.Schema({
   },
   verificationStatus: {
     type: String,
-    enum: ['none', 'pending', 'approved', 'rejected'],
-    default: 'none',
+    enum: ['unverified', 'pending', 'approved', 'rejected'],
+    default: 'unverified',
+  },
+  verificationFeedback: {
+    type: String,
+    trim: true,
   },
 
   // Student Specific
@@ -109,6 +113,10 @@ const userSchema = new mongoose.Schema({
   // Email Verification
   emailVerificationToken: String,
   emailVerificationExpire: Date,
+  hasSeenTutorial: {
+    type: Boolean,
+    default: false,
+  },
 }, {
   timestamps: true,
   toJSON: { virtuals: true },
@@ -151,8 +159,8 @@ userSchema.methods.getResetPasswordToken = function () {
     .update(resetToken)
     .digest('hex');
 
-  // Set expire time (10 minutes)
-  this.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+  // Set expire time (60 minutes)
+  this.resetPasswordExpire = Date.now() + 60 * 60 * 1000;
 
   return resetToken;
 };

@@ -24,7 +24,7 @@ export default function NotificationSettingsPanel() {
     const fetchSettings = async () => {
         try {
             const token = Cookies.get('token') || localStorage.getItem('token');
-            const res = await axios.get('http://localhost:5001/api/settings/notifications', {
+            const res = await axios.get('settings/notifications', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (res.data.success && res.data.data) {
@@ -52,7 +52,7 @@ export default function NotificationSettingsPanel() {
         setSaving(true);
         try {
             const token = Cookies.get('token') || localStorage.getItem('token');
-            await axios.put('http://localhost:5001/api/settings/notifications', newSettings, {
+            await axios.put('settings/notifications', newSettings, {
                 headers: { Authorization: `Bearer ${token}` }
             });
         } catch (err) {

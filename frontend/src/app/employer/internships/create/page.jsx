@@ -776,7 +776,7 @@ const CreateInternshipPage = () => {
                     </h3>
                     <p className="text-indigo-100 font-black mt-4 text-xl flex items-center gap-4 opacity-90">
                       <span className="w-3 h-3 rounded-full bg-emerald-400 shadow-[0_0_15px_rgba(52,211,153,1)]" />
-                      {user?.companyName || 'Incubator Labs'}
+                      {user?.companyName || 'Company Name'}
                     </p>
                   </div>
 

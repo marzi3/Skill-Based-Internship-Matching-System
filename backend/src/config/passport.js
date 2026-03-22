@@ -16,14 +16,15 @@ passport.deserializeUser(async (id, done) => {
     }
 });
 
-// Googe Strategy
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "http://localhost:5001/api/v1/auth/google/callback"
+    callbackURL: `${process.env.BACKEND_URL || 'http://localhost:5001'}/api/v1/auth/google/callback`,
+    passReqToCallback: true
 },
-    async function (accessToken, refreshToken, profile, done) {
+    async function (req, accessToken, refreshToken, profile, done) {
         try {
+            const role = req.query.state || 'student'; // Captured from state param
             let user = await User.findOne({ email: profile.emails[0].value });
 
             if (user) {
@@ -43,7 +44,7 @@ passport.use(new GoogleStrategy({
                 email: profile.emails[0].value,
                 oauthProvider: 'google',
                 providerId: profile.id,
-                role: 'student', // Default role, user can change later or we prompt before auth? 
+                role: role, 
                 // Requirement says "After successful OAuth... Check if user exists... If new -> create... Store role"
                 // This implies we might need a state param or a redirect to role selection if strict.
                 // For now defaulting to student, but will allow role update if 'none'.
@@ -62,10 +63,12 @@ passport.use(new GoogleStrategy({
 passport.use(new LinkedInStrategy({
     clientID: process.env.LINKEDIN_CLIENT_ID,
     clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
-    callbackURL: "http://localhost:5001/api/v1/auth/linkedin/callback",
+    callbackURL: `${process.env.BACKEND_URL || 'http://localhost:5001'}/api/v1/auth/linkedin/callback`,
     scope: ['r_emailaddress', 'r_liteprofile'],
-}, async function (accessToken, refreshToken, profile, done) {
+    passReqToCallback: true
+}, async function (req, accessToken, refreshToken, profile, done) {
     try {
+        const role = req.query.state || 'student';
         let user = await User.findOne({ email: profile.emails[0].value });
 
         if (user) {

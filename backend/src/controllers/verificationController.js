@@ -1,4 +1,6 @@
 const User = require('../models/User');
+const { send: sendNotification } = require('../services/notificationService');
+const logger = require('../utils/logger');
 
 // @desc    Upload Student Verification (ID Card)
 // @route   POST /api/verification/student
@@ -110,6 +112,19 @@ const approveVerification = async (req, res) => {
         user.isVerified = true;
         await user.save();
 
+        // Notify User
+        try {
+            await sendNotification({
+                userId: user._id,
+                type: 'VERIFICATION_STATUS',
+                message: 'Your account has been successfully verified! You now have full access to matching and applications.',
+                link: '/student-dashboard', // or employer dashboard
+                subject: 'Account Verified - InternMatch 🏅'
+            });
+        } catch (err) {
+            logger.error('Verification approval notification failed', err);
+        }
+
         res.status(200).json({ message: `User ${user.name} verified successfully` });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -127,11 +142,27 @@ const rejectVerification = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
+        const { reason } = req.body;
+        
         user.verificationStatus = 'rejected';
         user.isVerified = false;
+        user.verificationFeedback = reason || 'Your documentation did not meet our verification standards.';
         await user.save();
-
-        res.status(200).json({ message: `User ${user.name} verification rejected` });
+ 
+        // Notify User
+        try {
+            await sendNotification({
+                userId: user._id,
+                type: 'VERIFICATION_STATUS',
+                message: `Your verification was not approved. Reason: ${user.verificationFeedback}. Please update your documents.`,
+                link: '/verify',
+                subject: 'Action Required: Verification Update'
+            });
+        } catch (err) {
+            logger.error('Verification rejection notification failed', err);
+        }
+ 
+        res.status(200).json({ message: `User ${user.name} verification rejected`, reason: user.verificationFeedback });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

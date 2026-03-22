@@ -34,7 +34,7 @@ const StudentInternshipsPage = () => {
             try {
                 setLoading(true);
                 // Protocol: Fetching personalized matches
-                const response = await axios.post('/matching/internships', {
+                const response = await axios.post('matching/internships', {
                     studentId: user._id
                 });
                 if (response.data.success) {
@@ -136,6 +136,15 @@ const StudentInternshipsPage = () => {
                         </div>
                         <h3 className="text-3xl font-black text-slate-900 tracking-tight">Zero Matches Detected</h3>
                         <p className="text-slate-400 font-bold mt-3 max-w-sm mx-auto">Your profile does not currently intersect with any active hiring protocols matching your parameters.</p>
+                        
+                        <div className="mt-12 flex justify-center">
+                            <Link
+                                href="/find-internships"
+                                className="flex items-center gap-3 bg-indigo-600 text-white px-10 py-5 rounded-[2rem] font-black uppercase tracking-[0.2em] text-xs shadow-2xl shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all duration-300"
+                            >
+                                Browse All Internships <ArrowRight size={18} />
+                            </Link>
+                        </div>
                     </motion.div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">

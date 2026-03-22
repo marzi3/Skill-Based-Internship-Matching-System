@@ -21,21 +21,39 @@ app.use(Sentry.Handlers.requestHandler());
 app.use(Sentry.Handlers.tracingHandler());
 
 // Middleware
-// Set security HTTP headers
-app.use(helmet());
+app.use((req, res, next) => {
+  console.log(`[REQUEST] ${req.method} ${req.url}`);
+  next();
+});
 
-// Apply global rate limiting
-app.use(globalLimiter);
+// Set security HTTP headers
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  frameguard: false,
+  contentSecurityPolicy: {
+    directives: {
+      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      "frame-ancestors": [
+        "'self'", 
+        "http://localhost:3000", "http://localhost:3001", "http://localhost:3002", "http://localhost:3003", "http://localhost:3004", "http://localhost:3005",
+        "http://127.0.0.1:3000", "http://127.0.0.1:3001", "http://127.0.0.1:3002", "http://127.0.0.1:3003", "http://127.0.0.1:3004", "http://127.0.0.1:3005"
+      ],
+    },
+  },
+}));
 
 app.use(cors({
   origin: function (origin, callback) {
-    const allowedOrigins = [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      process.env.FRONTEND_URL
-    ].filter(Boolean);
+    const isLocalhost = origin && (
+      origin.startsWith('http://localhost:3000') ||
+      origin.startsWith('http://localhost:3001') ||
+      origin.startsWith('http://localhost:3002') ||
+      origin.startsWith('http://localhost:3003') ||
+      origin.startsWith('http://localhost:3004') ||
+      origin.startsWith('http://localhost:3005')
+    );
 
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin || isLocalhost || origin === process.env.FRONTEND_URL) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -43,6 +61,10 @@ app.use(cors({
   },
   credentials: true
 }));
+
+// Apply global rate limiting (Moved after CORS to ensure 429 errors follow CORS policy)
+app.use(globalLimiter);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser()); // Parse cookies

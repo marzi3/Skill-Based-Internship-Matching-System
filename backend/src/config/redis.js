@@ -18,6 +18,8 @@ redisClient.on('connect', () => {
 
 // Since not all users will have Redis installed locally automatically while cloning this github, 
 // we won't strictly enforce connection crashing. We attempt a connection.
+// Commented out to clear logs in dev environment where Redis might not be present
+/*
 (async () => {
     try {
         await redisClient.connect();
@@ -25,5 +27,6 @@ redisClient.on('connect', () => {
         logger.error('Failed to connect to Redis on startup over port 6379:', err.message);
     }
 })();
+*/
 
 module.exports = redisClient;

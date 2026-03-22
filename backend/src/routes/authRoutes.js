@@ -36,14 +36,22 @@ router.post('/forgotpassword', authLimiter, forgotPassword);
 router.put('/resetpassword/:resettoken', authLimiter, resetPassword);
 
 // Google OAuth
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get('/google', (req, res, next) => {
+  const { role } = req.query;
+  const state = role || 'student';
+  passport.authenticate('google', { scope: ['profile', 'email'], state })(req, res, next);
+});
 router.get('/google/callback',
   passport.authenticate('google', { failureRedirect: '/login' }),
   googleAuthCallback
 );
 
 // LinkedIn OAuth
-router.get('/linkedin', passport.authenticate('linkedin', { state: 'SOME STATE' }));
+router.get('/linkedin', (req, res, next) => {
+  const { role } = req.query;
+  const state = role || 'student';
+  passport.authenticate('linkedin', { state })(req, res, next);
+});
 router.get('/linkedin/callback',
   passport.authenticate('linkedin', { failureRedirect: '/login' }),
   linkedinAuthCallback

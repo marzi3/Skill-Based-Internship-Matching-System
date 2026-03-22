@@ -2,7 +2,8 @@ const logger = require('../utils/logger');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const User = require('../models/User');
-const sendEmail = require('../utils/sendEmail');
+const sendEmailRaw = require('../utils/sendEmail');
+const { send: sendNotification } = require('../services/notificationService');
 
 // Helper to generate JWT
 const generateToken = (id, role, isVerified) => {
@@ -50,15 +51,12 @@ const registerUser = async (req, res) => {
             const message = `Welcome to InternMatch! Please verify your email by clicking the following link: \n\n ${verificationUrl}`;
 
             try {
-                await sendEmail({
-                    email: user.email,
-                    subject: 'Email Verification - InternMatch',
-                    message,
-                    html: `
-                        <h1>Welcome to InternMatch!</h1>
-                        <p>Thank you for registering. Please click the link below to verify your email address:</p>
-                        <a href="${verificationUrl}" clicktracking=off>Verify Email Address</a>
-                    `
+                await sendNotification({
+                    userId: user._id,
+                    type: 'WELCOME',
+                    message: 'Welcome to InternMatch! Please verify your email to unlock all features.',
+                    link: `/verify-email/${verificationToken}`,
+                    subject: 'Verify your InternMatch Account'
                 });
                 logger.info(`Verification email sent to ${user.email}`);
             } catch (err) {
@@ -84,6 +82,8 @@ const registerUser = async (req, res) => {
                 email: user.email,
                 role: user.role,
                 isVerified: user.isVerified,
+                companyName: user.companyName,
+                positionInCompany: user.positionInCompany,
                 token,
             });
         } else {
@@ -158,6 +158,8 @@ const loginUser = async (req, res) => {
                 role: user.role,
                 isVerified: user.isVerified,
                 verificationStatus: user.verificationStatus,
+                companyName: user.companyName,
+                positionInCompany: user.positionInCompany,
                 token,
             });
         } else {
@@ -230,6 +232,7 @@ const linkedinAuthCallback = (req, res) => {
 // @access  Public
 const forgotPassword = async (req, res) => {
     const { email } = req.body;
+    logger.info(`Forgot password request received for: ${email}`);
 
     try {
         const user = await User.findOne({ email });
@@ -249,15 +252,12 @@ const forgotPassword = async (req, res) => {
         const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
 
             try {
-                await sendEmail({
-                    email: user.email,
-                    subject: 'Password Reset Token',
-                    message,
-                    html: `
-          <h1>You requested a password reset</h1>
-          <p>Please go to this link to reset your password:</p>
-          <a href="${resetUrl}" clicktracking=off>${resetUrl}</a>
-        `
+                await sendNotification({
+                    userId: user._id,
+                    type: 'PASSWORD_RESET',
+                    message: 'You requested a password reset. Please click the button below to set a new password.',
+                    link: `/reset-password/${resetToken}`,
+                    subject: 'Reset your InternMatch Password'
                 });
 
                 res.status(200).json({ success: true, data: 'Email sent' });
@@ -414,22 +414,32 @@ const getStudentPublicProfile = async (req, res) => {
         let user = null;
         let studentDetails = null;
 
+        logger.info(`Fetching profile for ID: ${req.params.id}`);
+
         // First, try to find by User ID
-        user = await User.findById(req.params.id).select('name email profilePicture bio location');
+        user = await User.findById(req.params.id).select('name email profilePicture bio location').lean();
 
         if (user && user.role === 'student') {
-            // Found a student user — look up their Student profile
-            studentDetails = await Student.findOne({ userId: user._id });
+            logger.info(`Found user by ID, fetching student details for userId: ${user._id}`);
+            studentDetails = await Student.findOne({ userId: user._id }).lean();
         } else {
-            // Not a User doc or not a student — try as a Student doc ID
-            studentDetails = await Student.findById(req.params.id);
+            logger.info(`User not found by ID or not a student, trying as Student ID`);
+            studentDetails = await Student.findById(req.params.id).lean();
             if (studentDetails) {
-                user = await User.findById(studentDetails.userId).select('name email profilePicture bio location');
+                logger.info(`Found student details, fetching user for userId: ${studentDetails.userId}`);
+                user = await User.findById(studentDetails.userId).select('name email profilePicture bio location').lean();
             }
         }
 
         if (!user) {
+            logger.warn(`No student/user found for ID: ${req.params.id}`);
             return res.status(404).json({ message: 'Student not found' });
+        }
+
+        logger.info(`Profile fetch successful for ${user.name}. Student details present: ${!!studentDetails}`);
+        if (studentDetails) {
+            logger.info(`Skills count: ${studentDetails.skills?.length || 0}`);
+            logger.info(`Education count: ${studentDetails.education?.length || 0}`);
         }
 
         res.status(200).json({
@@ -440,6 +450,7 @@ const getStudentPublicProfile = async (req, res) => {
             }
         });
     } catch (error) {
+        logger.error('Error fetching student public profile:', error);
         res.status(500).json({ message: error.message });
     }
 };

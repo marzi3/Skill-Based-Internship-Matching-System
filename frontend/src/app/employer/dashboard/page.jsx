@@ -9,7 +9,7 @@ import {
   Plus, Users, FileText, CheckCircle2, MessageSquare,
   ChevronDown, TrendingUp, Briefcase, Eye, Clock, Calendar,
   Download, Activity, Zap, Star, Search, Edit, Trash2,
-  Power, Filter, Loader2, AlertTriangle, ArrowUpRight,
+  Power, Filter, Loader2, AlertTriangle, ArrowUpRight, Sparkles,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -20,6 +20,7 @@ import Avatar from '@/components/common/Avatar';
 import { useAuth } from '@/context/AuthContext';
 import RecommendedCandidates from '@/components/matching/RecommendedCandidates';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import OnboardingTour from '@/components/OnboardingTour';
 
 /**
  * Employer Dashboard — main overview page.
@@ -48,6 +49,19 @@ const EmployerDashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [userDropdown, setUserDropdown] = useState(false);
+  const [showTour, setShowTour] = useState(false);
+
+  useEffect(() => {
+    const hasSeen = localStorage.getItem('hasSeenEmployerTour');
+    if (!hasSeen && user) {
+        setShowTour(true);
+    }
+  }, [user]);
+
+  const handleTourComplete = () => {
+    setShowTour(false);
+    localStorage.setItem('hasSeenEmployerTour', 'true');
+  };
 
   useEffect(() => {
     if (!authLoading && !user) router.push('/login');
@@ -198,7 +212,8 @@ const EmployerDashboard = () => {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 relative">
+      {showTour && <OnboardingTour role="employer" onComplete={handleTourComplete} />}
       {/* Header Bar */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
@@ -211,6 +226,14 @@ const EmployerDashboard = () => {
           <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 text-sm text-gray-500">
             <Clock className="w-4 h-4" /> Last Activity: Just now
           </div>
+          {typeof window !== 'undefined' && !localStorage.getItem('hasSeenEmployerTour') && (
+            <button 
+                onClick={() => setShowTour(true)}
+                className="flex items-center gap-2 bg-indigo-50 text-indigo-600 px-4 py-2 rounded-xl text-sm font-bold hover:bg-indigo-100 transition-colors"
+            >
+                <Sparkles className="w-4 h-4" /> System Tour
+            </button>
+          )}
           <button
             onClick={() => {
               let csv = "Metric,Value\n";

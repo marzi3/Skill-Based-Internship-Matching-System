@@ -33,9 +33,9 @@ function FindInternshipsContent() {
         jobType: searchParams.get('jobType') ? searchParams.get('jobType').split(',') : [],
         industry: searchParams.get('industry') ? searchParams.get('industry').split(',') : [],
     });
-    const [sort, setSort] = useState(searchParams.get('sort') || 'Best Matches');
+    const [sort, setSort] = useState(searchParams.get('sort') || 'Newest');
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api/v1';
 
     const fetchInternships = async () => {
         try {
@@ -296,7 +296,7 @@ function FindInternshipsContent() {
                                     onChange={(e) => setSort(e.target.value)}
                                     className="bg-white border text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2 outline-none cursor-pointer font-medium border-gray-200 shadow-sm transition-all"
                                 >
-                                    {['Best Matches', 'Newest', 'Oldest', 'Salary', 'Deadline Soon'].map(opt => (
+                                    {['Newest', 'Best Matches', 'Oldest', 'Salary', 'Deadline Soon'].map(opt => (
                                         <option key={opt} value={opt}>{opt}</option>
                                     ))}
                                 </select>

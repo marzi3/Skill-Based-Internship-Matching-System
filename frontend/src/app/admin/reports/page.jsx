@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import axios from '@/services/apiClient';
 import { Download, FileText, FileSpreadsheet, BarChart2, ShieldCheck, Zap, Lock, Search, Loader2 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import Papa from 'papaparse';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -39,39 +39,54 @@ export default function ReportsAnalytics() {
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = `InternX_Intelligence_Segment_${new Date().getTime()}.csv`;
+        link.download = `InternMatch_Intelligence_Segment_${new Date().getTime()}.csv`;
         link.click();
     };
 
     const exportPDF = () => {
-        if (reportData.length === 0) return;
-        const doc = new jsPDF();
-        doc.setFont("helvetica", "bold");
-        doc.text('InternX Platforms: Data Intelligence Report', 14, 15);
-        doc.setFontSize(8);
-        doc.setFont("helvetica", "normal");
-        doc.text(`Security Protocol: SHA-256 | Segment: ${new Date().toLocaleString()}`, 14, 22);
+        try {
+            if (reportData.length === 0) {
+                alert("No data available to export.");
+                return;
+            }
 
-        const tableColumn = ["Applicant", "Position", "Company", "Domain", "Status", "Date"];
-        const tableRows = reportData.map(app => [
-            app.ApplicantName,
-            app.Position,
-            app.Company,
-            app.Domain,
-            app.Status,
-            app.AppliedDate
-        ]);
+            const doc = new jsPDF();
+            
+            // Header
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(18);
+            doc.text('InternMatch: Data Intelligence Report', 14, 20);
+            
+            doc.setFontSize(8);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Security Protocol: SHA-256 | Segment Generated: ${new Date().toLocaleString()}`, 14, 28);
+            doc.line(14, 32, 196, 32);
 
-        doc.autoTable({
-            head: [tableColumn],
-            body: tableRows,
-            startY: 30,
-            styles: { fontSize: 7, cellPadding: 2 },
-            headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255] },
-            alternateRowStyles: { fillColor: [249, 250, 251] }
-        });
+            const tableColumn = ["Applicant", "Position", "Company", "Domain", "Status", "Date"];
+            const tableRows = reportData.map(app => [
+                app.ApplicantName || 'N/A',
+                app.Position || 'N/A',
+                app.Company || 'N/A',
+                app.Domain || 'N/A',
+                app.Status || 'N/A',
+                app.AppliedDate || 'N/A'
+            ]);
 
-        doc.save(`InternX_Intelligence_${new Date().getTime()}.pdf`);
+            autoTable(doc, {
+                head: [tableColumn],
+                body: tableRows,
+                startY: 40,
+                styles: { fontSize: 8, cellPadding: 3 },
+                headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255], fontStyle: 'bold' },
+                alternateRowStyles: { fillColor: [249, 250, 251] },
+                margin: { top: 40 }
+            });
+
+            doc.save(`InternMatch_Intelligence_${new Date().getTime()}.pdf`);
+        } catch (err) {
+            console.error('PDF Export Error:', err);
+            alert(`Failed to generate PDF: ${err.message}`);
+        }
     };
 
     return (

@@ -10,6 +10,8 @@ import Avatar from '@/components/common/Avatar';
 import Badge from '@/components/common/Badge';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import ReportModal from '@/components/modals/ReportModal';
+import { Flag } from 'lucide-react';
 
 /**
  * Candidate Search — browse students, run Rapid Match against active postings,
@@ -32,6 +34,7 @@ const CandidateSearchPage = () => {
     const [rapidMatchResults, setRapidMatchResults] = useState(null);
     const [internships, setInternships] = useState([]);
     const [selectedInternship, setSelectedInternship] = useState('');
+    const [reportTarget, setReportTarget] = useState(null);
 
     useEffect(() => {
         fetchStudents();
@@ -252,6 +255,16 @@ const CandidateSearchPage = () => {
                                                 className="rounded-2xl shadow-md ring-4 ring-white"
                                             />
                                             <div className="flex flex-col items-end gap-1">
+                                                <button 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setReportTarget({ id, name });
+                                                    }}
+                                                    className="p-1.5 text-gray-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all mb-2"
+                                                    title="Report Candidate"
+                                                >
+                                                    <Flag size={14} />
+                                                </button>
                                                 <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-black border ${getScoreColor(score)}`}>
                                                     <Star size={14} fill="currentColor" /> {score}%
                                                 </span>
@@ -292,6 +305,14 @@ const CandidateSearchPage = () => {
                     })}
                 </div>
             )}
+
+            <ReportModal 
+                isOpen={!!reportTarget}
+                onClose={() => setReportTarget(null)}
+                reportedId={reportTarget?.id}
+                reportedEntity="User"
+                reportedName={reportTarget?.name}
+            />
         </div>
     );
 };

@@ -11,9 +11,12 @@ import Card from '../../../components/common/Card';
 import { X, User, GraduationCap, Code, Loader, Upload, Pencil, Plus, Trash2, Badge, Eye, ExternalLink, Download, CheckCircle, ArrowRight, FileText, LayoutDashboard, Home, Settings, Search, Briefcase, Zap, LogOut } from 'lucide-react';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const imageBaseUrl = apiUrl.includes('/api/v1') ? apiUrl.replace('/api/v1', '') : apiUrl;
+console.log('Resume Debug - API URL:', apiUrl);
+console.log('Resume Debug - Image Base URL:', imageBaseUrl);
 
 export default function StudentProfile() {
-  const { user, token, loading: authLoading, logout } = useAuth();
+  const { user, token, loading: authLoading, logout, checkUserLoggedIn } = useAuth();
   const [activeTab, setActiveTab] = useState('personal');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -164,13 +167,13 @@ export default function StudentProfile() {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await axios.get(`/students/profile`, {
+      const response = await axios.get(`students/profile`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
       const data = response.data.data;
 
-      if (data.personalInfo) {
+      if (data && data.personalInfo) {
         // Handle both old format (firstName/lastName) and new format (fullName)
         let personalData = { ...data.personalInfo };
 
@@ -213,11 +216,11 @@ export default function StudentProfile() {
         setResumeFile(null);
       }
       if (data.profileImage && data.profileImage.filePath) {
-        const fullImageUrl = `${apiUrl}/${data.profileImage.filePath}`;
+        const fullImageUrl = `${imageBaseUrl}/${data.profileImage.filePath}`;
         setStoredProfileImage(fullImageUrl);
       }
       if (data.coverImage && data.coverImage.filePath) {
-        const fullCoverUrl = `${apiUrl}/${data.coverImage.filePath}`;
+        const fullCoverUrl = `${imageBaseUrl}/${data.coverImage.filePath}`;
         setStoredCoverImage(fullCoverUrl);
       }
     } catch (error) {
@@ -286,7 +289,7 @@ export default function StudentProfile() {
       }
 
       const response = await axios.post(
-        `/students/profile/certification`,
+        `students/profile/certification`,
         newCertification,
         { headers: { Authorization: `Bearer ${authToken}` } }
       );
@@ -326,7 +329,7 @@ export default function StudentProfile() {
       formData.append('resume', file);
 
       const response = await axios.post(
-        `/students/profile/resume`,
+        `students/profile/resume`,
         formData,
         {
           headers: {
@@ -335,7 +338,7 @@ export default function StudentProfile() {
         }
       );
 
-      setResumeFile(response.data.data.resumeFile);
+      setResumeFile(response.data.data.student.resume);
       setMessage('Resume uploaded successfully (+5 matching points)');
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
@@ -356,7 +359,7 @@ export default function StudentProfile() {
   // Download resume function
   const handleResumeDownload = () => {
     if (resumeFile && resumeFile.filePath) {
-      const fullResumeUrl = `${apiUrl}/${resumeFile.filePath}`;
+      const fullResumeUrl = `${imageBaseUrl}/${resumeFile.filePath}`;
       window.open(fullResumeUrl, '_blank');
     }
   };
@@ -373,7 +376,7 @@ export default function StudentProfile() {
       }
 
       const response = await axios.delete(
-        `/students/profile/certification/${certificationId}`,
+        `students/profile/certification/${certificationId}`,
         { headers: { Authorization: `Bearer ${authToken}` } }
       );
 
@@ -440,7 +443,7 @@ export default function StudentProfile() {
       }
 
       const response = await axios.delete(
-        `/students/profile/reset`,
+        `students/profile/reset`,
         {
           headers: {
             'Authorization': `Bearer ${authToken}`
@@ -499,7 +502,7 @@ export default function StudentProfile() {
       }
 
       const response = await axios.post(
-        `/students/profile/personal`,
+        `students/profile/personal`,
         personalInfo,
         {
           headers: {
@@ -549,7 +552,7 @@ export default function StudentProfile() {
       }
 
       const response = await axios.post(
-        `/students/profile/education`,
+        `students/profile/education`,
         newEducation,
         { headers: { Authorization: `Bearer ${authToken}` } }
       );
@@ -584,7 +587,7 @@ export default function StudentProfile() {
       }
 
       const response = await axios.delete(
-        `/students/profile/education/${educationId}`,
+        `students/profile/education/${educationId}`,
         { headers: { 'Authorization': `Bearer ${authToken}` } }
       );
 
@@ -616,7 +619,7 @@ export default function StudentProfile() {
       }
 
       const response = await axios.post(
-        `/students/profile/skill`,
+        `students/profile/skill`,
         { name: newSkill, proficiency },
         { headers: { Authorization: `Bearer ${authToken}` } }
       );
@@ -646,7 +649,7 @@ export default function StudentProfile() {
       }
 
       const response = await axios.delete(
-        `/students/profile/skill/${skillId}`,
+        `students/profile/skill/${skillId}`,
         { headers: { Authorization: `Bearer ${authToken}` } }
       );
 
@@ -948,7 +951,7 @@ export default function StudentProfile() {
       formData.append('profileImage', profileImage);
 
       const response = await axios.post(
-        `/students/profile/image`,
+        `students/profile/image`,
         formData,
         {
           headers: {
@@ -966,8 +969,12 @@ export default function StudentProfile() {
       }
       // Update stored profile image
       if (response.data.data && response.data.data.student && response.data.data.student.profileImage) {
-        const fullImageUrl = `${apiUrl}/${response.data.data.student.profileImage.filePath}`;
+        const fullImageUrl = `${imageBaseUrl}/${response.data.data.student.profileImage.filePath}`;
         setStoredProfileImage(fullImageUrl);
+      }
+      // Refresh auth context to update profile picture elsewhere (like Navbar)
+      if (typeof checkUserLoggedIn === 'function') {
+        checkUserLoggedIn();
       }
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
@@ -1031,7 +1038,7 @@ export default function StudentProfile() {
       formData.append('coverImage', coverImage);
 
       const response = await axios.post(
-        `/students/profile/cover`,
+        `students/profile/cover`,
         formData,
         {
           headers: {
@@ -1049,8 +1056,12 @@ export default function StudentProfile() {
       }
       // Update stored cover image
       if (response.data.data && response.data.data.student && response.data.data.student.coverImage) {
-        const fullCoverUrl = `${apiUrl}/${response.data.data.student.coverImage.filePath}`;
+        const fullCoverUrl = `${imageBaseUrl}/${response.data.data.student.coverImage.filePath}`;
         setStoredCoverImage(fullCoverUrl);
+      }
+      // Refresh auth context
+      if (typeof checkUserLoggedIn === 'function') {
+        checkUserLoggedIn();
       }
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
@@ -2281,7 +2292,7 @@ export default function StudentProfile() {
             {/* PDF Viewer */}
             <div className="flex-1 p-4 overflow-hidden">
               <iframe
-                src={`${apiUrl}/${resumeFile.filePath}#toolbar=0&navpanes=0&scrollbar=1`}
+                src={`${imageBaseUrl}/${resumeFile.filePath}#toolbar=0&navpanes=0&scrollbar=1`}
                 className="w-full h-full border-0 rounded-lg"
                 title="Resume Preview"
                 onError={() => {

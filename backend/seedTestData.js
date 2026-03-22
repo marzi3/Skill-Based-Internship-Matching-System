@@ -264,6 +264,24 @@ const seedData = async () => {
             message: `Your application to Backend Node.js Engineer moved to Interview stage!`,
             link: `/applications`
         });
+
+        // Add Employer Notifications for "Recent Activity"
+        await Notification.create({
+            userId: emp1._id, type: 'APPLICATION_RECEIVED',
+            message: `New application received for Frontend React Developer from Alex Johnson`,
+            link: `/employer/applications`
+        });
+        await Notification.create({
+            userId: emp1._id, type: 'NEW_MESSAGE',
+            message: `You have a new message regarding the Node.js Engineer position`,
+            link: `/employer/messages`
+        });
+        await Notification.create({
+            userId: emp2._id, type: 'APPLICATION_RECEIVED',
+            message: `New application received for AI / Machine Learning Intern from Priya Patel`,
+            link: `/employer/applications`
+        });
+        
         console.log('----------------------------------------------------');
         console.log('6. Seeding Match Caching Engine...');
 

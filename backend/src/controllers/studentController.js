@@ -432,11 +432,17 @@ exports.uploadProfileImage = asyncHandler(async (req, res, next) => {
   }
 
   // Update profile image
+  const profilePicturePath = req.file.path.replace(/\\/g, '/'); // Normalize path for cross-platform
   student.profileImage = {
     fileName: req.file.filename,
-    filePath: req.file.path,
+    filePath: profilePicturePath,
     uploadedAt: new Date(),
   };
+
+  // Sync with User model
+  await User.findByIdAndUpdate(req.user.id, {
+    profilePicture: profilePicturePath
+  });
 
   // Calculate profile completion
   student.calculateProfileCompletion();
@@ -565,9 +571,10 @@ exports.uploadResume = asyncHandler(async (req, res, next) => {
   }
 
   // Update resume
+  const resumePath = req.file.path.replace(/\\/g, '/');
   student.resume = {
     fileName: req.file.filename,
-    filePath: req.file.path,
+    filePath: resumePath,
     uploadedAt: new Date(),
   };
 

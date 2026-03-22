@@ -13,6 +13,7 @@ import Link from 'next/link';
 
 import { useAuth } from '@/context/AuthContext';
 import { PageLoader } from '@/components/common/Loader';
+import ReportModal from '@/components/modals/ReportModal';
 
 export default function InternshipDetailPage({ params }) {
     const { id } = use(params);
@@ -25,6 +26,7 @@ export default function InternshipDetailPage({ params }) {
     const [error, setError] = useState(null);
     const [applied, setApplied] = useState(false);
     const [applying, setApplying] = useState(false);
+    const [showReport, setShowReport] = useState(false);
 
     useEffect(() => {
         const fetchDetails = async () => {
@@ -33,12 +35,12 @@ export default function InternshipDetailPage({ params }) {
                 setLoading(true);
 
                 // 1. Fetch Job Details
-                const jobRes = await axios.get(`/internships/${id}`);
+                const jobRes = await axios.get(`internships/${id}`);
                 if (!jobRes.data.success) throw new Error('Failed to load internship details');
                 setInternship(jobRes.data.data);
 
                 // 2. Fetch Match Analysis
-                const matchRes = await axios.get(`/matching/explain/${user._id}/${id}`);
+                const matchRes = await axios.get(`matching/explain/${user._id}/${id}`);
                 if (matchRes.data.success) {
                     setAnalysis(matchRes.data.analysis);
                 }
@@ -61,7 +63,7 @@ export default function InternshipDetailPage({ params }) {
     const handleApply = async () => {
         try {
             setApplying(true);
-            const res = await axios.post(`/applications/apply/${id}`);
+            const res = await axios.post(`applications/apply/${id}`);
             if (res.data.success) {
                 setApplied(true);
             }
@@ -361,9 +363,27 @@ export default function InternshipDetailPage({ params }) {
                             )}
                         </div>
 
+                        {/* Report Button (Secondary) */}
+                        <div className="pt-2">
+                            <button 
+                                onClick={() => setShowReport(true)}
+                                className="w-full flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-rose-500 transition-colors group py-4 bg-white/50 border border-transparent hover:border-rose-100 rounded-2xl"
+                            >
+                                <AlertTriangle size={14} className="group-hover:scale-110 transition-transform" />
+                                Report this Listing
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <ReportModal 
+                isOpen={showReport}
+                onClose={() => setShowReport(false)}
+                reportedId={id}
+                reportedEntity="Internship"
+                reportedName={internship.positionTitle}
+            />
 
             <style jsx global>{`
                 .custom-scrollbar-light::-webkit-scrollbar { width: 4px; }

@@ -12,6 +12,7 @@ export default function AdminSidebar() {
 
     const navItems = [
         { label: 'Dashboard', path: '/admin', icon: <LayoutDashboard size={20} /> },
+        { label: 'Verifications', path: '/admin/verifications', icon: <ShieldAlert size={20} /> },
         { label: 'Students', path: '/admin/users/students', icon: <Users size={20} /> },
         { label: 'Employers', path: '/admin/employers', icon: <Users size={20} /> },
         { label: 'Moderation', path: '/admin/moderation', icon: <ShieldAlert size={20} /> },

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
-    LayoutDashboard, Briefcase, Plus, Search, FileText,
+    LayoutDashboard, Briefcase, Plus, Search, FileText, Building,
     MessageSquare, Bell, Settings, LogOut, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -22,10 +22,11 @@ export default function EmployerSidebar() {
     const navItems = [
         { label: 'Dashboard', path: '/employer/dashboard', icon: LayoutDashboard },
         { label: 'My Postings', path: '/employer/internships', icon: Briefcase },
-        { label: 'Post Internship', path: '/employer/internships/create', icon: Plus },
-        { label: 'Search Candidates', path: '/employer/candidates', icon: Search },
+        { label: 'Post Internship', path: '/employer/internships/create', icon: Plus, id: 'nav-create' },
+        { label: 'Search Candidates', path: '/employer/candidates', icon: Search, id: 'nav-candidates' },
         { label: 'Applications', path: '/employer/applications', icon: FileText },
         { label: 'Messages', path: '/employer/messages', icon: MessageSquare },
+        { label: 'Company Profile', path: '/employer/profile', icon: Building },
         { label: 'Notifications', path: '/employer/notifications', icon: Bell },
     ];
 
@@ -66,7 +67,7 @@ export default function EmployerSidebar() {
                     const isActive = pathname === item.path || (item.path !== '/employer/dashboard' && pathname?.startsWith(item.path));
 
                     return (
-                        <Link key={item.path} href={item.path}>
+                        <Link key={item.path} href={item.path} id={item.id}>
                             <div
                                 className={`flex items-center ${isCollapsed ? 'justify-center' : 'px-4'} py-3 rounded-xl font-bold transition-all duration-200 relative group ${isActive
                                         ? 'text-indigo-600 bg-indigo-50/50'

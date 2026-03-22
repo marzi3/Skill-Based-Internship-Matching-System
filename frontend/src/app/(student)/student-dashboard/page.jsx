@@ -25,7 +25,8 @@ import {
     Loader,
     MessageSquare,
     Menu,
-    ChevronLeft
+    ChevronLeft,
+    Sparkles
 } from 'lucide-react';
 import Card from '@/components/common/Card';
 import Badge from '@/components/common/Badge';
@@ -35,6 +36,7 @@ import { useAuth } from '@/context/AuthContext';
 import NotificationBell from '@/components/notifications/NotificationBell';
 import RecommendedInternships from '@/components/matching/RecommendedInternships';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import OnboardingTour from '@/components/OnboardingTour';
 
 export default function StudentDashboard() {
     const { user, logout } = useAuth();
@@ -48,15 +50,28 @@ export default function StudentDashboard() {
     });
     const [appStats, setAppStats] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showTour, setShowTour] = useState(false);
+
+    useEffect(() => {
+        const hasSeen = localStorage.getItem('hasSeenStudentTour');
+        if (!hasSeen && user) {
+            setShowTour(true);
+        }
+    }, [user]);
+
+    const handleTourComplete = () => {
+        setShowTour(false);
+        localStorage.setItem('hasSeenStudentTour', 'true');
+    };
 
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
                 setLoading(true);
                 const [matchesRes, statsRes, appsRes] = await Promise.all([
-                    axios.get(`/matching/best-matches`),
-                    axios.get(`/applications/student/stats`),
-                    axios.get(`/applications/student`)
+                    axios.get(`matching/best-matches`),
+                    axios.get(`applications/student/stats`),
+                    axios.get(`applications/student`)
                 ]);
 
                 if (matchesRes.data.success) {
@@ -71,7 +86,7 @@ export default function StudentDashboard() {
                 
                 // Fetch analytic stats
                 try {
-                    const analyticsRes = await axios.get('/analytics/student/applications');
+                    const analyticsRes = await axios.get('analytics/student/applications');
                     if (analyticsRes.data.success) {
                         setAppStats(analyticsRes.data.data);
                     }
@@ -89,7 +104,8 @@ export default function StudentDashboard() {
     }, [user]);
 
     return (
-        <div className="flex flex-col md:flex-row h-screen bg-gray-50 overflow-hidden">
+        <div className="flex flex-col md:flex-row h-screen bg-gray-50 overflow-hidden relative">
+            {showTour && <OnboardingTour role="student" onComplete={handleTourComplete} />}
             {/* Sidebar / Bottom Nav */}
             <aside className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-white border-r border-gray-200 hidden md:flex flex-col transition-all duration-300 ease-in-out z-20`}>
                 <div className={`p-6 flex items-center ${isSidebarOpen ? 'justify-between' : 'justify-center'}`}>
@@ -103,7 +119,7 @@ export default function StudentDashboard() {
                         <LayoutDashboard size={20} className="flex-shrink-0" />
                         {isSidebarOpen && <span>Dashboard</span>}
                     </Link>
-                    <Link href="/student-profile" className={`flex items-center ${isSidebarOpen ? 'gap-3 px-4' : 'justify-center'} py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-bold transition-all`} title="Profile Settings">
+                    <Link id="nav-profile" href="/student-profile" className={`flex items-center ${isSidebarOpen ? 'gap-3 px-4' : 'justify-center'} py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-bold transition-all`} title="Profile Settings">
                         <Settings size={20} className="flex-shrink-0" />
                         {isSidebarOpen && <span>Profile Settings</span>}
                     </Link>
@@ -115,7 +131,7 @@ export default function StudentDashboard() {
                         <Briefcase size={20} className="flex-shrink-0" />
                         {isSidebarOpen && <span>My Applications</span>}
                     </Link>
-                    <Link href="/matches" className={`flex items-center ${isSidebarOpen ? 'gap-3 px-4' : 'justify-center'} py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-bold transition-all`} title="Best Matches">
+                    <Link id="nav-matches" href="/matches" className={`flex items-center ${isSidebarOpen ? 'gap-3 px-4' : 'justify-center'} py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-bold transition-all`} title="Best Matches">
                         <Zap size={20} className="flex-shrink-0" />
                         {isSidebarOpen && <span>Best Matches</span>}
                     </Link>
@@ -164,6 +180,14 @@ export default function StudentDashboard() {
                         <p className="text-xs md:text-sm text-gray-500 font-medium">Welcome back, {user?.name}</p>
                     </div>
                     <div className="flex items-center gap-2 md:gap-4">
+                        {!localStorage.getItem('hasSeenStudentTour') && (
+                            <button 
+                                onClick={() => setShowTour(true)}
+                                className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors"
+                            >
+                                <Sparkles size={14} /> Start Tour
+                            </button>
+                        )}
                         <NotificationBell />
                         <Avatar name={user?.name} src={user?.profilePicture} size="md" />
                     </div>

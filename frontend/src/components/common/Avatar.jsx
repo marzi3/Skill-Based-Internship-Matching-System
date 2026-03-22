@@ -37,11 +37,33 @@ const Avatar = ({
 
   const displayInitials = initials || (name ? name.charAt(0).toUpperCase() : 'U');
 
+  const getImageUrl = (source) => {
+    if (!source) return null;
+    if (source.startsWith('http') || source.startsWith('data:')) return source;
+    
+    // For relative paths, prepend the base API URL (origin)
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    let baseUrl = apiUrl;
+    try {
+      const url = new URL(apiUrl);
+      baseUrl = url.origin;
+    } catch (e) {
+      // Fallback: remove /api/v1 if present
+      baseUrl = apiUrl.replace('/api/v1', '');
+    }
+    
+    // Ensure no double slashes
+    const cleanSource = source.startsWith('/') ? source.substring(1) : source;
+    return `${baseUrl}/${cleanSource}`;
+  };
+
+  const imageSrc = getImageUrl(src);
+
   return (
     <div className={`relative inline-block ${className}`.trim()}>
-      {src ? (
+      {imageSrc ? (
         <img
-          src={src}
+          src={imageSrc}
           alt={name}
           className={`
             ${sizeStyles[size]}

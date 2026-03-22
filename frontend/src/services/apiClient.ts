@@ -3,13 +3,21 @@ import axios, { InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'ax
 // Create an Axios instance
 // baseURL is just the origin — callers use full paths like /api/v1/auth/login
 const apiClient = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api/v1',
-    withCredentials: true, // Important for secure cookies if used
+    baseURL: (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api/v1').replace(/\/$/, '') + '/',
+    withCredentials: true,
 });
+
+console.log('API Client Initialized with baseURL:', apiClient.defaults.baseURL);
 
 // Request Interceptor: Attach Token
 apiClient.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
+        // Automatically trim leading slash from relative URLs to ensure proper concatenation with baseURL
+        // This fixes 404 errors caused by axios replacing the baseURL suffix
+        if (config.url && config.url.startsWith('/') && !config.url.startsWith('http')) {
+            config.url = config.url.substring(1);
+        }
+
         // Ensure this only runs on the client side
         if (typeof window !== 'undefined') {
             const token = localStorage.getItem('token');

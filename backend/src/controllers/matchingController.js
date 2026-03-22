@@ -1,6 +1,7 @@
 const logger = require('../utils/logger');
 const Student = require('../models/Student');
 const Internship = require('../models/Internship');
+const User = require('../models/User');
 const Match = require('../models/Match');
 const MatchingEngine = require('../services/matchingEngine');
 
@@ -159,8 +160,14 @@ exports.matchInternshipsForStudent = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Student ID is required' });
         }
 
-        // 1. Load the student profile (facts base slice)
-        const student = await Student.findById(studentId).lean();
+        // 1. Load the student profile - handle both StudentID and UserID for robust API calls
+        const student = await Student.findOne({
+            $or: [
+                { _id: mongoose.isValidObjectId(studentId) ? studentId : null },
+                { userId: mongoose.isValidObjectId(studentId) ? studentId : null }
+            ].filter(q => q[Object.keys(q)[0]] !== null)
+        }).lean();
+
         if (!student) {
             return res.status(404).json({ success: false, message: 'Student profile not found' });
         }

@@ -23,7 +23,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
         if (user && token) {
             // Socket.IO must connect to the root server, not the /api/v1 namespaced path
             const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL ||
-                (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api/v1').replace('/api/v1', '');
+                (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api/v1').replace('/api/v1', '');
             const socketInstance = io(socketUrl, {
                 auth: {
                     token

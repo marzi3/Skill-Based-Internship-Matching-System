@@ -14,12 +14,12 @@ const verificationRoutes = require('./verificationRoutes');
 const settingsRoutes = require('./settingsRoutes');
 const analyticsRoutes = require('./analyticsRoutes');
 
+const reportRoutes = require('./reportRoutes');
 
 // Route registration
 router.use('/auth', authRoutes);
-// Verification routes (new)
 router.use('/verification', verificationRoutes);
-
+router.use('/reports', reportRoutes); // Add this
 router.use('/students', studentRoutes);
 router.use('/internships', internshipRoutes);
 router.use('/applications', applicationRoutes);

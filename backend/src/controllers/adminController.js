@@ -35,10 +35,12 @@ exports.getDashboardStats = async (req, res) => {
         const activeInternships = await Internship.countDocuments({ status: 'Hiring', isDeleted: false });
         const totalApplications = await Application.countDocuments();
         const acceptedApplications = await Application.countDocuments({ status: 'Selected' });
+        const rejectedApplications = await Application.countDocuments({ status: 'Rejected' });
+        const resolvedApplications = acceptedApplications + rejectedApplications;
 
         let matchSuccessRate = 0;
-        if (totalApplications > 0) {
-            matchSuccessRate = ((acceptedApplications / totalApplications) * 100).toFixed(2);
+        if (resolvedApplications > 0) {
+            matchSuccessRate = ((acceptedApplications / resolvedApplications) * 100).toFixed(2);
         }
 
         // Recent activity (last 5 applications or other things)
@@ -182,9 +184,20 @@ exports.getReports = async (req, res) => {
             };
         }
 
-        // 1. Applications per week (Mocked grouping by day for simplicity, can be adjusted)
-        const applicationsTrend = await Application.aggregate([
-            { $match: dateFilter },
+        // 1. Applications per week (Last 7 days with zero padding)
+        const last7Days = [];
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            last7Days.push(d.toISOString().split('T')[0]);
+        }
+
+        const trendData = await Application.aggregate([
+            {
+                $match: {
+                    createdAt: { $gte: new Date(new Date().setDate(new Date().getDate() - 7)) }
+                }
+            },
             {
                 $group: {
                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
@@ -194,10 +207,16 @@ exports.getReports = async (req, res) => {
             { $sort: { _id: 1 } }
         ]);
 
+        // Map trend data to the 7-day window with zero padding
+        const applicationsTrend = last7Days.map(date => {
+            const found = trendData.find(t => t._id === date);
+            return { _id: date, count: found ? found.count : 0 };
+        });
+
         // 2. Placements by department
         // We get domain from Internship referenced in Application
         const placements = await Application.aggregate([
-            { $match: { ...dateFilter, status: 'Accepted' } },
+            { $match: { ...dateFilter, status: 'Selected' } },
             {
                 $lookup: {
                     from: 'internships',

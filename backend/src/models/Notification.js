@@ -9,7 +9,18 @@ const notificationSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ['APPLICATION_RECEIVED', 'APPLICATION_STATUS', 'NEW_MATCH', 'INTERVIEW_SCHEDULED', 'ACCOUNT_STATUS', 'NEW_MESSAGE'],
+        enum: [
+            'APPLICATION_RECEIVED', 
+            'APPLICATION_STATUS', 
+            'NEW_MATCH', 
+            'INTERVIEW_SCHEDULED', 
+            'ACCOUNT_STATUS', 
+            'NEW_MESSAGE',
+            'WELCOME',
+            'PASSWORD_RESET',
+            'VERIFICATION_STATUS',
+            'USER_REPORTED'
+        ],
         required: true
     },
     message: {
