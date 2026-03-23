@@ -86,10 +86,16 @@ const internshipSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
-    requiredDegreeField: [{
-        type: String,
-        trim: true
-    }],
+    requiredDegreeField: {
+        type: [String],
+        validate: {
+            validator: function (v) {
+                return v && v.length > 0;
+            },
+            message: 'At least one accepted degree field is required'
+        },
+        required: [true, 'Accepted degree fields are required']
+    },
     stipend: {
         amount: Number,
         currency: { type: String, default: 'INR' }

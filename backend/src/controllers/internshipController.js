@@ -2,6 +2,7 @@ const logger = require('../utils/logger');
 const Internship = require('../models/Internship');
 const User = require('../models/User');
 const Student = require('../models/Student');
+const mongoose = require('mongoose');
 
 // @desc    Get all hiring internships (for students)
 // @route   GET /api/internships

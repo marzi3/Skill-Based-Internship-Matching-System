@@ -30,7 +30,7 @@ const validateInternship = [
     check('duration', 'Duration is required').not().isEmpty(),
     check('expiryDate', 'Valid expiry date is required').isISO8601().toDate(),
     check('description', 'Description must be at least 20 characters').isLength({ min: 20 }),
-    check('company', 'Company name is required').not().isEmpty().trim().escape(),
+    check('company').optional().trim().escape(),
     check('minimumGPA', 'GPA must be between 0 and 4.0').optional().isFloat({ min: 0, max: 4.0 }),
     validateRequest
 ];

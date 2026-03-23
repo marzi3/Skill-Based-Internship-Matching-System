@@ -6,7 +6,7 @@ const globalLimiter = rateLimit({
     max: 10000, // Increased for development
     standardHeaders: true, 
     legacyHeaders: false, 
-    skip: (req) => req.method === 'OPTIONS', 
+    skip: (req) => process.env.NODE_ENV !== 'production' || req.method === 'OPTIONS', // Skip in development or for CORS preflight
     message: {
         success: false,
         message: 'Too many requests from this IP, please try again after 15 minutes'
@@ -19,7 +19,7 @@ const authLimiter = rateLimit({
     max: 1000, // Increased for development
     standardHeaders: true,
     legacyHeaders: false,
-    skip: (req) => req.method === 'OPTIONS', 
+    skip: (req) => process.env.NODE_ENV !== 'production' || req.method === 'OPTIONS', // Skip in development or for CORS preflight
     message: {
         success: false,
         message: 'Too many authentication attempts from this IP, please try again after 15 minutes'

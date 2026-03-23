@@ -2,6 +2,7 @@ import axios, { InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'ax
 
 // Create an Axios instance
 // baseURL is just the origin — callers use full paths like /api/v1/auth/login
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
 const apiClient = axios.create({
     baseURL: (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api/v1').replace(/\/$/, '') + '/',
     withCredentials: true,

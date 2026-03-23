@@ -6,11 +6,11 @@ const sendEmailRaw = require('../utils/sendEmail');
 const { send: sendNotification } = require('../services/notificationService');
 
 // Helper to generate JWT
-const generateToken = (id, role, isVerified) => {
+const generateToken = (id, role, isVerified, verificationStatus) => {
     if (!process.env.JWT_SECRET) {
         throw new Error('JWT_SECRET is not defined in environment variables');
     }
-    return jwt.sign({ id, role, isVerified }, process.env.JWT_SECRET, {
+    return jwt.sign({ id, role, isVerified, verificationStatus }, process.env.JWT_SECRET, {
         expiresIn: '30d',
     });
 };
@@ -69,7 +69,7 @@ const registerUser = async (req, res) => {
                 await user.save({ validateBeforeSave: false });
             }
 
-            const token = generateToken(user._id, user.role, user.isVerified);
+            const token = generateToken(user._id, user.role, user.isVerified, user.verificationStatus);
             res.cookie('jwt', token, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
@@ -143,7 +143,7 @@ const loginUser = async (req, res) => {
         const user = await User.findOne({ email }).select('+password');
 
         if (user && (await user.comparePassword(password))) {
-            const token = generateToken(user._id, user.role, user.isVerified);
+            const token = generateToken(user._id, user.role, user.isVerified, user.verificationStatus);
 
             res.cookie('jwt', token, {
                 httpOnly: true,
@@ -206,7 +206,7 @@ const getRoleDashboard = (role) => {
 // @desc    Google OAuth Callback
 // @route   GET /api/auth/google/callback
 const googleAuthCallback = (req, res) => {
-    const token = generateToken(req.user._id, req.user.role, req.user.isVerified);
+    const token = generateToken(req.user._id, req.user.role, req.user.isVerified, req.user.verificationStatus);
     res.cookie('jwt', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -217,7 +217,7 @@ const googleAuthCallback = (req, res) => {
 };
 
 const linkedinAuthCallback = (req, res) => {
-    const token = generateToken(req.user._id, req.user.role, req.user.isVerified);
+    const token = generateToken(req.user._id, req.user.role, req.user.isVerified, req.user.verificationStatus);
     res.cookie('jwt', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -306,7 +306,7 @@ const resetPassword = async (req, res) => {
 
         await user.save();
 
-        const token = generateToken(user._id, user.role, user.isVerified);
+        const token = generateToken(user._id, user.role, user.isVerified, user.verificationStatus);
 
         res.status(200).json({
             success: true,
@@ -473,7 +473,7 @@ const updatePassword = async (req, res) => {
         user.password = req.body.newPassword;
         await user.save();
 
-        const token = generateToken(user._id, user.role, user.isVerified);
+        const token = generateToken(user._id, user.role, user.isVerified, user.verificationStatus);
         res.status(200).json({ success: true, message: 'Password updated successfully', token });
     } catch (error) {
         res.status(500).json({ message: error.message });

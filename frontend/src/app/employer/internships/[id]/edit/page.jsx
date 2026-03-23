@@ -218,6 +218,7 @@ const EditInternshipPage = () => {
         }
         if (step === 2) {
             if (formData.requiredSkills.length === 0) errors.requiredSkills = true;
+            if (formData.requiredDegreeField.length === 0) errors.requiredDegreeField = true;
         }
         setValidationErrors(errors);
         return Object.keys(errors).length === 0;
@@ -441,15 +442,18 @@ const EditInternshipPage = () => {
 
                                             {/* REQUIRED DEGREES CACHE */}
                                             <div className="space-y-4">
-                                                <label className="block text-xs font-black uppercase tracking-widest ml-1 mb-2.5 text-slate-900">Accepted Degree Fields</label>
+                                                <label className={`block text-xs font-black uppercase tracking-widest ml-1 mb-2.5 ${validationErrors.requiredDegreeField ? 'text-rose-500' : 'text-slate-900'}`}>Accepted Degree Fields *</label>
                                                 <div className="flex gap-4">
                                                     <input
                                                         type="text"
                                                         value={degreeInput}
-                                                        onChange={(e) => setDegreeInput(e.target.value)}
+                                                        onChange={(e) => {
+                                                            setDegreeInput(e.target.value);
+                                                            if (validationErrors.requiredDegreeField) setValidationErrors(prev => ({ ...prev, requiredDegreeField: false }));
+                                                        }}
                                                         onKeyDown={(e) => e.key === 'Enter' && handleAddDegree(e)}
                                                         placeholder="e.g. Computer Science, IT, Software Engineering..."
-                                                        className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl py-4 px-6 text-slate-900 font-bold focus:outline-none focus:border-[#6366F1]/50 transition-all placeholder:text-slate-300 shadow-sm"
+                                                        className={`flex-1 bg-slate-50 border rounded-2xl py-4 px-6 text-slate-900 font-bold focus:outline-none transition-all placeholder:text-slate-300 shadow-sm ${validationErrors.requiredDegreeField ? 'border-rose-500/50 focus:border-rose-500' : 'border-slate-200 focus:border-[#6366F1]/50'}`}
                                                     />
                                                     <button
                                                         onClick={handleAddDegree}
