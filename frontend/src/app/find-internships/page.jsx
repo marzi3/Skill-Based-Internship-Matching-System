@@ -19,6 +19,7 @@ import {
     ArrowLeft,
     LogOut,
 } from 'lucide-react';
+import Avatar from '@/components/common/Avatar';
 
 function FindInternshipsContent() {
     const router = useRouter();
@@ -122,7 +123,11 @@ function FindInternshipsContent() {
     const filtered = internships;
 
     const jobTypeOptions = ['Remote', 'On-site', 'Hybrid'];
-    const industryOptions = ['Technology', 'Finance', 'Design', 'Marketing', 'AI/ML', 'Engineering'];
+    const industryOptions = [
+        'Web Development', 'Mobile App Development', 'UI/UX Design',
+        'Data Science', 'Backend Development', 'Frontend Development',
+        'DevOps', 'Machine Learning', 'Cloud Architecture', 'Database Design'
+    ];
 
     return (
         <div className="min-h-screen bg-white font-sans">
@@ -143,9 +148,12 @@ function FindInternshipsContent() {
                                     <span className="text-sm font-bold text-gray-900">{user.name}</span>
                                     <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest">{user.role}</span>
                                 </div>
-                                <div className="w-10 h-10 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-center text-indigo-600 font-bold">
-                                    {user.name?.charAt(0)}
-                                </div>
+                                <Avatar
+                                    src={user.profilePicture}
+                                    name={user.name}
+                                    size="md"
+                                    className="rounded-xl shadow-sm"
+                                />
                                 <button
                                     onClick={logout}
                                     className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-red-500 transition-colors"
@@ -155,14 +163,14 @@ function FindInternshipsContent() {
                                 </button>
                             </div>
                         ) : (
-                            <>
+                            <div className="flex items-center gap-4 sm:gap-6">
                                 <Link href="/employers" className="text-gray-600 hover:text-indigo-600 transition-colors text-sm font-medium">
                                     For Employers
                                 </Link>
                                 <Link href="/login" className="bg-indigo-600 text-white px-5 py-2 rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200">
                                     Sign In
                                 </Link>
-                            </>
+                            </div>
                         )}
                     </div>
                 </div>
@@ -328,20 +336,25 @@ function FindInternshipsContent() {
                                     >
                                         <div className="flex items-start justify-between gap-4">
                                             <div className="flex items-start gap-4">
-                                                {/* Company Icon */}
-                                                <div className="w-12 h-12 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-center shrink-0 group-hover:bg-indigo-50 transition-colors">
-                                                    <Building2 className="w-6 h-6 text-gray-400 group-hover:text-indigo-500 transition-colors" />
-                                                </div>
+                                                 {/* Company Icon */}
+                                                 <Link href={`/employers/${job.employer?._id || job.employerId}`} className="shrink-0 group">
+                                                     <Avatar 
+                                                         src={job.employer?.profilePicture} 
+                                                         name={job.employer?.companyName} 
+                                                         size="lg"
+                                                         className="rounded-xl border border-gray-100 group-hover:border-indigo-200 transition-all shadow-sm"
+                                                     />
+                                                 </Link>
 
                                                 <div>
                                                     <h3 className="text-base font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
                                                         {job.positionTitle}
                                                     </h3>
                                                     <div className="flex items-center gap-3 mt-1 text-sm text-gray-400">
-                                                        <span className="flex items-center gap-1">
+                                                        <Link href={`/employers/${job.employer?._id || job.employerId}`} className="flex items-center gap-1 hover:text-indigo-600 transition-colors">
                                                             <Building2 className="w-3.5 h-3.5" />
                                                             {job.employer?.companyName || job.company || 'Company'}
-                                                        </span>
+                                                        </Link>
                                                         <span>•</span>
                                                         <span className="flex items-center gap-1">
                                                             <MapPin className="w-3.5 h-3.5" />

@@ -6,6 +6,7 @@ import { FileText, Search, Filter, Calendar, CheckCircle2, Clock, XCircle, Loade
 import axios from '@/services/apiClient';
 import Card from '@/components/common/Card';
 import Badge from '@/components/common/Badge';
+import Avatar from '@/components/common/Avatar';
 import Link from 'next/link';
 
 const ApplicationsPage = () => {
@@ -112,9 +113,12 @@ const ApplicationsPage = () => {
                                 <tr key={app._id} className="hover:bg-slate-50/50 transition-colors group">
                                     <td className="px-6 py-5">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center text-primary-600 font-black text-xs border border-primary-100">
-                                                {app.student?.name?.charAt(0) || 'U'}
-                                            </div>
+                                            <Avatar
+                                                src={app.student?.profilePicture}
+                                                name={app.student?.name || 'Unknown'}
+                                                size="md"
+                                                className="rounded-xl"
+                                            />
                                             <span className="font-bold text-gray-900">{app.student?.name || 'Unknown'}</span>
                                         </div>
                                     </td>
@@ -144,8 +148,8 @@ const ApplicationsPage = () => {
                                         {new Date(app.appliedDate).toLocaleDateString()}
                                     </td>
                                     <td className="px-6 py-5">
-                                        <Link href={`/students/${app.student?._id}`} className="text-xs font-black uppercase tracking-[0.2em] text-primary-600 hover:text-primary-800 transition-colors">
-                                            View Profile
+                                        <Link href={`/employer/applications/${app._id}`} className="text-xs font-black uppercase tracking-[0.2em] text-primary-600 hover:text-primary-800 transition-colors">
+                                            View Application
                                         </Link>
                                     </td>
                                 </tr>

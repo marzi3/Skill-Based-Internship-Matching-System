@@ -97,7 +97,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             return { success: true };
         } catch (error: any) {
             console.error('Login Error:', error.response?.data || error.message);
-            return { success: false, error: error.response?.data?.message || 'Login failed' };
+            const errorMessage = error.response?.data?.message || 
+                               (error.response?.data?.errors && Array.isArray(error.response.data.errors) 
+                                ? error.response.data.errors[0].msg 
+                                : null) || 
+                               'Login failed';
+            return { success: false, error: errorMessage };
         }
     };
 

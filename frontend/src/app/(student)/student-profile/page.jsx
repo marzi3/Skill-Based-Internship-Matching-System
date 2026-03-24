@@ -1448,8 +1448,12 @@ export default function StudentProfile() {
                           <label className="block text-sm font-medium text-slate-700 mb-2">
                             Industries of Interest * <span className="text-green-500">(+7 points per match)</span>
                           </label>
-                          <div className="grid grid-cols-3 gap-2 p-3 border border-green-300 bg-green-50 rounded-lg">
-                            {['Technology', 'Finance', 'Healthcare', 'Marketing', 'Design', 'Engineering', 'Education', 'Manufacturing', 'Consulting'].map(industry => (
+                          <div className="grid grid-cols-2 gap-2 p-3 border border-green-300 bg-green-50 rounded-lg">
+                            {[
+                                'Web Development', 'Mobile App Development', 'UI/UX Design',
+                                'Data Science', 'Backend Development', 'Frontend Development',
+                                'DevOps', 'Machine Learning', 'Cloud Architecture', 'Database Design'
+                            ].map(industry => (
                               <label key={industry} className="flex items-center cursor-pointer">
                                 <input
                                   type="checkbox"
@@ -1457,7 +1461,7 @@ export default function StudentProfile() {
                                   onChange={(e) => handleIndustryChange(industry, e.target.checked)}
                                   className="mr-2 rounded"
                                 />
-                                <span className="text-sm">{industry}</span>
+                                <span className="text-xs font-semibold">{industry}</span>
                               </label>
                             ))}
                           </div>

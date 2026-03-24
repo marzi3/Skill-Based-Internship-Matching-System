@@ -20,13 +20,14 @@ const {
   getStudentPublicProfile
 } = require('../controllers/authController');
 const { protect, authorize } = require('../middleware/auth');
+const upload = require('../config/multer');
 
 // Standard Auth
 router.post('/register', authLimiter, validateRegister, registerUser);
 router.post('/login', authLimiter, validateLogin, loginUser);
 router.post('/logout', logoutUser);
 router.get('/me', protect, getMe);
-router.put('/profile', protect, updateProfile);
+router.put('/profile', protect, upload.single('profilePicture'), updateProfile);
 router.put('/password', protect, updatePassword);
 router.get('/students', protect, authorize('employer', 'admin'), getStudents);
 router.get('/students/:id', getStudentPublicProfile);

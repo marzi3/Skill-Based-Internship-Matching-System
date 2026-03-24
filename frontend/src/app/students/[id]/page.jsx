@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import axios from '@/services/apiClient';
 import Navbar from '@/components/common/Navbar';
-import { Mail, MapPin, Code, Star, Loader2, ArrowLeft, GraduationCap, Briefcase, Award } from 'lucide-react';
+import { Mail, MapPin, Code, Star, Loader2, ArrowLeft, GraduationCap, Briefcase, Award, User, Phone, FileText, Link as LinkIcon } from 'lucide-react';
 import Avatar from '@/components/common/Avatar';
 import Badge from '@/components/common/Badge';
 
@@ -97,6 +97,37 @@ export default function StudentPublicProfile() {
                                 <Mail size={16} className="text-gray-400" />
                                 <a href={`mailto:${user.email}`} className="hover:text-primary-600 transition-colors">{user.email}</a>
                             </div>
+                            {profile?.personalInfo?.phone && (
+                                <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
+                                    <Phone size={16} className="text-gray-400" />
+                                    <a href={`tel:${profile.personalInfo.phone}`} className="hover:text-primary-600 transition-colors">{profile.personalInfo.phone}</a>
+                                </div>
+                            )}
+                            {profile?.resume?.filePath && (
+                                <div className="flex items-center gap-3 bg-gray-50 border border-gray-100 p-3 rounded-xl mt-2 w-max">
+                                    <FileText size={24} className="text-primary-500" />
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-bold text-gray-900">{profile.resume.fileName || 'Resume.pdf'}</span>
+                                        {(() => {
+                                            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api/v1';
+                                            const baseUrl = apiUrl.includes('/api/v1') ? apiUrl.replace('/api/v1', '') : apiUrl;
+                                            return (
+                                                <a href={`${baseUrl}/${profile.resume.filePath}`} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-primary-500 hover:text-primary-600 transition-colors">
+                                                    View / Download
+                                                </a>
+                                            );
+                                        })()}
+                                    </div>
+                                </div>
+                            )}
+                            {profile?.portfolio?.portfolio && (
+                                <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
+                                    <LinkIcon size={16} className="text-gray-400" />
+                                    <a href={profile.portfolio.portfolio.startsWith('http') ? profile.portfolio.portfolio : `https://${profile.portfolio.portfolio}`} target="_blank" rel="noopener noreferrer" className="hover:text-primary-600 transition-colors">
+                                        Portfolio
+                                    </a>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

@@ -97,14 +97,48 @@ const markMessageAsRead = asyncHandler(async (req, res) => {
     message.isRead = true;
     await message.save();
 
+    // Notify the sender that the message was read
+    emitToUser(message.senderId, 'messagesRead', { 
+        messageId: message._id, 
+        applicationId: message.applicationId 
+    });
+
     res.status(200).json({
         success: true,
         data: message
     });
 });
 
+// @desc    Mark all messages in a thread as read (called when receiver opens the thread)
+// @route   PATCH /api/messages/:applicationId/read-all
+// @access  Private
+const markThreadAsRead = asyncHandler(async (req, res) => {
+    const { applicationId } = req.params;
+
+    // Find who the sender is for these messages to notify them
+    // Usually it's the other party in the thread
+    const threadMessages = await Message.find({ 
+        applicationId, 
+        receiverId: req.user._id, 
+        isRead: false 
+    }).distinct('senderId');
+
+    await Message.updateMany(
+        { applicationId, receiverId: req.user._id, isRead: false },
+        { $set: { isRead: true } }
+    );
+
+    // Notify each sender that their messages in this thread were read
+    threadMessages.forEach(senderId => {
+        emitToUser(senderId, 'messagesRead', { applicationId });
+    });
+
+    res.status(200).json({ success: true });
+});
+
 module.exports = {
     getMessagesByApplication,
     sendMessage,
-    markMessageAsRead
+    markMessageAsRead,
+    markThreadAsRead
 };

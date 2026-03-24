@@ -10,8 +10,12 @@ import axios from '@/services/apiClient';
 
 const SettingsPage = () => {
     const router = useRouter();
-    const { user, setUser } = useAuth();
+    const { user, checkUserLoggedIn } = useAuth();
     const [activeTab, setActiveTab] = useState('profile');
+    
+    // Dynamic Image URL Base
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api/v1';
+    const imageBaseUrl = apiUrl.includes('/api/v1') ? apiUrl.replace('/api/v1', '') : apiUrl;
 
     // Forms State
     const [profileData, setProfileData] = useState({
@@ -38,12 +42,32 @@ const SettingsPage = () => {
         setTimeout(() => setMessage({ type: '', text: '' }), 4000);
     };
 
+    const handleFileChange = (e) => {
+        if (e.target.files && e.target.files[0]) {
+            setProfileData({ ...profileData, profilePicture: e.target.files[0] });
+        }
+    };
+
     const handleProfileSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
         try {
-            const res = await axios.put('/auth/profile', profileData);
-            setUser({ ...user, ...res.data });
+            const data = new FormData();
+            Object.keys(profileData).forEach(key => {
+                if (key === 'profilePicture' && profileData[key] instanceof File) {
+                    data.append('profilePicture', profileData[key]);
+                } else if (profileData[key] !== null && profileData[key] !== undefined) {
+                    data.append(key, profileData[key]);
+                }
+            });
+
+            const res = await axios.put('/auth/profile', data);
+            
+            // Refresh auth context
+            if (typeof checkUserLoggedIn === 'function') {
+                checkUserLoggedIn();
+            }
+            
             showMessage('success', 'Profile updated successfully.');
         } catch (error) {
             showMessage('error', error.response?.data?.message || 'Failed to update profile.');
@@ -151,15 +175,17 @@ const SettingsPage = () => {
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-bold text-gray-700">Profile Picture URL</label>
+                                    <label className="text-sm font-bold text-gray-700">Profile Picture</label>
                                     <input
-                                        type="url"
-                                        value={profileData.profilePicture}
-                                        onChange={(e) => setProfileData({ ...profileData, profilePicture: e.target.value })}
+                                        type="file"
+                                        accept="image/*"
+                                        name="profilePicture"
+                                        onChange={handleFileChange}
                                         className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary-100 focus:border-primary-500 outline-none transition-all"
-                                        placeholder="https://example.com/logo.png"
                                     />
-                                    <p className="text-xs text-gray-500">Provide a direct link to your company logo or profile picture.</p>
+                                    {typeof profileData.profilePicture === 'string' && profileData.profilePicture && (
+                                        <p className="text-xs text-gray-400 truncate">Current: {profileData.profilePicture}</p>
+                                    )}
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-bold text-gray-700">Company Description</label>

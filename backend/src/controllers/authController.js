@@ -138,6 +138,7 @@ const verifyEmail = async (req, res) => {
 // @access  Public
 const loginUser = async (req, res) => {
     const { email, password } = req.body;
+    logger.info(`Login attempt for: ${email}`);
 
     try {
         const user = await User.findOne({ email }).select('+password');
@@ -163,6 +164,7 @@ const loginUser = async (req, res) => {
                 token,
             });
         } else {
+            logger.warn(`Login failed for: ${email} - Invalid credentials`);
             res.status(401).json({ message: 'Invalid email or password' });
         }
     } catch (error) {
@@ -363,9 +365,19 @@ const updateProfile = async (req, res) => {
         user.companyName = req.body.companyName || user.companyName;
         user.businessRegistrationNumber = req.body.businessRegistrationNumber || user.businessRegistrationNumber;
         user.website = req.body.website || user.website;
-        user.profilePicture = req.body.profilePicture || user.profilePicture;
+        
+        if (req.file) {
+            user.profilePicture = req.file.path.replace(/\\/g, '/');
+        } else if (req.body.profilePicture) {
+            user.profilePicture = req.body.profilePicture;
+        }
+
         if (req.body.companyDescription !== undefined) user.companyDescription = req.body.companyDescription;
         if (req.body.positionInCompany !== undefined) user.positionInCompany = req.body.positionInCompany;
+        if (req.body.location !== undefined) user.location = req.body.location;
+        if (req.body.industry !== undefined) user.industry = req.body.industry;
+        if (req.body.companySize !== undefined) user.companySize = req.body.companySize;
+        if (req.body.foundedYear !== undefined) user.foundedYear = req.body.foundedYear;
 
         const updatedUser = await user.save();
         res.status(200).json(updatedUser);
@@ -380,7 +392,7 @@ const updateProfile = async (req, res) => {
 const getEmployerPublicProfile = async (req, res) => {
     try {
         const user = await User.findById(req.params.id)
-            .select('name companyName website profilePicture companyDescription verificationStatus role');
+            .select('name companyName website profilePicture companyDescription verificationStatus role location industry companySize foundedYear');
 
         if (!user || user.role !== 'employer') {
             return res.status(404).json({ message: 'Employer not found' });
@@ -417,7 +429,7 @@ const getStudentPublicProfile = async (req, res) => {
         logger.info(`Fetching profile for ID: ${req.params.id}`);
 
         // First, try to find by User ID
-        user = await User.findById(req.params.id).select('name email profilePicture bio location').lean();
+        user = await User.findById(req.params.id).select('name email profilePicture bio location role').lean();
 
         if (user && user.role === 'student') {
             logger.info(`Found user by ID, fetching student details for userId: ${user._id}`);
@@ -427,7 +439,7 @@ const getStudentPublicProfile = async (req, res) => {
             studentDetails = await Student.findById(req.params.id).lean();
             if (studentDetails) {
                 logger.info(`Found student details, fetching user for userId: ${studentDetails.userId}`);
-                user = await User.findById(studentDetails.userId).select('name email profilePicture bio location').lean();
+                user = await User.findById(studentDetails.userId).select('name email profilePicture bio location role').lean();
             }
         }
 

@@ -154,8 +154,30 @@ const send = async ({ userId, type, message, link, sendEmail = true, subject }) 
     }
 };
 
+/**
+ * Send notification to all admin users
+ */
+const notifyAdmins = async ({ type, message, link, subject }) => {
+    try {
+        const admins = await User.find({ role: 'admin' }).select('_id');
+        const notifications = await Promise.all(
+            admins.map(admin => send({
+                userId: admin._id,
+                type,
+                message,
+                link,
+                subject
+            }))
+        );
+        return notifications;
+    } catch (error) {
+        logger.error('[Notification Service] Failed to notify admins:', error);
+    }
+};
+
 module.exports = {
     send,
+    notifyAdmins,
     sendEmailWithRetry,
     generateEmailTemplate
 };

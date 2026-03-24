@@ -165,7 +165,9 @@ function evaluatePair(student, internship) {
                 // Hard disqualification signals immediate elimination
                 if (result.scoreAdjustment === -Infinity) {
                     disqualified = true;
-                    break; // Optimization: Stop executing lower-priority rules
+                    // Optimization removed: Continue executing lower-priority rules 
+                    // to generate complete explanation logs for the UI so false skill 
+                    // gaps are not incorrectly reported.
                 }
             }
         } catch (error) {

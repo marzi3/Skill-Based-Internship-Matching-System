@@ -84,7 +84,7 @@ exports.getInternships = async (req, res) => {
             projection = { score: { $meta: "textScore" } };
         }
 
-        const internships = await Internship.find(query, projection).sort(sortOption).populate('employer', 'name email companyName');
+        const internships = await Internship.find(query, projection).sort(sortOption).populate('employer', 'name email companyName profilePicture companyDescription');
         
         res.status(200).json({
             success: true,
@@ -141,7 +141,8 @@ exports.updateInternshipStatus = async (req, res) => {
 // @access  Public
 exports.getInternship = async (req, res) => {
     try {
-        const internship = await Internship.findById(req.params.id).populate('employer', 'name email companyName');
+        const internship = await Internship.findById(req.params.id)
+            .populate('employer', 'name email companyName profilePicture companyDescription website companyDescription');
         if (!internship) {
             return res.status(404).json({
                 success: false,

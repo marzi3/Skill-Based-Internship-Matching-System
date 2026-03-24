@@ -1,5 +1,6 @@
 const Report = require('../models/Report');
 const logger = require('../utils/logger');
+const { notifyAdmins } = require('../services/notificationService');
 
 /**
  * @desc    Create a new report
@@ -20,6 +21,16 @@ exports.createReport = async (req, res) => {
             reportedId,
             reason
         });
+
+        // Notify Admins
+        try {
+            await notifyAdmins({
+                type: 'MODERATION_ALERT',
+                message: `New moderation report received from ${req.user.name}. Reason: "${reason.substring(0, 50)}${reason.length > 50 ? '...' : ''}"`,
+                link: '/admin/moderation',
+                subject: `[Moderation] New Report: ${reportedEntity}`
+            });
+        } catch (err) { logger.error('Admin notification for report failed', err); }
 
         res.status(201).json({
             success: true,

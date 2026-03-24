@@ -34,11 +34,12 @@ function checkFileType(file, cb) {
         'image/jpeg',
         'image/png',
         'image/gif',
+        'image/webp',
         'application/pdf'
     ];
 
     // Allowed extensions
-    const filetypes = /jpeg|jpg|png|gif|pdf/;
+    const filetypes = /jpeg|jpg|png|gif|webp|pdf/;
 
     // Check ext
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());

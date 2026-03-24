@@ -237,6 +237,7 @@ const CandidateSearchPage = () => {
                         const score = isMatchResult ? Math.round(candidate.finalScore || 0) : (candidate.score || 0);
                         const location = isMatchResult ? '' : (candidate.location || '');
                         const field = isMatchResult ? (candidate.fieldOfStudy || '') : (candidate.fieldOfStudy || '');
+                        const profilePicture = candidate.profilePicture || '';
 
                         return (
                             <motion.div
@@ -249,7 +250,7 @@ const CandidateSearchPage = () => {
                                     <div className="space-y-5">
                                         <div className="flex items-start justify-between">
                                             <Avatar
-                                                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${name || 'user'}`}
+                                                src={profilePicture}
                                                 name={name || 'Candidate'}
                                                 size="xl"
                                                 className="rounded-2xl shadow-md ring-4 ring-white"

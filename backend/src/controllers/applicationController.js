@@ -4,6 +4,7 @@ const Internship = require('../models/Internship');
 const User = require('../models/User');
 const Student = require('../models/Student');
 const Match = require('../models/Match');
+const matchingEngine = require('../services/matchingEngine');
 const { send: sendNotification } = require('../services/notificationService');
 
 // @desc    Apply to an internship
@@ -11,7 +12,27 @@ const { send: sendNotification } = require('../services/notificationService');
 // @access  Private (Student)
 exports.applyToInternship = async (req, res) => {
     try {
-        const internship = await Internship.findById(req.params.id);
+        const { id } = req.params;
+        const { coverLetter } = req.body;
+
+        // 1. Check if already applied (ignore withdrawn applications)
+        const existingApplication = await Application.findOne({ 
+            student: req.user.id, 
+            internship: id,
+            status: { $ne: 'Withdrawn' }
+        });
+        if (existingApplication) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'You have an active application for this protocol. Withdraw it first if you wish to re-submit.',
+                data: existingApplication
+            });
+        }
+
+        // Delete any previous withdrawn application so the new one starts clean
+        await Application.deleteOne({ student: req.user.id, internship: id, status: 'Withdrawn' });
+
+        const internship = await Internship.findById(id);
 
         if (!internship) {
             return res.status(404).json({ success: false, message: 'Internship not found' });
@@ -37,30 +58,35 @@ exports.applyToInternship = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Student profile not found. Please complete your profile.' });
         }
 
-        // Find relevant match for score injection
-        const match = await Match.findOne({ student: student._id, internship: req.params.id });
+        // Perform final match calculation for snapshot
+        const analysis = matchingEngine.explainMatch(student, internship);
 
         const application = await Application.create({
             student: req.user.id,
             internship: req.params.id,
             employer: internship.employer,
             resume: req.body.resume,
+            coverLetter: req.body.coverLetter,
             answers: req.body.answers,
-            matchScore: match ? match.normalizedScore : 0
+            matchScore: analysis.normalizedScore,
+            matchAnalysis: {
+                tier: analysis.tier,
+                score: analysis.normalizedScore,
+                explanation: analysis.explanation
+            },
+            status: 'Applied',
+            statusHistory: [{
+                status: 'Applied',
+                comment: 'Application submitted'
+            }]
         });
 
         // Update Match status using correct Student ID
-        if (match) {
-            match.status = 'Applied';
-            await match.save();
-        } else {
-            // Check if maybe it was saved with User ID by mistake alternatively or just skip
-            await Match.findOneAndUpdate(
-                { student: student._id, internship: req.params.id },
-                { status: 'Applied' },
-                { upsert: false }
-            );
-        }
+        await Match.findOneAndUpdate(
+            { student: student._id, internship: req.params.id },
+            { status: 'Applied' },
+            { upsert: true }
+        );
 
         // Add student to internship applicants list
         internship.applicants.push(req.user.id);
@@ -72,12 +98,13 @@ exports.applyToInternship = async (req, res) => {
                 userId: internship.employer,
                 type: 'APPLICATION_RECEIVED',
                 message: `You have received a new application for ${internship.positionTitle}.`,
-                link: '/employer/applications' // Or specific URL
+                link: `/employer/applications/${application._id}`
             });
         } catch (err) { logger.error('Notification failed', err); }
 
         res.status(201).json({
             success: true,
+            message: 'Application successfully submitted',
             data: application
         });
     } catch (error) {
@@ -104,12 +131,43 @@ exports.getEmployerApplications = async (req, res) => {
     }
 };
 
+// @desc    Get single application details
+// @route   GET /api/applications/:id
+// @access  Private (Student/Employer/Admin)
+exports.getApplicationDetails = async (req, res) => {
+    try {
+        const application = await Application.findById(req.params.id)
+            .populate('student', 'name email profilePicture')
+            .populate('internship', 'positionTitle company location duration workEnvironment description stipend domain')
+            .populate('employer', 'companyName profilePicture');
+
+        if (!application) {
+            return res.status(404).json({ success: false, message: 'Application not found' });
+        }
+
+        // Auth check: Is current user the student or the employer?
+        const isStudent = application.student._id.toString() === req.user.id;
+        const isEmployer = application.employer._id.toString() === req.user.id;
+        
+        if (!isStudent && !isEmployer && req.user.role !== 'admin') {
+            return res.status(401).json({ success: false, message: 'Not authorized to view this application' });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: application
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 // @desc    Update application status
 // @route   PATCH /api/applications/:id/status
 // @access  Private (Employer)
 exports.updateApplicationStatus = async (req, res) => {
     try {
-        const { status } = req.body;
+        const { status, comment } = req.body;
         const application = await Application.findById(req.params.id);
 
         if (!application) {
@@ -122,6 +180,12 @@ exports.updateApplicationStatus = async (req, res) => {
         }
 
         application.status = status;
+        application.statusHistory.push({
+            status,
+            comment: comment || `Status updated to ${status}`,
+            updatedAt: Date.now()
+        });
+        
         await application.save();
 
         // Notify Student
@@ -132,13 +196,46 @@ exports.updateApplicationStatus = async (req, res) => {
                 userId: application.student,
                 type,
                 message: `Your application status for ${application.internship.positionTitle} has been updated to: ${status}.`,
-                link: '/applications'
+                link: `/applications/${application._id}`
             });
         } catch (err) { logger.error('Notification failed', err); }
 
         res.status(200).json({
             success: true,
             data: application
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Withdraw application
+// @route   DELETE /api/applications/:id/withdraw
+// @access  Private (Student)
+exports.withdrawApplication = async (req, res) => {
+    try {
+        const application = await Application.findById(req.params.id);
+
+        if (!application) {
+            return res.status(404).json({ success: false, message: 'Application not found' });
+        }
+
+        if (application.student.toString() !== req.user.id) {
+            return res.status(401).json({ success: false, message: 'Unauthorized' });
+        }
+
+        application.status = 'Withdrawn';
+        application.statusHistory.push({
+            status: 'Withdrawn',
+            comment: 'Application withdrawn by candidate',
+            updatedAt: Date.now()
+        });
+
+        await application.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Application successfully withdrawn'
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -194,6 +291,27 @@ exports.getStudentApplications = async (req, res) => {
             success: true,
             count: applications.length,
             data: applications
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Check application status and return ID if exists
+// @route   GET /api/applications/check/:internshipId
+// @access  Private (Student)
+exports.checkApplicationStatus = async (req, res) => {
+    try {
+        const application = await Application.findOne({ 
+            student: req.user.id, 
+            internship: req.params.internshipId
+        });
+
+        res.status(200).json({
+            success: true,
+            applied: !!application && application.status !== 'Withdrawn',
+            applicationId: application?._id || null,
+            applicationStatus: application?.status || null
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });

@@ -53,7 +53,7 @@ exports.getDashboardStats = async (req, res) => {
         const recentInternships = await Internship.find()
             .sort({ createdAt: -1 })
             .limit(5)
-            .populate('employer', 'companyName');
+            .populate('employer', 'companyName profilePicture');
 
         res.json({
             success: true,
@@ -384,7 +384,7 @@ exports.deleteListing = async (req, res) => {
 exports.getModerationItems = async (req, res) => {
     try {
         const flaggedListings = await Internship.find({ flagged: true, isDeleted: false })
-            .populate('employer', 'name email companyName');
+            .populate('employer', 'name email companyName profilePicture');
 
         const reports = await Report.find({ status: 'pending' })
             .populate('reporterId', 'name email')

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from '@/services/apiClient';
 import Cookies from 'js-cookie';
-import { ArrowLeft, MessageSquare, Send, Loader2, User } from 'lucide-react';
+import { ArrowLeft, MessageSquare, Send, Loader2, Check, CheckCheck } from 'lucide-react';
 import Avatar from '@/components/common/Avatar';
 import { useAuth } from '@/context/AuthContext';
 import { useSocket } from '@/context/SocketContext';
@@ -35,15 +35,32 @@ const EmployerMessagesPage = () => {
             if (selectedApp && msg.applicationId === selectedApp._id) {
                 setMessages((prev) => [...prev, msg]);
                 setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+
+                // If the message is from the other party and the chat is open, mark as read
+                if (msg.senderId?._id !== user?._id && msg.senderId !== user?._id) {
+                    axios.patch(`/messages/${msg._id}/read`).catch(() => {});
+                }
+            }
+        };
+
+        const handleMessagesRead = (data) => {
+            if (selectedApp && data.applicationId === selectedApp._id) {
+                setMessages(prev => prev.map(m => {
+                    if (data.messageId && m._id === data.messageId) return { ...m, isRead: true };
+                    if (!data.messageId) return { ...m, isRead: true };
+                    return m;
+                }));
             }
         };
 
         socket.on('receiveMessage', handleNewMessage);
+        socket.on('messagesRead', handleMessagesRead);
 
         return () => {
             socket.off('receiveMessage', handleNewMessage);
+            socket.off('messagesRead', handleMessagesRead);
         };
-    }, [socket, selectedApp]);
+    }, [socket, selectedApp, user?._id]);
 
     useEffect(() => { fetchApplications(); }, []);
 
@@ -72,6 +89,10 @@ const EmployerMessagesPage = () => {
             });
             setMessages(res.data.data || res.data.messages || []);
             setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+            // Mark all received messages as read
+            await axios.patch(`/messages/${app._id}/read-all`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            }).catch(() => {});
         } catch (err) {
             console.error('Failed to fetch messages:', err);
             setMessages([]);
@@ -148,8 +169,9 @@ const EmployerMessagesPage = () => {
                                     >
                                         <div className="flex items-center gap-3">
                                             <Avatar
-                                                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${studentName}`}
+                                                src={app.student?.profilePicture}
                                                 name={studentName} size="md"
+                                                className="rounded-xl border border-gray-100"
                                             />
                                             <div className="min-w-0">
                                                 <p className="font-bold text-gray-900 text-sm truncate">{studentName}</p>
@@ -177,8 +199,9 @@ const EmployerMessagesPage = () => {
                             {/* Chat Header */}
                             <div className="p-4 border-b border-gray-100 flex items-center gap-3 bg-gray-50/50">
                                 <Avatar
-                                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedApp.student?.name || 'user'}`}
+                                    src={selectedApp.student?.profilePicture}
                                     name={selectedApp.student?.name || 'Student'} size="md"
+                                    className="rounded-xl border border-gray-100"
                                 />
                                 <div>
                                     <p className="font-bold text-gray-900 text-sm">{selectedApp.student?.name || 'Student'}</p>
@@ -198,7 +221,9 @@ const EmployerMessagesPage = () => {
                                     </div>
                                 ) : (
                                     messages.map((msg, idx) => {
-                                        const isMe = msg.sender === user?._id || msg.sender?._id === user?._id;
+                                        const sid = msg.senderId?._id ?? msg.senderId;
+                                        const userId = user?._id || user?.id;
+                                        const isMe = sid?.toString() === userId?.toString();
                                         return (
                                             <motion.div
                                                 key={msg._id || idx}
@@ -206,14 +231,24 @@ const EmployerMessagesPage = () => {
                                                 animate={{ opacity: 1, y: 0 }}
                                                 className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
                                             >
-                                                <div className={`max-w-[70%] px-4 py-2.5 rounded-2xl text-sm ${isMe
-                                                    ? 'bg-indigo-600 text-white rounded-br-md'
-                                                    : 'bg-gray-100 text-gray-900 rounded-bl-md'
+                                                <div className={`flex flex-col max-w-[70%] ${isMe ? 'items-end' : 'items-start'}`}>
+                                                    <div className={`px-4 py-2.5 rounded-2xl text-sm ${
+                                                        isMe
+                                                            ? 'bg-indigo-600 text-white rounded-br-none shadow-md shadow-indigo-600/15'
+                                                            : 'bg-gray-100 text-gray-900 rounded-bl-none'
                                                     }`}>
-                                                    <p>{msg.content}</p>
-                                                    <p className={`text-[10px] mt-1 ${isMe ? 'text-indigo-200' : 'text-gray-400'}`}>
-                                                        {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
-                                                    </p>
+                                                        <p>{msg.content}</p>
+                                                    </div>
+                                                    <div className={`flex items-center gap-1 mt-1 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
+                                                        <span className="text-[10px] text-gray-400">
+                                                            {(msg.timestamp || msg.createdAt) ? new Date(msg.timestamp || msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                                                        </span>
+                                                        {isMe && (
+                                                            msg.isRead
+                                                                ? <CheckCheck size={12} className="text-indigo-500" title="Seen" />
+                                                                : <Check size={12} className="text-gray-400" title="Sent" />
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </motion.div>
                                         );

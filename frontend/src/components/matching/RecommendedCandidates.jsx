@@ -31,7 +31,7 @@ export default function RecommendedCandidates({ candidates = [] }) {
                 >
                     <div className="flex items-start gap-4">
                         <Avatar
-                            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${c.studentName || 'user'}`}
+                            src={c.profilePicture}
                             name={c.studentName || 'Candidate'}
                             size="lg"
                         />

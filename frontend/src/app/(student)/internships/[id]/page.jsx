@@ -14,6 +14,7 @@ import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { PageLoader } from '@/components/common/Loader';
 import ReportModal from '@/components/modals/ReportModal';
+import SubmitApplicationModal from '@/components/modals/SubmitApplicationModal';
 
 export default function InternshipDetailPage({ params }) {
     const { id } = use(params);
@@ -25,8 +26,11 @@ export default function InternshipDetailPage({ params }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [applied, setApplied] = useState(false);
+    const [applicationStatus, setApplicationStatus] = useState(null);
     const [applying, setApplying] = useState(false);
     const [showReport, setShowReport] = useState(false);
+    const [showApplyModal, setShowApplyModal] = useState(false);
+    const [submittedAppId, setSubmittedAppId] = useState(null);
 
     useEffect(() => {
         const fetchDetails = async () => {
@@ -45,7 +49,14 @@ export default function InternshipDetailPage({ params }) {
                     setAnalysis(matchRes.data.analysis);
                 }
 
-                // 3. Check if already applied (logic can be added here or in backend)
+                // 3. Check if already applied
+                const checkRes = await axios.get(`applications/check/${id}`);
+                if (checkRes.data.success) {
+                    const { applied: isApplied, applicationId, applicationStatus: appStatus } = checkRes.data;
+                    setApplied(isApplied);
+                    setApplicationStatus(appStatus);
+                    if (applicationId) setSubmittedAppId(applicationId);
+                }
 
             } catch (err) {
                 console.error(err);
@@ -60,12 +71,17 @@ export default function InternshipDetailPage({ params }) {
         }
     }, [id, user?._id]);
 
-    const handleApply = async () => {
+    const handleApply = async (coverLetter) => {
         try {
             setApplying(true);
-            const res = await axios.post(`applications/apply/${id}`);
+            const res = await axios.post(`applications/apply/${id}`, {
+                coverLetter
+            });
             if (res.data.success) {
                 setApplied(true);
+                setApplicationStatus(res.data.data.status || 'Applied');
+                setSubmittedAppId(res.data.data._id);
+                setShowApplyModal(false);
             }
         } catch (err) {
             alert(err.response?.data?.message || 'Failed to submit application');
@@ -129,13 +145,21 @@ export default function InternshipDetailPage({ params }) {
 
                             <div className="relative z-10">
                                 <div className="flex items-center gap-4 mb-8">
-                                    <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100 shadow-inner">
-                                        <Building className="text-[#6366F1]" size={28} />
-                                    </div>
+                                    <Link href={`/employers/${internship.employer?._id || internship.employerId}`} className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100 shadow-inner overflow-hidden group">
+                                        {internship.employer?.profilePicture ? (
+                                            <img 
+                                                src={internship.employer.profilePicture.startsWith('http') ? internship.employer.profilePicture : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}/${internship.employer.profilePicture}`} 
+                                                alt={internship.employer?.companyName} 
+                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                            />
+                                        ) : (
+                                            <Building className="text-[#6366F1]" size={28} />
+                                        )}
+                                    </Link>
                                     <div>
-                                        <p className="text-[10px] font-black tracking-[0.3em] uppercase text-[#6366F1] mb-1">
+                                        <Link href={`/employers/${internship.employer?._id || internship.employerId}`} className="text-[10px] font-black tracking-[0.3em] uppercase text-[#6366F1] mb-1 hover:text-[#4F46E5] transition-colors">
                                             {internship.employer?.companyName || internship.company || 'Industrial Partner'}
-                                        </p>
+                                        </Link>
                                         <div className="flex items-center gap-2">
                                             <MapPin size={14} className="text-slate-400" />
                                             <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{internship.workEnvironment || 'Remote'}</span>
@@ -336,21 +360,38 @@ export default function InternshipDetailPage({ params }) {
                                     </button>
                                 </div>
                             ) : applied ? (
-                                <div className="text-center space-y-4">
-                                    <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <CheckCircle2 className="text-emerald-500" size={28} />
+                                <div className="space-y-4">
+                                    <div className="bg-emerald-50 border border-emerald-100 rounded-[2rem] p-8 text-center">
+                                        <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-sm mx-auto mb-4">
+                                            <CheckCircle2 size={32} className="text-emerald-500" />
+                                        </div>
+                                        <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-2">Protocol Established</h3>
+                                        <p className="text-slate-500 font-bold text-xs italic">Application successfully submitted and synchronized with employer node.</p>
                                     </div>
-                                    <h4 className="text-sm font-black text-emerald-900 uppercase tracking-widest">Applied Successfully</h4>
-                                    <p className="text-xs font-bold text-emerald-700 leading-relaxed">
-                                        Your credentials have been submitted. The industrial partner will review your protocol shortly.
-                                    </p>
-                                    <Link href="/applications" className="block text-center text-[10px] font-black text-[#6366F1] uppercase tracking-widest hover:underline mt-4">
-                                        View All Applications
+                                    <Link href={`/applications/${submittedAppId}`} className="block w-full py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] text-center shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 transition-all">
+                                        View Protocol Details
                                     </Link>
+                                </div>
+                            ) : applicationStatus === 'Withdrawn' ? (
+                                <div className="space-y-4">
+                                    <div className="bg-amber-50 border border-amber-100 rounded-[2rem] p-8 text-center">
+                                        <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-sm mx-auto mb-4">
+                                            <XCircle size={32} className="text-amber-500" />
+                                        </div>
+                                        <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-2">Protocol Withdrawn</h3>
+                                        <p className="text-slate-500 font-bold text-xs italic">You previously withdrew this application. You may re-apply below.</p>
+                                    </div>
+                                    <button
+                                        onClick={() => setShowApplyModal(true)}
+                                        disabled={applying}
+                                        className="w-full group bg-[#6366F1] text-white py-5 px-6 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] hover:bg-[#4F46E5] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-indigo-600/20 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {applying ? <Loader2 className="animate-spin" size={16} /> : <>Re-initialize Protocol <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" /></>}
+                                    </button>
                                 </div>
                             ) : (
                                 <button
-                                    onClick={handleApply}
+                                    onClick={() => setShowApplyModal(true)}
                                     disabled={applying}
                                     className="w-full group bg-[#6366F1] text-white py-5 px-6 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] hover:bg-[#4F46E5] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-indigo-600/20 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
@@ -383,6 +424,14 @@ export default function InternshipDetailPage({ params }) {
                 reportedId={id}
                 reportedEntity="Internship"
                 reportedName={internship.positionTitle}
+            />
+
+            <SubmitApplicationModal
+                isOpen={showApplyModal}
+                onClose={() => setShowApplyModal(false)}
+                onSubmit={handleApply}
+                internship={internship}
+                analysis={analysis}
             />
 
             <style jsx global>{`

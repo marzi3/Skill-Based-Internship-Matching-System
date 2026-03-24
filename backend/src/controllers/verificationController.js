@@ -1,5 +1,5 @@
 const User = require('../models/User');
-const { send: sendNotification } = require('../services/notificationService');
+const { send: sendNotification, notifyAdmins } = require('../services/notificationService');
 const logger = require('../utils/logger');
 
 // @desc    Upload Student Verification (ID Card)
@@ -28,6 +28,16 @@ const submitStudentVerification = async (req, res) => {
         user.isVerified = false; // reset in case they re-submit
 
         await user.save();
+
+        // Notify Admins
+        try {
+            await notifyAdmins({
+                type: 'VERIFICATION_PENDING',
+                message: `User ${user.name} has submitted student verification documents for review.`,
+                link: '/admin/verifications',
+                subject: `[Verification] New Student: ${user.name}`
+            });
+        } catch (err) { logger.error('Admin notification for student verification failed', err); }
 
         res.status(200).json({
             message: 'Verification submitted successfully',
@@ -68,6 +78,16 @@ const submitEmployerVerification = async (req, res) => {
         user.isVerified = false;
 
         await user.save();
+
+        // Notify Admins
+        try {
+            await notifyAdmins({
+                type: 'VERIFICATION_PENDING',
+                message: `Employer ${user.name} has submitted business verification documents for review.`,
+                link: '/admin/verifications',
+                subject: `[Verification] New Employer: ${user.companyName}`
+            });
+        } catch (err) { logger.error('Admin notification for employer verification failed', err); }
 
         res.status(200).json({
             message: 'Business verification submitted successfully',

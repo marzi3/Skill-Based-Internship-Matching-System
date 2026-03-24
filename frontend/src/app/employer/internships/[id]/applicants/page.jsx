@@ -72,7 +72,11 @@ export default function ApplicantsListPage() {
                     internship.applicants.map((applicant) => (
                         <Card key={applicant._id} padding="lg" className="hover:shadow-lg transition-all border border-gray-100 group">
                             <div className="flex items-center gap-4 mb-6">
-                                <Avatar name={applicant.name} size="lg" src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${applicant.name}`} />
+                                <Avatar 
+                                    name={applicant.name} 
+                                    size="lg" 
+                                    src={applicant.profilePicture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${applicant.name}`} 
+                                />
                                 <div>
                                     <h3 className="font-bold text-gray-900 text-lg">{applicant.name}</h3>
                                     <p className="text-gray-500 text-sm font-medium">{applicant.email}</p>

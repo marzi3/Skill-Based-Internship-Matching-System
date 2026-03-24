@@ -60,20 +60,30 @@ export default function ContentModeration() {
 
     return (
         <div className="w-full h-full">
-            <div className="mb-8 flex justify-between items-center">
+            <div className="mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
                 <div>
-                    <h1 className="text-3xl font-black text-gray-900 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">Content Moderation</h1>
-                    <p className="text-gray-500 mt-1">Review flagged listings and handle user reports</p>
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2 bg-rose-600 rounded-lg shadow-lg shadow-rose-600/20">
+                            <ShieldAlert className="text-white w-5 h-5" />
+                        </div>
+                        <span className="text-[10px] font-black text-rose-600 uppercase tracking-[0.3em]">System Level: Moderation</span>
+                    </div>
+                    <h1 className="text-4xl font-black text-gray-900 tracking-tight leading-none">Content Moderation <span className="text-rose-600">.</span></h1>
+                    <p className="text-gray-500 font-bold mt-2">Security review for flagged listing protocols and user transmission reports</p>
                 </div>
             </div>
 
             <div className="space-y-8">
                 {/* Flagged Listings */}
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="glass p-6 rounded-2xl">
-                    <div className="flex items-center gap-3 mb-6 border-b border-gray-100 pb-4">
-                        <ShieldAlert className="text-red-500" size={24} />
-                        <h2 className="text-xl font-bold text-gray-900">Flagged Internship Postings</h2>
-                        <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold">{flaggedListings.length} pending</span>
+                <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="bg-white/60 backdrop-blur-xl p-8 rounded-[3rem] border border-white/50 shadow-xl">
+                    <div className="flex items-center gap-4 mb-8 border-b border-gray-100 pb-6">
+                        <div className="p-3 bg-rose-50 rounded-2xl text-rose-600">
+                            <ShieldAlert size={24} />
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-black text-gray-900 uppercase tracking-wide">Flagged Internship Protocols</h2>
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">Awaiting Security Clearance: {flaggedListings.length}</p>
+                        </div>
                     </div>
 
                     <div className="overflow-x-auto overflow-y-auto max-h-[40vh] border border-gray-100 rounded-xl relative">

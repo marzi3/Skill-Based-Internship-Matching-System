@@ -17,6 +17,8 @@ const Avatar = ({
     md: 'w-10 h-10 text-sm',
     lg: 'w-12 h-12 text-base',
     xl: 'w-16 h-16 text-lg',
+    '2xl': 'w-24 h-24 text-xl',
+    full: 'w-full h-full text-2xl',
   };
 
   const colorStyles = {
@@ -67,14 +69,16 @@ const Avatar = ({
           alt={name}
           className={`
             ${sizeStyles[size]}
-            rounded-full object-cover border-2 border-gray-200
+            ${className.includes('rounded') ? '' : 'rounded-full'}
+            object-cover border-2 border-gray-200
           `.trim()}
         />
       ) : (
         <div
           className={`
             ${sizeStyles[size]}
-            rounded-full flex items-center justify-center font-bold
+            ${className.includes('rounded') ? '' : 'rounded-full'}
+            flex items-center justify-center font-bold
             text-white ${colorStyles[color]}
           `.trim()}
         >

@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const logger = require('../utils/logger');
 const Student = require('../models/Student');
 const Internship = require('../models/Internship');
@@ -23,9 +24,11 @@ exports.getBestMatches = async (req, res) => {
             .lean();
 
         if (!student) {
-            return res.status(404).json({
-                success: false,
-                message: 'Student profile not found. Please complete your profile first.'
+            logger.info(`[Matching Controller] getBestMatches: No student profile for user ${req.user.id}. Returning empty matches.`);
+            return res.status(200).json({
+                success: true,
+                data: [],
+                message: 'Please complete your student profile to see personalized matches.'
             });
         }
 
@@ -34,7 +37,7 @@ exports.getBestMatches = async (req, res) => {
             status: { $in: ['Hiring', 'Active'] },
             expiryDate: { $gte: new Date() },
             isDeleted: { $ne: true }
-        }).lean();
+        }).populate('employer', 'companyName profilePicture').lean();
 
         if (!internships.length) {
             return res.status(200).json({
@@ -259,7 +262,7 @@ exports.matchStudentsForInternship = async (req, res) => {
         }
 
         // We only want students who have at least partially completed profiles or are looking.
-        const students = await Student.find({}).lean();
+        const students = await Student.find({}).populate('userId', 'profilePicture').lean();
 
         let candidates = MatchingEngine.matchStudentsForInternship(internship, students);
 
@@ -294,6 +297,7 @@ exports.matchStudentsForInternship = async (req, res) => {
                 studentName: fullStudent?.personalInfo?.fullName || fullStudent?.name || candidate.studentName || 'Unknown Student',
                 fieldOfStudy: fullStudent?.education?.[0]?.field || 'Student',
                 gpa: fullStudent?.personalInfo?.gpa || 'N/A',
+                profilePicture: fullStudent?.userId?.profilePicture || fullStudent?.profileImage?.filePath || '',
                 finalScore: candidate.normalizedScore || (candidate.tier === 'EXCELLENT' ? 90 :
                     candidate.tier === 'GOOD' ? 75 :
                         candidate.tier === 'FAIR' ? 60 : 45),
@@ -326,6 +330,15 @@ exports.explainMatch = async (req, res) => {
     try {
         const { studentId, internshipId } = req.params;
 
+        if (!mongoose.isValidObjectId(studentId) || !mongoose.isValidObjectId(internshipId)) {
+            return res.status(400).json({ success: false, message: 'Invalid ID format' });
+        }
+
+        const internship = await Internship.findById(internshipId).lean();
+        if (!internship) {
+            return res.status(404).json({ success: false, message: 'Internship listing not found' });
+        }
+
         // Search for student by either its own _id or the linked userId
         const student = await Student.findOne({
             $or: [
@@ -334,13 +347,20 @@ exports.explainMatch = async (req, res) => {
             ]
         }).lean();
 
-        const internship = await Internship.findById(internshipId).lean();
-
-        if (!student || !internship) {
-            logger.info(`[Matching Controller] Explain Match failed: Student: ${!!student}, Internship: ${!!internship}`);
-            return res.status(404).json({
-                success: false,
-                message: !student ? 'Student profile not found' : 'Internship listing not found'
+        if (!student) {
+            // Log for debugging but don't hard 404 - return a "no profile" analysis
+            logger.info(`[Matching Controller] explainMatch: No student profile for user ID ${studentId}. Returning 0 analysis.`);
+            return res.status(200).json({
+                success: true,
+                analysis: {
+                    normalizedScore: 0,
+                    tier: 'INCOMPLETE PROFILE',
+                    explanation: [{
+                        category: 'Profile',
+                        score: 0,
+                        detail: 'Student profile not yet initialized. Please complete your profile to enable match analysis.'
+                    }]
+                }
             });
         }
 

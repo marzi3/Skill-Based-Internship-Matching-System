@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Star, Briefcase, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Badge from '@/components/common/Badge';
+import Avatar from '@/components/common/Avatar';
 
 export default function RecommendedInternships({ matches = [] }) {
     if (!matches || matches.length === 0) {
@@ -25,9 +26,12 @@ export default function RecommendedInternships({ matches = [] }) {
                 >
                     <div className="space-y-4 flex-1">
                         <div className="flex justify-between items-start">
-                            <div className="bg-gray-100 p-3 rounded-2xl">
-                                <Briefcase size={24} className="text-gray-600" />
-                            </div>
+                            <Avatar 
+                                src={match.internship.employer?.profilePicture} 
+                                name={match.internship.employer?.companyName} 
+                                size="lg"
+                                className="rounded-2xl"
+                            />
                             <div className="flex flex-col items-end">
                                 <div className="bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-xs font-black border border-emerald-100 flex items-center gap-1 shadow-sm">
                                     <Star size={12} fill="currentColor" /> {Math.round(match.score)}% Match

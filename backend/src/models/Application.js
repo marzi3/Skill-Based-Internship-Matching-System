@@ -18,13 +18,34 @@ const applicationSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['Applied', 'Reviewing', 'Interviewing', 'Selected', 'Rejected'],
-        default: 'Applied'
+        enum: ['Pending', 'Applied', 'Reviewing', 'Interviewing', 'Shortlisted', 'Offered', 'Accepted', 'Rejected', 'Withdrawn'],
+        default: 'Pending'
     },
     appliedDate: {
         type: Date,
         default: Date.now
     },
+    coverLetter: {
+        type: String,
+        trim: true
+    },
+    matchAnalysis: {
+        tier: String,
+        score: Number,
+        explanation: [{
+            rule: String,
+            score: Number,
+            detail: String
+        }]
+    },
+    statusHistory: [{
+        status: String,
+        comment: String,
+        updatedAt: {
+            type: Date,
+            default: Date.now
+        }
+    }],
     answers: [{
         question: String,
         answer: String
@@ -38,7 +59,10 @@ const applicationSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// Avoid double applications
-applicationSchema.index({ student: 1, internship: 1 }, { unique: true });
+// Avoid double applications (allow re-applying if withdrawn)
+applicationSchema.index({ student: 1, internship: 1 }, { 
+    unique: true,
+    partialFilterExpression: { status: { $ne: 'Withdrawn' } }
+});
 
 module.exports = mongoose.model('Application', applicationSchema);

@@ -1,266 +1,454 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { User as UserIcon, Building, Mail, Phone, MapPin, Globe, Edit3, Save, X, Loader2, ArrowLeft } from 'lucide-react';
+import { 
+    User as UserIcon, Building, Mail, Phone, MapPin, 
+    Globe, Edit3, Save, X, Loader2, ArrowLeft, 
+    Briefcase, Users, Calendar, Info
+} from 'lucide-react';
 import Card from '@/components/common/Card';
+import Avatar from '@/components/common/Avatar';
 import { useAuth } from '@/context/AuthContext';
 import axios from '@/services/apiClient';
 
 const ProfilePage = () => {
     const router = useRouter();
-    const { user, setUser } = useAuth();
+    const { user, checkUserLoggedIn } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
-
+    const [previewImage, setPreviewImage] = useState(null);
+    
     const [formData, setFormData] = useState({
         name: user?.name || '',
         companyName: user?.companyName || '',
         website: user?.website || '',
+        location: user?.location || '',
+        industry: user?.industry || '',
+        companySize: user?.companySize || '',
+        foundedYear: user?.foundedYear || '',
         businessRegistrationNumber: user?.businessRegistrationNumber || '',
         companyDescription: user?.companyDescription || '',
         profilePicture: user?.profilePicture || '',
         positionInCompany: user?.positionInCompany || ''
     });
 
+    useEffect(() => {
+        // Update form when user data loads
+        if (user) {
+            setFormData({
+                name: user.name || '',
+                companyName: user.companyName || '',
+                website: user.website || '',
+                location: user.location || '',
+                industry: user.industry || '',
+                companySize: user.companySize || '',
+                foundedYear: user.foundedYear || '',
+                businessRegistrationNumber: user.businessRegistrationNumber || '',
+                companyDescription: user.companyDescription || '',
+                profilePicture: user.profilePicture || '',
+                positionInCompany: user.positionInCompany || ''
+            });
+        }
+    }, [user]);
+
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleFileChange = (e) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setFormData({ ...formData, profilePicture: file });
+            
+            // Create preview URL
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPreviewImage(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
     };
 
     const handleSave = async () => {
         setIsLoading(true);
         setMessage({ type: '', text: '' });
         try {
-            const res = await axios.put('/auth/profile', formData);
-            setUser({ ...user, ...res.data }); // Update context
+            const data = new FormData();
+            Object.keys(formData).forEach(key => {
+                if (key === 'profilePicture') {
+                    if (formData[key] instanceof File) {
+                        data.append('profilePicture', formData[key]);
+                    }
+                    // If it's a string, we don't need to append it as a file
+                } else if (formData[key] !== null && formData[key] !== undefined) {
+                    data.append(key, formData[key]);
+                }
+            });
+
+            const res = await axios.put('/auth/profile', data);
+            
+            // Refresh auth context
+            if (typeof checkUserLoggedIn === 'function') {
+                await checkUserLoggedIn();
+            }
+            
             setIsEditing(false);
-            setMessage({ type: 'success', text: 'Profile updated successfully!' });
+            setPreviewImage(null);
+            setMessage({ type: 'success', text: 'Corporate profile synchronized successfully!' });
 
             // Clear message after 3 seconds
             setTimeout(() => setMessage({ type: '', text: '' }), 3000);
         } catch (error) {
-            setMessage({ type: 'error', text: error.response?.data?.message || 'Failed to update profile' });
+            const errorMsg = error.response?.data?.message || error.message || 'Synchronization failed';
+            setMessage({ type: 'error', text: `Failed: ${errorMsg}` });
         } finally {
             setIsLoading(false);
         }
     };
 
     const handleCancel = () => {
-        setFormData({
-            name: user?.name || '',
-            companyName: user?.companyName || '',
-            website: user?.website || '',
-            businessRegistrationNumber: user?.businessRegistrationNumber || '',
-            companyDescription: user?.companyDescription || '',
-            profilePicture: user?.profilePicture || '',
-            positionInCompany: user?.positionInCompany || ''
-        });
+        if (user) {
+            setFormData({
+                name: user.name || '',
+                companyName: user.companyName || '',
+                website: user.website || '',
+                location: user.location || '',
+                industry: user.industry || '',
+                companySize: user.companySize || '',
+                foundedYear: user.foundedYear || '',
+                businessRegistrationNumber: user.businessRegistrationNumber || '',
+                companyDescription: user.companyDescription || '',
+                profilePicture: user.profilePicture || '',
+                positionInCompany: user.positionInCompany || ''
+            });
+        }
         setIsEditing(false);
+        setPreviewImage(null);
         setMessage({ type: '', text: '' });
     };
 
     return (
-        <div className="p-8 space-y-8">
-            <div className="flex items-center justify-between">
+        <div className="p-8 space-y-8 max-w-7xl mx-auto">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="flex items-center gap-4">
-                    <button onClick={() => router.push('/employer/dashboard')} className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600 transition-all">
-                        <ArrowLeft className="w-4 h-4" />
+                    <button onClick={() => router.push('/employer/dashboard')} className="w-10 h-10 flex items-center justify-center rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-md text-gray-600 transition-all group">
+                        <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
                     </button>
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Employer Profile</h1>
-                        <p className="text-gray-600">View and manage your company profile information</p>
+                        <div className="flex items-center gap-3 mb-1">
+                            <Building className="text-primary-600 w-5 h-5" />
+                            <span className="text-[10px] font-black text-primary-600 uppercase tracking-[0.2em]">Operational Status: Root</span>
+                        </div>
+                        <h1 className="text-4xl font-black text-gray-900 tracking-tight">Corporate Profile</h1>
                     </div>
                 </div>
                 {!isEditing ? (
                     <button
                         onClick={() => setIsEditing(true)}
-                        className="flex items-center gap-2 bg-primary-600 text-white px-6 py-2 rounded-xl hover:bg-primary-700 transition-all shadow-md"
+                        className="flex items-center gap-2 bg-primary-600 text-white px-8 py-3 rounded-2xl hover:bg-primary-700 transition-all shadow-lg shadow-primary-500/20 font-bold"
                     >
-                        <Edit3 size={18} /> Edit Profile
+                        <Edit3 size={18} /> Edit Metadata
                     </button>
                 ) : (
                     <div className="flex gap-3">
                         <button
                             onClick={handleCancel}
                             disabled={isLoading}
-                            className="flex items-center gap-2 bg-gray-100 text-gray-700 px-6 py-2 rounded-xl hover:bg-gray-200 transition-all"
+                            className="flex items-center gap-2 bg-white text-gray-700 px-8 py-3 rounded-2xl border border-gray-200 hover:bg-gray-50 transition-all font-bold"
                         >
-                            <X size={18} /> Cancel
+                            <X size={18} /> Discard
                         </button>
                         <button
                             onClick={handleSave}
                             disabled={isLoading}
-                            className="flex items-center gap-2 bg-emerald-600 text-white px-6 py-2 rounded-xl hover:bg-emerald-700 transition-all shadow-md disabled:opacity-50"
+                            className="flex items-center gap-2 bg-emerald-600 text-white px-8 py-3 rounded-2xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20 font-bold disabled:opacity-50"
                         >
                             {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-                            Save Changes
+                            Sync Profiles
                         </button>
                     </div>
                 )}
             </div>
 
             {message.text && (
-                <div className={`p-4 rounded-xl text-sm font-bold ${message.type === 'success' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-red-50 text-red-600 border border-red-100'}`}>
+                <div className={`p-5 rounded-[1.5rem] text-sm font-bold flex items-center gap-3 animate-in fade-in slide-in-from-top-4 ${message.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'}`}>
+                    <div className={`w-2 h-2 rounded-full ${message.type === 'success' ? 'bg-emerald-500' : 'bg-rose-500'} animate-pulse`} />
                     {message.text}
                 </div>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Company Card */}
-                <Card shadow="sm" rounded="lg" padding="lg" className="lg:col-span-1 text-center space-y-6">
-                    <div className="flex justify-center">
-                        <div className="w-32 h-32 bg-gray-100 rounded-[2.5rem] flex items-center justify-center border-4 border-white shadow-xl relative overflow-hidden group">
-                            {user?.profilePicture ? (
-                                <img src={user.profilePicture} alt="Profile" className="w-full h-full object-cover" />
-                            ) : (
-                                <Building size={48} className="text-gray-400 group-hover:scale-110 transition-transform" />
-                            )}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                {/* Visual Identity Card */}
+                <Card shadow="none" rounded="xl" padding="none" className="lg:col-span-4 bg-white/50 backdrop-blur-xl border border-gray-100/50 p-10 flex flex-col items-center text-center space-y-8">
+                    <div className="relative group">
+                        <div className="absolute inset-0 bg-primary-500/10 blur-3xl rounded-full scale-150 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="w-44 h-44 rounded-[3.5rem] p-1 bg-gradient-to-br from-primary-500 via-indigo-500 to-purple-500 shadow-2xl relative z-10">
+                            <div className="w-full h-full bg-white rounded-[3.1rem] overflow-hidden flex items-center justify-center border-4 border-white">
+                                {previewImage ? (
+                                    <img src={previewImage} alt="Preview" className="w-full h-full object-cover" />
+                                ) : (
+                                    <Avatar 
+                                        src={user?.profilePicture} 
+                                        name={user?.companyName} 
+                                        size="full" 
+                                        className="w-full h-full rounded-none"
+                                    />
+                                )}
+                            </div>
                         </div>
+                        {isEditing && (
+                            <label className="absolute -bottom-2 -right-2 bg-indigo-600 text-white p-4 rounded-3xl shadow-xl hover:bg-indigo-700 cursor-pointer transition-all hover:scale-110 z-20 border-4 border-white">
+                                <Edit3 size={20} />
+                                <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+                            </label>
+                        )}
                     </div>
-                    <div>
-                        <h2 className="text-2xl font-black text-gray-900 tracking-tight">
+
+                    <div className="space-y-4 w-full">
+                        <h2 className="text-3xl font-black text-gray-900 tracking-tight leading-tight">
                             {isEditing ? (
                                 <input
                                     name="companyName"
                                     value={formData.companyName}
                                     onChange={handleChange}
-                                    className="w-full text-center border-b-2 border-primary-200 focus:border-primary-500 outline-none text-2xl font-black bg-transparent py-1 transition-colors"
-                                    placeholder="Company Name"
+                                    className="w-full text-center border-b-2 border-primary-200 focus:border-primary-500 outline-none text-2xl font-black bg-transparent py-2 transition-all placeholder:text-gray-200"
+                                    placeholder="Company Legal Name"
                                 />
                             ) : (
-                                user?.companyName || 'Setup Your Company'
+                                user?.companyName || 'Establish Identity'
                             )}
                         </h2>
+                        
                         {isEditing ? (
                             <textarea
                                 name="companyDescription"
                                 value={formData.companyDescription}
                                 onChange={handleChange}
-                                className="w-full mt-4 text-center border-b-2 border-primary-200 focus:border-primary-500 outline-none text-sm bg-transparent py-1 transition-colors resize-none h-20"
-                                placeholder="Short mission or company description..."
+                                className="w-full mt-6 text-center border-2 border-gray-100 rounded-3xl p-6 focus:border-primary-500 outline-none text-sm bg-gray-50/50 font-medium leading-relaxed transition-all resize-none h-40"
+                                placeholder="Describe the mission, vision, and operational scope of your organization..."
                             />
                         ) : (
-                            <p className="text-gray-500 text-sm mt-3 px-4 italic leading-relaxed">
-                                {user?.companyDescription || 'No description provided yet.'}
+                            <p className="text-gray-500 text-base font-medium leading-[1.8] px-2 italic">
+                                {user?.companyDescription || 'No operational record provided. Update identity description to improve matching heuristics.'}
                             </p>
                         )}
-                        <p className="text-primary-600 font-bold uppercase tracking-widest text-[10px] mt-4">
-                            {user?.verificationStatus === 'approved' ? 'Verified Employer' : 'Pending Verification'}
-                        </p>
+
+                        <div className="flex flex-col items-center gap-3 pt-6">
+                            <div className={`flex items-center gap-2 px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-sm ${user?.verificationStatus === 'approved' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-amber-50 text-amber-600 border border-amber-100'}`}>
+                                {user?.verificationStatus === 'approved' ? 'Verified Entity' : 'Pending Validation'}
+                            </div>
+                        </div>
                     </div>
 
                     {isEditing && (
-                        <div className="space-y-4 pt-4 border-t border-gray-100">
-                            <div className="text-left space-y-1">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Profile Picture URL</label>
-                                <input
-                                    name="profilePicture"
-                                    value={formData.profilePicture}
-                                    onChange={handleChange}
-                                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-primary-100 focus:border-primary-500 outline-none transition-all"
-                                    placeholder="https://example.com/logo.png"
-                                />
-                            </div>
-                            <div className="text-left space-y-1 mt-4">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">BRN / TIN</label>
+                        <div className="w-full pt-8 border-t border-gray-100 space-y-6">
+                            <div className="text-left space-y-2">
+                                <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                    <Info size={12} className="text-primary-500" /> Administrative Reg. Number
+                                </label>
                                 <input
                                     name="businessRegistrationNumber"
                                     value={formData.businessRegistrationNumber}
                                     onChange={handleChange}
-                                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-primary-100 focus:border-primary-500 outline-none transition-all"
-                                    placeholder="Enter Business Registration Number"
+                                    className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-6 py-4 text-sm font-bold focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all"
+                                    placeholder="BRN-990-221"
                                 />
-                                <p className="text-[9px] text-gray-400">Required for verification.</p>
                             </div>
                         </div>
                     )}
                 </Card>
 
-                {/* Details Card */}
-                <Card shadow="sm" rounded="lg" padding="lg" className="lg:col-span-2 space-y-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Primary Contact</label>
-                            <div className="flex flex-col gap-2 text-gray-900 font-bold">
-                                <div className="flex items-center gap-3">
-                                    <UserIcon size={20} className={isEditing ? 'text-gray-400' : 'text-primary-500'} />
+                {/* Technical Specifications Card */}
+                <Card shadow="none" rounded="xl" padding="none" className="lg:col-span-8 bg-white border border-gray-100/50 overflow-hidden flex flex-col">
+                    <div className="p-10 lg:p-12 space-y-12 flex-1">
+                        {/* Core Profiles Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
+                            {/* Contact Section */}
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-indigo-500 flex items-center gap-2">
+                                    <UserIcon size={14} /> Global Administrator
+                                </label>
+                                <div className="space-y-4">
                                     {isEditing ? (
-                                        <input
-                                            name="name"
-                                            value={formData.name}
-                                            onChange={handleChange}
-                                            placeholder="Full Name"
-                                            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-primary-100 outline-none"
-                                        />
+                                        <>
+                                            <input
+                                                name="name"
+                                                value={formData.name}
+                                                onChange={handleChange}
+                                                placeholder="Representative Name"
+                                                className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-6 py-4 text-sm font-bold focus:ring-4 focus:ring-primary-500/10 outline-none"
+                                            />
+                                            <input
+                                                name="positionInCompany"
+                                                value={formData.positionInCompany}
+                                                onChange={handleChange}
+                                                placeholder="Designation (e.g. Director of Operations)"
+                                                className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-6 py-4 text-sm font-bold focus:ring-4 focus:ring-primary-500/10 outline-none"
+                                            />
+                                        </>
                                     ) : (
-                                        <span>{user?.name || 'Administrator'}</span>
+                                        <div className="flex items-center gap-4 group">
+                                            <div className="w-14 h-14 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-inner group-hover:scale-110 transition-transform">
+                                                <UserIcon size={24} />
+                                            </div>
+                                            <div>
+                                                <p className="text-xl font-black text-gray-900 leading-none">{user?.name || 'Authorized Personnel'}</p>
+                                                <p className="text-xs text-gray-400 font-bold mt-2 uppercase tracking-widest">{user?.positionInCompany || 'Senior Executive'}</p>
+                                            </div>
+                                        </div>
                                     )}
                                 </div>
-                                {isEditing ? (
-                                    <input
-                                        name="positionInCompany"
-                                        value={formData.positionInCompany}
-                                        onChange={handleChange}
-                                        placeholder="Position (e.g. HR Manager)"
-                                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-primary-100 outline-none ml-[2rem]"
-                                    />
-                                ) : (
-                                    <span className="text-xs text-gray-500 font-medium ml-[2.6rem]">{user?.positionInCompany || 'Position Not Specified'}</span>
-                                )}
                             </div>
-                        </div>
 
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Email Address</label>
-                            <div className="flex items-center gap-3 text-gray-500 font-medium">
-                                <Mail size={20} className="text-gray-400" />
-                                <span>{user?.email || 'admin@company.com'}</span>
-                                <span className="ml-auto text-[9px] uppercase tracking-wider bg-gray-100 px-2 py-0.5 rounded-full">Read Only</span>
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Website</label>
-                            <div className="flex items-center gap-3 text-gray-900 font-bold">
-                                <Globe size={20} className={isEditing ? 'text-gray-400' : 'text-primary-500'} />
-                                {isEditing ? (
-                                    <input
-                                        name="website"
-                                        value={formData.website}
-                                        onChange={handleChange}
-                                        placeholder="https://"
-                                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-primary-100 outline-none"
-                                    />
-                                ) : (
-                                    <a href={user?.website} target="_blank" rel="noreferrer" className="hover:text-primary-600 hover:underline">{user?.website || 'Not provided'}</a>
-                                )}
-                            </div>
-                        </div>
-
-                        {!isEditing && user?.businessRegistrationNumber && (
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Reg. Number</label>
-                                <div className="flex items-center gap-3 text-gray-900 font-bold">
-                                    <Building size={20} className="text-primary-500" />
-                                    <span>{user.businessRegistrationNumber}</span>
+                            {/* Network Config Section */}
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-indigo-500 flex items-center gap-2">
+                                    < Globe size={14} /> Domain Metadata
+                                </label>
+                                <div className="space-y-4">
+                                    {isEditing ? (
+                                        <input
+                                            name="website"
+                                            value={formData.website}
+                                            onChange={handleChange}
+                                            placeholder="https://company.network"
+                                            className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-6 py-4 text-sm font-bold focus:ring-4 focus:ring-primary-500/10 outline-none"
+                                        />
+                                    ) : (
+                                        <div className="flex items-center gap-4 group">
+                                            <div className="w-14 h-14 rounded-2xl bg-primary-50 flex items-center justify-center text-primary-600 shadow-inner group-hover:scale-110 transition-transform">
+                                                <Globe size={24} />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Official Repository</p>
+                                                <a href={user?.website} target="_blank" rel="noreferrer" className="text-lg font-black text-primary-600 hover:text-primary-700 underline underline-offset-8 mt-2 inline-block">
+                                                    {user?.website ? user.website.replace(/^https?:\/\//, '') : 'None Provided'}
+                                                </a>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
-                        )}
+
+                            {/* Location Section */}
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-indigo-500 flex items-center gap-2">
+                                    <MapPin size={14} /> Core Headquarters
+                                </label>
+                                <div className="space-y-4">
+                                    {isEditing ? (
+                                        <input
+                                            name="location"
+                                            value={formData.location}
+                                            onChange={handleChange}
+                                            placeholder="HQ City, Region (e.g. San Francisco, US)"
+                                            className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-6 py-4 text-sm font-bold focus:ring-4 focus:ring-primary-500/10 outline-none"
+                                        />
+                                    ) : (
+                                        <div className="flex items-center gap-4 group">
+                                            <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 shadow-inner group-hover:scale-110 transition-transform">
+                                                <MapPin size={24} />
+                                            </div>
+                                            <div>
+                                                <p className="text-lg font-black text-gray-900 leading-none">{user?.location || 'Undisclosed Location'}</p>
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-2">{user?.location ? 'Operational Core' : 'Awaiting Deployment'}</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Industry Section */}
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-indigo-500 flex items-center gap-2">
+                                    <Briefcase size={14} /> Operational Sector
+                                </label>
+                                <div className="space-y-4">
+                                    {isEditing ? (
+                                        <input
+                                            name="industry"
+                                            value={formData.industry}
+                                            onChange={handleChange}
+                                            placeholder="Primary Industry (e.g. Artificial Intelligence)"
+                                            className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-6 py-4 text-sm font-bold focus:ring-4 focus:ring-primary-500/10 outline-none"
+                                        />
+                                    ) : (
+                                        <div className="flex items-center gap-4 group">
+                                            <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-inner group-hover:scale-110 transition-transform">
+                                                <Briefcase size={24} />
+                                            </div>
+                                            <div>
+                                                <p className="text-lg font-black text-gray-900 leading-none">{user?.industry || 'General Industry'}</p>
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-2">Specialization Tier</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Extended Metadata */}
+                        <div className="pt-12 border-t border-gray-100">
+                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-8 flex items-center gap-3">
+                                <div className="w-10 h-0.5 bg-gray-100" /> Organizational Depth
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Force Size</label>
+                                    {isEditing ? (
+                                        <select
+                                            name="companySize"
+                                            value={formData.companySize}
+                                            onChange={handleChange}
+                                            className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-6 py-4 text-sm font-bold focus:ring-4 focus:ring-primary-500/10 outline-none appearance-none"
+                                        >
+                                            <option value="">Select Capacity</option>
+                                            <option value="1-10">1-10 Operators</option>
+                                            <option value="11-50">11-50 Deployment</option>
+                                            <option value="51-200">51-200 Scaled</option>
+                                            <option value="201-500">201-500 Enterprise</option>
+                                            <option value="500+">500+ Global Force</option>
+                                        </select>
+                                    ) : (
+                                        <div className="flex items-center gap-3 font-black text-gray-900">
+                                            <Users size={16} className="text-gray-400" />
+                                            {user?.companySize ? `${user.companySize} Operators` : 'Classified'}
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Epoch Established</label>
+                                    {isEditing ? (
+                                        <input
+                                            type="number"
+                                            name="foundedYear"
+                                            value={formData.foundedYear}
+                                            onChange={handleChange}
+                                            placeholder="Year of Inception"
+                                            className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-6 py-4 text-sm font-bold focus:ring-4 focus:ring-primary-500/10 outline-none"
+                                        />
+                                    ) : (
+                                        <div className="flex items-center gap-3 font-black text-gray-900">
+                                            <Calendar size={16} className="text-gray-400" />
+                                            {user?.foundedYear || 'Ancient Era'}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div className="pt-8 border-t border-gray-100">
-                        <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Account Status</h3>
-                        <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="font-bold text-gray-900 text-sm">Verification Level</p>
-                                    <p className="text-xs text-gray-500 mt-1">Your company has been verified by the administration team.</p>
-                                </div>
-                                <div className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider ${user?.verificationStatus === 'approved' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-                                    {user?.verificationStatus}
-                                </div>
-                            </div>
+                    {/* Security Clearance Footer */}
+                    <div className="bg-gray-50/50 p-8 border-t border-gray-100 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse" />
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Profile Integrity Verified</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Mail size={14} className="text-gray-400" />
+                            <span className="text-xs font-bold text-gray-500">{user?.email}</span>
                         </div>
                     </div>
                 </Card>
