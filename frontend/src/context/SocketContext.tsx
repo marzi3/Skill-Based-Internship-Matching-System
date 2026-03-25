@@ -21,14 +21,18 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
         const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
         if (user && token) {
-            // Socket.IO must connect to the root server, not the /api/v1 namespaced path
-            const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL ||
-                (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api/v1').replace('/api/v1', '');
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api/v1';
+            const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || apiUrl.split('/api/v1')[0];
+            
+            console.log('Attempting socket connection to:', socketUrl);
+
             const socketInstance = io(socketUrl, {
                 auth: {
                     token
                 },
-                transports: ['websocket', 'polling'] // fallback string
+                transports: ['websocket', 'polling'],
+                reconnectionAttempts: 5,
+                timeout: 10000
             });
 
             socketInstance.on('connect', () => {

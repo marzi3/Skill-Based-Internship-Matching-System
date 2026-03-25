@@ -124,9 +124,7 @@ function FindInternshipsContent() {
 
     const jobTypeOptions = ['Remote', 'On-site', 'Hybrid'];
     const industryOptions = [
-        'Web Development', 'Mobile App Development', 'UI/UX Design',
-        'Data Science', 'Backend Development', 'Frontend Development',
-        'DevOps', 'Machine Learning', 'Cloud Architecture', 'Database Design'
+        'Software Engineering', 'Data Science', 'Cybersecurity', 'Design', 'Finance'
     ];
 
     return (
@@ -390,7 +388,7 @@ function FindInternshipsContent() {
                                                     <Bookmark className="w-5 h-5" />
                                                 </button>
                                                 <Link
-                                                    href={`/internships/${job._id}`}
+                                                    href={`/internships/${job._id}?from=search`}
                                                     className="flex items-center gap-1 text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
                                                 >
                                                     Apply <ChevronRight className="w-4 h-4" />

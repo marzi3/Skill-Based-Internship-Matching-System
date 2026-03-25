@@ -8,7 +8,7 @@ import { useAuth } from '../../../context/AuthContext';
 import Input from '../../../components/common/Input';
 import Button from '../../../components/common/Button';
 import Card from '../../../components/common/Card';
-import { X, User, GraduationCap, Code, Loader, Upload, Pencil, Plus, Trash2, Badge, Eye, ExternalLink, Download, CheckCircle, ArrowRight, FileText, LayoutDashboard, Home, Settings, Search, Briefcase, Zap, LogOut } from 'lucide-react';
+import { X, User, GraduationCap, Code, Loader, Upload, Pencil, Plus, Trash2, Badge, Eye, ExternalLink, Download, CheckCircle, ArrowRight, FileText, LayoutDashboard, Home, Settings, Search, Briefcase, Zap, LogOut, MessageSquare, ChevronLeft, Menu } from 'lucide-react';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 const imageBaseUrl = apiUrl.includes('/api/v1') ? apiUrl.replace('/api/v1', '') : apiUrl;
@@ -22,6 +22,7 @@ export default function StudentProfile() {
   const [message, setMessage] = useState('');
   const [localToken, setLocalToken] = useState(null);
   const [currentDate, setCurrentDate] = useState('');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   // Initialize local token from localStorage
   useEffect(() => {
@@ -391,33 +392,31 @@ export default function StudentProfile() {
     }
   };
 
-  // Calculate profile completion
+  // Calculate profile completion — max 100% without certifications
   const calculateProfileCompletion = () => {
     let score = 0;
-    const maxScore = 100;
 
-    // Personal Info (40 points)
+    // Personal Info (35 points)
     if (personalInfo?.fullName) score += 5;
     if (personalInfo?.email) score += 5;
     if (personalInfo?.phone) score += 5;
-    if (personalInfo?.gpa) score += 10; // CRITICAL
-    if (personalInfo?.portfolioUrl) score += 10; // CRITICAL  
-    if (personalInfo?.preferredLocation) score += 5; // CRITICAL
+    if (personalInfo?.gpa) score += 10; // CRITICAL for matching
+    if (personalInfo?.preferredLocation) score += 5; // CRITICAL for matching
+    if (personalInfo?.industriesOfInterest?.length > 0) score += 5; // CRITICAL
 
     // Education (20 points)
     if (education?.length > 0) score += 15;
     if (education?.some(edu => edu.degreeLevel)) score += 5;
 
-    // Skills (20 points) 
+    // Skills (20 points)
     if (skills?.length >= 3) score += 15;
     if (skills?.some(skill => skill.proficiency === 'ADVANCED' || skill.proficiency === 'EXPERT')) score += 5;
 
-    // Additional (20 points)
-    if (personalInfo?.industriesOfInterest?.length > 0) score += 5; // CRITICAL
-    if (resumeFile) score += 10; // +5 bonus points
-    if (certifications?.length > 0) score += 5;
+    // Documents (25 points)
+    if (resumeFile) score += 20;
+    if (certifications?.length > 0) score += 5; // Bonus — capped to 100
 
-    return Math.min(score, maxScore);
+    return Math.min(score, 100);
   };
 
   // Update profile completion when data changes
@@ -1074,31 +1073,44 @@ export default function StudentProfile() {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-gray-200 hidden md:flex flex-col">
-        <div className="p-6">
-          <h2 className="text-2xl font-black text-primary-600 tracking-tighter">InternMatch</h2>
+      {/* Collapsable Sidebar */}
+      <aside className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-white border-r border-gray-200 hidden md:flex flex-col transition-all duration-300 ease-in-out z-20`}>
+        <div className={`p-6 flex items-center ${isSidebarOpen ? 'justify-between' : 'justify-center'}`}>
+          {isSidebarOpen && <h2 className="text-2xl font-black text-primary-600 tracking-tighter">InternMatch</h2>}
+          <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 transition-colors">
+            {isSidebarOpen ? <ChevronLeft size={20} /> : <Menu size={20} />}
+          </button>
         </div>
-        <nav className="flex-1 px-4 space-y-2">
-          <Link href="/student-dashboard" className="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-bold transition-all">
-            <LayoutDashboard size={20} /> Dashboard
+        <nav className="flex-1 px-4 space-y-2 mt-2">
+          <Link href="/student-dashboard" className={`flex items-center ${isSidebarOpen ? 'gap-3 px-4' : 'justify-center'} py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-bold transition-all`} title="Dashboard">
+            <LayoutDashboard size={20} className="flex-shrink-0" />
+            {isSidebarOpen && <span>Dashboard</span>}
           </Link>
-          <Link href="/student-profile" className="flex items-center gap-3 px-4 py-3 bg-primary-50 text-primary-700 rounded-xl font-bold">
-            <Settings size={20} /> Profile Settings
+          <Link href="/student-profile" className={`flex items-center ${isSidebarOpen ? 'gap-3 px-4' : 'justify-center'} py-3 bg-primary-50 text-primary-700 rounded-xl font-bold`} title="Profile Settings">
+            <Settings size={20} className="flex-shrink-0" />
+            {isSidebarOpen && <span>Profile Settings</span>}
           </Link>
-          <Link href="/find-internships" className="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-bold transition-all">
-            <Search size={20} /> Browse Jobs
+          <Link href="/find-internships" className={`flex items-center ${isSidebarOpen ? 'gap-3 px-4' : 'justify-center'} py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-bold transition-all`} title="Browse Jobs">
+            <Search size={20} className="flex-shrink-0" />
+            {isSidebarOpen && <span>Browse Jobs</span>}
           </Link>
-          <Link href="/applications" className="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-bold transition-all">
-            <Briefcase size={20} /> My Applications
+          <Link href="/applications" className={`flex items-center ${isSidebarOpen ? 'gap-3 px-4' : 'justify-center'} py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-bold transition-all`} title="My Applications">
+            <Briefcase size={20} className="flex-shrink-0" />
+            {isSidebarOpen && <span>My Applications</span>}
           </Link>
-          <Link href="/student/matches" className="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-bold transition-all">
-            <Zap size={20} /> Best Matches
+          <Link href="/student/matches" className={`flex items-center ${isSidebarOpen ? 'gap-3 px-4' : 'justify-center'} py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-bold transition-all`} title="Best Matches">
+            <Zap size={20} className="flex-shrink-0" />
+            {isSidebarOpen && <span>Best Matches</span>}
+          </Link>
+          <Link href="/messages" className={`flex items-center ${isSidebarOpen ? 'gap-3 px-4' : 'justify-center'} py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-bold transition-all`} title="Messages">
+            <MessageSquare size={20} className="flex-shrink-0" />
+            {isSidebarOpen && <span>Messages</span>}
           </Link>
         </nav>
         <div className="p-4 border-t border-gray-100 space-y-2">
-          <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-3 text-rose-600 hover:bg-rose-50 rounded-xl font-bold transition-all">
-            <LogOut size={20} /> Logout
+          <button onClick={logout} className={`w-full flex items-center ${isSidebarOpen ? 'gap-3 px-4' : 'justify-center'} py-3 text-rose-600 hover:bg-rose-50 rounded-xl font-bold transition-all`} title="Logout">
+            <LogOut size={20} className="flex-shrink-0" />
+            {isSidebarOpen && <span>Logout</span>}
           </button>
         </div>
       </aside>

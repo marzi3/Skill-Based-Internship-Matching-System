@@ -96,12 +96,12 @@ const ProfilePage = () => {
             
             setIsEditing(false);
             setPreviewImage(null);
-            setMessage({ type: 'success', text: 'Corporate profile synchronized successfully!' });
+            setMessage({ type: 'success', text: 'Corporate profile updated successfully!' });
 
             // Clear message after 3 seconds
             setTimeout(() => setMessage({ type: '', text: '' }), 3000);
         } catch (error) {
-            const errorMsg = error.response?.data?.message || error.message || 'Synchronization failed';
+            const errorMsg = error.response?.data?.message || error.message || 'Update failed';
             setMessage({ type: 'error', text: `Failed: ${errorMsg}` });
         } finally {
             setIsLoading(false);
@@ -139,7 +139,7 @@ const ProfilePage = () => {
                     <div>
                         <div className="flex items-center gap-3 mb-1">
                             <Building className="text-primary-600 w-5 h-5" />
-                            <span className="text-[10px] font-black text-primary-600 uppercase tracking-[0.2em]">Operational Status: Root</span>
+                            <span className="text-[10px] font-black text-primary-600 uppercase tracking-[0.2em]">Profile Status: Verified</span>
                         </div>
                         <h1 className="text-4xl font-black text-gray-900 tracking-tight">Corporate Profile</h1>
                     </div>
@@ -149,7 +149,7 @@ const ProfilePage = () => {
                         onClick={() => setIsEditing(true)}
                         className="flex items-center gap-2 bg-primary-600 text-white px-8 py-3 rounded-2xl hover:bg-primary-700 transition-all shadow-lg shadow-primary-500/20 font-bold"
                     >
-                        <Edit3 size={18} /> Edit Metadata
+                        <Edit3 size={18} /> Edit Profile
                     </button>
                 ) : (
                     <div className="flex gap-3">
@@ -166,7 +166,7 @@ const ProfilePage = () => {
                             className="flex items-center gap-2 bg-emerald-600 text-white px-8 py-3 rounded-2xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20 font-bold disabled:opacity-50"
                         >
                             {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-                            Sync Profiles
+                            Save Changes
                         </button>
                     </div>
                 )}
@@ -227,11 +227,11 @@ const ProfilePage = () => {
                                 value={formData.companyDescription}
                                 onChange={handleChange}
                                 className="w-full mt-6 text-center border-2 border-gray-100 rounded-3xl p-6 focus:border-primary-500 outline-none text-sm bg-gray-50/50 font-medium leading-relaxed transition-all resize-none h-40"
-                                placeholder="Describe the mission, vision, and operational scope of your organization..."
+                                placeholder="Describe your company's mission, values, and the opportunities you offer to students..."
                             />
                         ) : (
                             <p className="text-gray-500 text-base font-medium leading-[1.8] px-2 italic">
-                                {user?.companyDescription || 'No operational record provided. Update identity description to improve matching heuristics.'}
+                                {user?.companyDescription || 'No description provided. Add a compelling company overview to attract top talent.'}
                             </p>
                         )}
 
@@ -246,7 +246,7 @@ const ProfilePage = () => {
                         <div className="w-full pt-8 border-t border-gray-100 space-y-6">
                             <div className="text-left space-y-2">
                                 <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400">
-                                    <Info size={12} className="text-primary-500" /> Administrative Reg. Number
+                                    <Info size={12} className="text-primary-500" /> Business Registration Number
                                 </label>
                                 <input
                                     name="businessRegistrationNumber"
@@ -268,7 +268,7 @@ const ProfilePage = () => {
                             {/* Contact Section */}
                             <div className="space-y-4">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-indigo-500 flex items-center gap-2">
-                                    <UserIcon size={14} /> Global Administrator
+                                    <UserIcon size={14} /> Key Contact Personnel
                                 </label>
                                 <div className="space-y-4">
                                     {isEditing ? (
@@ -277,14 +277,14 @@ const ProfilePage = () => {
                                                 name="name"
                                                 value={formData.name}
                                                 onChange={handleChange}
-                                                placeholder="Representative Name"
+                                                placeholder="Primary Representative"
                                                 className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-6 py-4 text-sm font-bold focus:ring-4 focus:ring-primary-500/10 outline-none"
                                             />
                                             <input
                                                 name="positionInCompany"
                                                 value={formData.positionInCompany}
                                                 onChange={handleChange}
-                                                placeholder="Designation (e.g. Director of Operations)"
+                                                placeholder="Designation (e.g. Hiring Manager)"
                                                 className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-6 py-4 text-sm font-bold focus:ring-4 focus:ring-primary-500/10 outline-none"
                                             />
                                         </>
@@ -294,18 +294,18 @@ const ProfilePage = () => {
                                                 <UserIcon size={24} />
                                             </div>
                                             <div>
-                                                <p className="text-xl font-black text-gray-900 leading-none">{user?.name || 'Authorized Personnel'}</p>
-                                                <p className="text-xs text-gray-400 font-bold mt-2 uppercase tracking-widest">{user?.positionInCompany || 'Senior Executive'}</p>
+                                                <p className="text-xl font-black text-gray-900 leading-none">{user?.name || 'Authorized Contact'}</p>
+                                                <p className="text-xs text-gray-400 font-bold mt-2 uppercase tracking-widest">{user?.positionInCompany || 'Company Executive'}</p>
                                             </div>
                                         </div>
                                     )}
                                 </div>
                             </div>
 
-                            {/* Network Config Section */}
+                            {/* Online Presence Section */}
                             <div className="space-y-4">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-indigo-500 flex items-center gap-2">
-                                    < Globe size={14} /> Domain Metadata
+                                    < Globe size={14} /> Online Presence
                                 </label>
                                 <div className="space-y-4">
                                     {isEditing ? (
@@ -313,7 +313,7 @@ const ProfilePage = () => {
                                             name="website"
                                             value={formData.website}
                                             onChange={handleChange}
-                                            placeholder="https://company.network"
+                                            placeholder="https://www.company.com"
                                             className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-6 py-4 text-sm font-bold focus:ring-4 focus:ring-primary-500/10 outline-none"
                                         />
                                     ) : (
@@ -322,9 +322,9 @@ const ProfilePage = () => {
                                                 <Globe size={24} />
                                             </div>
                                             <div>
-                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Official Repository</p>
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Official Website</p>
                                                 <a href={user?.website} target="_blank" rel="noreferrer" className="text-lg font-black text-primary-600 hover:text-primary-700 underline underline-offset-8 mt-2 inline-block">
-                                                    {user?.website ? user.website.replace(/^https?:\/\//, '') : 'None Provided'}
+                                                    {user?.website ? user.website.replace(/^https?:\/\//, '') : 'No website linked'}
                                                 </a>
                                             </div>
                                         </div>
@@ -335,7 +335,7 @@ const ProfilePage = () => {
                             {/* Location Section */}
                             <div className="space-y-4">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-indigo-500 flex items-center gap-2">
-                                    <MapPin size={14} /> Core Headquarters
+                                    <MapPin size={14} /> Primary Headquarters
                                 </label>
                                 <div className="space-y-4">
                                     {isEditing ? (
@@ -343,7 +343,7 @@ const ProfilePage = () => {
                                             name="location"
                                             value={formData.location}
                                             onChange={handleChange}
-                                            placeholder="HQ City, Region (e.g. San Francisco, US)"
+                                            placeholder="City, Country"
                                             className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-6 py-4 text-sm font-bold focus:ring-4 focus:ring-primary-500/10 outline-none"
                                         />
                                     ) : (
@@ -352,8 +352,8 @@ const ProfilePage = () => {
                                                 <MapPin size={24} />
                                             </div>
                                             <div>
-                                                <p className="text-lg font-black text-gray-900 leading-none">{user?.location || 'Undisclosed Location'}</p>
-                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-2">{user?.location ? 'Operational Core' : 'Awaiting Deployment'}</p>
+                                                <p className="text-lg font-black text-gray-900 leading-none">{user?.location || 'Location not specified'}</p>
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-2">{user?.location ? 'Operational HQ' : 'Update headquarters'}</p>
                                             </div>
                                         </div>
                                     )}
@@ -363,7 +363,7 @@ const ProfilePage = () => {
                             {/* Industry Section */}
                             <div className="space-y-4">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-indigo-500 flex items-center gap-2">
-                                    <Briefcase size={14} /> Operational Sector
+                                    <Briefcase size={14} /> Industry Sector
                                 </label>
                                 <div className="space-y-4">
                                     {isEditing ? (
@@ -371,7 +371,7 @@ const ProfilePage = () => {
                                             name="industry"
                                             value={formData.industry}
                                             onChange={handleChange}
-                                            placeholder="Primary Industry (e.g. Artificial Intelligence)"
+                                            placeholder="Industry (e.g. Technology, AI)"
                                             className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-6 py-4 text-sm font-bold focus:ring-4 focus:ring-primary-500/10 outline-none"
                                         />
                                     ) : (
@@ -380,8 +380,8 @@ const ProfilePage = () => {
                                                 <Briefcase size={24} />
                                             </div>
                                             <div>
-                                                <p className="text-lg font-black text-gray-900 leading-none">{user?.industry || 'General Industry'}</p>
-                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-2">Specialization Tier</p>
+                                                <p className="text-lg font-black text-gray-900 leading-none">{user?.industry || 'Select Industry'}</p>
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-2">Core Specialization</p>
                                             </div>
                                         </div>
                                     )}
@@ -392,11 +392,11 @@ const ProfilePage = () => {
                         {/* Extended Metadata */}
                         <div className="pt-12 border-t border-gray-100">
                             <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-8 flex items-center gap-3">
-                                <div className="w-10 h-0.5 bg-gray-100" /> Organizational Depth
+                                <div className="w-10 h-0.5 bg-gray-100" /> Company Details
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Force Size</label>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Company Size</label>
                                     {isEditing ? (
                                         <select
                                             name="companySize"
@@ -404,35 +404,35 @@ const ProfilePage = () => {
                                             onChange={handleChange}
                                             className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-6 py-4 text-sm font-bold focus:ring-4 focus:ring-primary-500/10 outline-none appearance-none"
                                         >
-                                            <option value="">Select Capacity</option>
-                                            <option value="1-10">1-10 Operators</option>
-                                            <option value="11-50">11-50 Deployment</option>
-                                            <option value="51-200">51-200 Scaled</option>
-                                            <option value="201-500">201-500 Enterprise</option>
-                                            <option value="500+">500+ Global Force</option>
+                                            <option value="">Select Size</option>
+                                            <option value="1-10">1-10 Employees</option>
+                                            <option value="11-50">11-50 Employees</option>
+                                            <option value="51-200">51-200 Employees</option>
+                                            <option value="201-500">201-500 Employees</option>
+                                            <option value="500+">500+ Global Team</option>
                                         </select>
                                     ) : (
                                         <div className="flex items-center gap-3 font-black text-gray-900">
                                             <Users size={16} className="text-gray-400" />
-                                            {user?.companySize ? `${user.companySize} Operators` : 'Classified'}
+                                            {user?.companySize ? `${user.companySize} Employees` : 'Undisclosed'}
                                         </div>
                                     )}
                                 </div>
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Epoch Established</label>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Founding Year</label>
                                     {isEditing ? (
                                         <input
                                             type="number"
                                             name="foundedYear"
                                             value={formData.foundedYear}
                                             onChange={handleChange}
-                                            placeholder="Year of Inception"
+                                            placeholder="Year"
                                             className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-6 py-4 text-sm font-bold focus:ring-4 focus:ring-primary-500/10 outline-none"
                                         />
                                     ) : (
                                         <div className="flex items-center gap-3 font-black text-gray-900">
                                             <Calendar size={16} className="text-gray-400" />
-                                            {user?.foundedYear || 'Ancient Era'}
+                                            {user?.foundedYear || 'Not provided'}
                                         </div>
                                     )}
                                 </div>

@@ -41,5 +41,8 @@ const notificationSchema = new mongoose.Schema({
     }
 });
 
+// Unique index to prevent duplicate NEW_MATCH notifications for the same user and item (e.g. internship)
+notificationSchema.index({ userId: 1, type: 1, link: 1 }, { unique: true, partialFilterExpression: { type: 'NEW_MATCH' } });
+
 const Notification = mongoose.model('Notification', notificationSchema);
 module.exports = Notification;

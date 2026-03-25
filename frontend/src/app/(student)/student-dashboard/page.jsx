@@ -75,7 +75,7 @@ export default function StudentDashboard() {
                 ]);
 
                 if (matchesRes.data.success) {
-                    setMatches(matchesRes.data.data?.slice(0, 3) || []);
+                    setMatches(matchesRes.data.data?.slice(0, 10) || []);
                 }
                 if (statsRes.data.success) {
                     setStats(statsRes.data.data);
@@ -276,7 +276,7 @@ export default function StudentDashboard() {
                                 <div className="py-10 text-center"><Loader size={32} className="animate-spin mx-auto text-primary-600" /></div>
                             ) : applications.length > 0 ? (
                                 applications.map((app) => (
-                                    <Link key={app._id} href={`/internships/${app.internship?._id || ''}`} className="block group">
+                                    <Link key={app._id} href={`/internships/${app.internship?._id || ''}?from=dashboard`} className="block group">
                                         <Card className="p-4 flex flex-col md:flex-row md:items-center justify-between hover:shadow-md hover:border-primary-200 transition-all border border-gray-100 gap-4 md:gap-0">
                                             <div className="flex items-center gap-4">
                                                 <Avatar name={app.employer?.companyName} src={app.employer?.profilePicture} size="md" />

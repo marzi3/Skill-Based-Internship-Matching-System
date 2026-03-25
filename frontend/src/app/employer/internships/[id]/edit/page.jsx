@@ -266,7 +266,7 @@ const EditInternshipPage = () => {
                 prefersExperienced: formData.prefersExperienced || false,
                 stipend: {
                     amount: parseInt(formData.stipendAmount) || 0,
-                    currency: 'INR'
+                    currency: 'LKR'
                 },
                 perks: formData.perks
             };

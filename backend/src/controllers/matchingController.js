@@ -4,7 +4,9 @@ const Student = require('../models/Student');
 const Internship = require('../models/Internship');
 const User = require('../models/User');
 const Match = require('../models/Match');
+const Notification = require('../models/Notification');
 const MatchingEngine = require('../services/matchingEngine');
+const notificationService = require('../services/notificationService');
 
 
 
@@ -123,6 +125,47 @@ exports.getBestMatches = async (req, res) => {
             Match.bulkWrite(bulkOps).catch(err => {
                 logger.error('[Matching Controller] Failed to cache matches in DB:', err);
             });
+
+            // Send notification for new 60%+ matches (fire-and-forget, de-duplicated via Notification collection)
+            (async () => {
+                try {
+                    const highScoreMatches = formattedMatches.filter(m => m.score >= 60);
+                    if (highScoreMatches.length > 0 && student.userId) {
+                        // Bulk-check which internships already have a NEW_MATCH notification sent to this user
+                        const internshipLinks = highScoreMatches.map(m => `/internships/${m.internship._id?.toString()}`);
+                        const alreadySent = await Notification.find({
+                            userId: student.userId,
+                            type: 'NEW_MATCH',
+                            link: { $in: internshipLinks }
+                        }).distinct('link');
+
+                        const alreadySentSet = new Set(alreadySent);
+
+                        for (const match of highScoreMatches) {
+                            const internshipId = match.internship._id?.toString();
+                            const link = `/internships/${internshipId}`;
+                            if (!alreadySentSet.has(link)) {
+                                try {
+                                    await notificationService.send({
+                                        userId: student.userId,
+                                        type: 'NEW_MATCH',
+                                        message: `You have a ${Math.round(match.score)}% match with "${match.internship.positionTitle}"! Check it out now.`,
+                                        link,
+                                        sendEmail: true
+                                    });
+                                } catch (innerErr) {
+                                    // Ignore duplicate key errors from unique index
+                                    if (innerErr.code !== 11000) {
+                                        logger.error(`[Matching Controller] Failed to send notification for ${internshipId}:`, innerErr);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (err) {
+                    logger.error('[Matching Controller] Failed to send match notifications:', err);
+                }
+            })();
             
             // Add status to formattedMatches for frontend
             formattedMatches.forEach(m => {

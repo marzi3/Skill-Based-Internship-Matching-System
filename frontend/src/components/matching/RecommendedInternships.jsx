@@ -59,7 +59,7 @@ export default function RecommendedInternships({ matches = [] }) {
                         </div>
                     </div>
                     <Link
-                        href={`/internships/${match.internship._id}`}
+                        href={`/internships/${match.internship._id}?from=dashboard`}
                         className="w-full mt-6 py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-black transition-all flex items-center justify-center gap-2 group/btn text-center"
                     >
                         Launch Protocol <ChevronRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />

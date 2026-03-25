@@ -98,7 +98,7 @@ const internshipSchema = new mongoose.Schema({
     },
     stipend: {
         amount: Number,
-        currency: { type: String, default: 'INR' }
+        currency: { type: String, default: 'LKR' }
     },
     perks: [{
         type: String,

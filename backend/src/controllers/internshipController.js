@@ -30,7 +30,7 @@ exports.getInternships = async (req, res) => {
         // Handle comma-separated domains/industries
         const industries = industry || domain;
         if (industries) {
-            const industryArray = industries.split(',').map(i => new RegExp(`^${i.trim()}$`, 'i'));
+            const industryArray = industries.split(',').map(i => new RegExp(i.trim(), 'i'));
             query.domain = { $in: industryArray };
         }
 

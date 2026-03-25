@@ -158,7 +158,7 @@ export default function EmployerProfilePage({ params }) {
                                 )}
                                 <div className="flex justify-between items-center">
                                     <span className="text-xs font-bold text-slate-500 tracking-wide uppercase">Member Since</span>
-                                    <span className="text-sm font-black text-slate-900">{new Date(employer.createdAt).getFullYear()}</span>
+                                    <span className="text-sm font-black text-slate-900">{employer.createdAt ? new Date(employer.createdAt).getFullYear() : new Date().getFullYear()}</span>
                                 </div>
                              </div>
                         </div>

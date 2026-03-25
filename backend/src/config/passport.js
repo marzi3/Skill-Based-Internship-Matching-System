@@ -19,7 +19,7 @@ passport.deserializeUser(async (id, done) => {
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: `${process.env.BACKEND_URL || 'http://localhost:5001'}/api/v1/auth/google/callback`,
+    callbackURL: `${process.env.BACKEND_URL || 'http://localhost:5005'}/api/v1/auth/google/callback`,
     passReqToCallback: true
 },
     async function (req, accessToken, refreshToken, profile, done) {
@@ -63,7 +63,7 @@ passport.use(new GoogleStrategy({
 passport.use(new LinkedInStrategy({
     clientID: process.env.LINKEDIN_CLIENT_ID,
     clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
-    callbackURL: `${process.env.BACKEND_URL || 'http://localhost:5001'}/api/v1/auth/linkedin/callback`,
+    callbackURL: `${process.env.BACKEND_URL || 'http://localhost:5005'}/api/v1/auth/linkedin/callback`,
     scope: ['r_emailaddress', 'r_liteprofile'],
     passReqToCallback: true
 }, async function (req, accessToken, refreshToken, profile, done) {

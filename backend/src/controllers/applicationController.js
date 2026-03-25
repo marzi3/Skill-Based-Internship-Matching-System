@@ -81,10 +81,16 @@ exports.applyToInternship = async (req, res) => {
             }]
         });
 
-        // Update Match status using correct Student ID
+        // Sync with Match model using the correct Student ID (legacy profile sync)
         await Match.findOneAndUpdate(
             { student: student._id, internship: req.params.id },
-            { status: 'Applied' },
+            { 
+                status: 'Applied',
+                rawScore: analysis.rawScore,
+                normalizedScore: analysis.normalizedScore,
+                tier: analysis.tier,
+                explanations: analysis.explanation
+            },
             { upsert: true }
         );
 
@@ -143,6 +149,24 @@ exports.getApplicationDetails = async (req, res) => {
 
         if (!application) {
             return res.status(404).json({ success: false, message: 'Application not found' });
+        }
+
+        // Fetch the corresponding Match record for the latest Match Intelligence
+        const student = await Student.findOne({ userId: application.student?._id || application.student });
+        if (student) {
+            const latestMatch = await Match.findOne({ 
+                student: student._id, 
+                internship: application.internship?._id || application.internship 
+            }).lean();
+            
+            if (latestMatch) {
+                application.matchAnalysis = {
+                    tier: latestMatch.tier,
+                    score: latestMatch.normalizedScore,
+                    explanation: latestMatch.explanations
+                };
+                application.matchScore = latestMatch.normalizedScore;
+            }
         }
 
         // Auth check: Is current user the student or the employer?

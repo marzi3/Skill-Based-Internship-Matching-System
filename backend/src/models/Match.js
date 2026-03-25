@@ -57,6 +57,10 @@ const matchSchema = new mongoose.Schema({
         type: String,
         enum: ['Pending', 'Applied', 'Rejected', 'Interacting'],
         default: 'Pending'
+    },
+    notified: {
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: true

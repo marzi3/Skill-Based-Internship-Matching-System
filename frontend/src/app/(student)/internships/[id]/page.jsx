@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, use } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import axios from '@/services/apiClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -19,7 +19,12 @@ import SubmitApplicationModal from '@/components/modals/SubmitApplicationModal';
 export default function InternshipDetailPage({ params }) {
     const { id } = use(params);
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { user } = useAuth();
+    // Determine back navigation context
+    const fromParam = searchParams.get('from');
+    const backHref = fromParam === 'search' ? '/find-internships' : '/student-dashboard';
+    const backLabel = fromParam === 'search' ? 'Back to Search' : 'Back to Dashboard';
 
     const [internship, setInternship] = useState(null);
     const [analysis, setAnalysis] = useState(null);
@@ -131,8 +136,8 @@ export default function InternshipDetailPage({ params }) {
             <div className="max-w-6xl mx-auto space-y-8">
 
                 {/* Header Back Button */}
-                <Link href="/find-internships" className="inline-flex items-center gap-3 text-slate-400 hover:text-slate-900 transition-colors font-black uppercase text-[10px] tracking-widest">
-                    <ArrowLeft size={16} /> Back to Search
+                <Link href={backHref} className="inline-flex items-center gap-3 text-slate-400 hover:text-slate-900 transition-colors font-black uppercase text-[10px] tracking-widest">
+                    <ArrowLeft size={16} /> {backLabel}
                 </Link>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -178,7 +183,7 @@ export default function InternshipDetailPage({ params }) {
                                     </div>
                                     <div className="px-5 py-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-3">
                                         <Banknote size={16} className="text-amber-500" />
-                                        <span className="text-[10px] font-black uppercase tracking-widest">INR {internship.stipend?.amount || '0'}</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest">LKR {internship.stipend?.amount || '0'}</span>
                                     </div>
                                     <div className="px-5 py-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-3">
                                         <Briefcase size={16} className="text-indigo-500" />

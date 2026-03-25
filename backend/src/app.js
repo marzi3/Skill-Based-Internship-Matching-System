@@ -70,22 +70,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser()); // Parse cookies
 // Configure session store
 let sessionStore;
-if (process.env.NODE_ENV === 'test') {
-  // Use MemoryStore for testing to avoid Redis connection issues
+  // For development/debugging, we'll use MemoryStore to avoid Redis connection issues
   sessionStore = new session.MemoryStore();
-} else {
-  // For connect-redis v7+, it exports RedisStore directly or under .default
-  const Store = typeof RedisStore === 'function' ? RedisStore : RedisStore.RedisStore;
-
-  try {
-    sessionStore = new Store({ client: redisClient });
-    // Note: redisClient connection error is handled in config/redis.js, 
-    // but we can also detect if we should fallback here if desired.
-  } catch (err) {
-    console.warn('⚠️ Redis Store initialization failed, falling back to MemoryStore');
-    sessionStore = new session.MemoryStore();
-  }
-}
+  console.info('ℹ️ Using MemoryStore for sessions (Redis disabled)');
 
 app.use(session({
   store: sessionStore,
