@@ -94,6 +94,7 @@ export default function StudentProfile() {
   const [profileCompletion, setProfileCompletion] = useState(0);
   const [showAllSkills, setShowAllSkills] = useState(false);
   const [showAllEducation, setShowAllEducation] = useState(false);
+  const [errors, setErrors] = useState({});
 
   // Stepper logic
   const steps = [
@@ -275,13 +276,27 @@ export default function StudentProfile() {
 
   // Handler for certifications
   const handleAddCertification = async () => {
-    if (!newCertification.name || !newCertification.credentialUrl) {
-      setMessage('Please fill in all certification fields');
+    const certErrors = {};
+    if (!newCertification.name) certErrors.name = 'Certification name is required';
+    if (!newCertification.credentialUrl) certErrors.credentialUrl = 'Link is required';
+    if (!newCertification.issuedDate) certErrors.issuedDate = 'Issue date is required';
+    
+    if (Object.keys(certErrors).length > 0) {
+      setErrors(certErrors);
+      setMessage('Error: Please fill in all required fields');
+      return;
+    }
+
+    // Validate date is not in future
+    if (newCertification.issuedDate && new Date(newCertification.issuedDate) > new Date()) {
+      setErrors({ issuedDate: 'Date cannot be in the future' });
+      setMessage('Error: Issued date cannot be in the future');
       return;
     }
 
     try {
       setLoading(true);
+      setErrors({});
       const authToken = getAuthToken();
       if (!authToken) {
         setMessage('Error: No authentication token. Please login again.');
@@ -484,8 +499,21 @@ export default function StudentProfile() {
   };
 
   const handleSavePersonalInfo = async () => {
+    // Basic validation for critical fields
+    const personalErrors = {};
+    if (!personalInfo.fullName) personalErrors.fullName = 'Full Name is required';
+    if (!personalInfo.portfolioUrl) personalErrors.portfolioUrl = 'Portfolio URL is required';
+    if (!personalInfo.preferredLocation) personalErrors.preferredLocation = 'Preferred Location is required';
+    
+    if (Object.keys(personalErrors).length > 0) {
+      setErrors(personalErrors);
+      setMessage('Error: Please fill in all required fields marked with *');
+      return;
+    }
+
     try {
       setLoading(true);
+      setErrors({});
       setMessage('');
 
       let authToken = token || localToken;
@@ -523,24 +551,51 @@ export default function StudentProfile() {
 
   const handleSaveEducation = async () => {
     // Validate required fields including degreeLevel and startDate
-    if (!newEducation.institution || !newEducation.degree || !newEducation.field || !newEducation.degreeLevel || !newEducation.startDate) {
-      setMessage('Please fill in all required fields including degree level and start date');
+    const eduErrors = {};
+    if (!newEducation.institution) eduErrors.institution = 'Institution is required';
+    if (!newEducation.degree) eduErrors.degree = 'Degree title is required';
+    if (!newEducation.field) eduErrors.field = 'Field of study is required';
+    if (!newEducation.degreeLevel) eduErrors.degreeLevel = 'Degree level is required';
+    if (!newEducation.startDate) eduErrors.startDate = 'Start date is required';
+
+    if (Object.keys(eduErrors).length > 0) {
+      setErrors(eduErrors);
+      setMessage('Error: Please fill in all required fields');
       return;
     }
 
     // Validate dates
     if (newEducation.startDate && isNaN(new Date(newEducation.startDate).getTime())) {
+      setErrors({ startDate: 'Invalid date' });
       setMessage('Please enter a valid start date');
       return;
     }
 
     if (newEducation.endDate && isNaN(new Date(newEducation.endDate).getTime())) {
+      setErrors({ endDate: 'Invalid date' });
       setMessage('Please enter a valid end date');
+      return;
+    }
+
+    // Validate that end date is after start date
+    if (newEducation.startDate && newEducation.endDate) {
+      if (new Date(newEducation.endDate) < new Date(newEducation.startDate)) {
+        setErrors({ endDate: 'End date must be after start date' });
+        setMessage('Error: End date must be after the start date');
+        return;
+      }
+    }
+
+    // Validate no future dates for start date
+    if (newEducation.startDate && new Date(newEducation.startDate) > new Date()) {
+      setErrors({ startDate: 'Start date cannot be in the future' });
+      setMessage('Error: Start date cannot be in the future');
       return;
     }
 
     try {
       setLoading(true);
+      setErrors({});
       setMessage('');
 
       const authToken = getAuthToken();
@@ -1360,7 +1415,8 @@ export default function StudentProfile() {
                           name="fullName"
                           value={personalInfo.fullName || ''}
                           onChange={(e) => setPersonalInfo({ ...personalInfo, fullName: e.target.value })}
-                          className="bg-slate-50"
+                          error={errors.fullName}
+                          className={`bg-slate-50 ${errors.fullName ? 'ring-2 ring-red-200' : ''}`}
                           placeholder="Enter your full name"
                         />
                         <Input
@@ -1414,8 +1470,10 @@ export default function StudentProfile() {
                           name="portfolioUrl"
                           value={personalInfo.portfolioUrl || ''}
                           onChange={handlePersonalInfoChange}
-                          className="bg-green-50 border-green-300"
+                          error={errors.portfolioUrl}
+                          className={`bg-green-50 border-green-300 ${errors.portfolioUrl ? 'ring-2 ring-red-200' : ''}`}
                           placeholder="https://yourportfolio.com"
+                          required
                         />
 
                         <div className="col-span-1">
@@ -1426,7 +1484,7 @@ export default function StudentProfile() {
                             name="preferredLocation"
                             value={personalInfo.preferredLocation || ''}
                             onChange={handlePersonalInfoChange}
-                            className="w-full p-3 border border-green-300 bg-green-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${errors.preferredLocation ? 'border-red-500 bg-red-50' : 'border-green-300 bg-green-50'}`}
                           >
                             <option value="">Select Location</option>
                             <option value="Remote">Remote</option>
@@ -1547,19 +1605,21 @@ export default function StudentProfile() {
 
                       <div className="grid grid-cols-2 gap-4 mb-4">
                         <Input
-                          label="Institution"
+                          label="Institution *"
                           name="institution"
                           value={newEducation.institution}
                           onChange={handleEducationChange}
-                          className="bg-slate-50"
+                          error={errors.institution}
+                          className={`bg-slate-50 ${errors.institution ? 'ring-2 ring-red-200' : ''}`}
                           placeholder="e.g., University of ABC"
                         />
                         <Input
-                          label="Degree"
+                          label="Degree *"
                           name="degree"
                           value={newEducation.degree}
                           onChange={handleEducationChange}
-                          className="bg-slate-50"
+                          error={errors.degree}
+                          className={`bg-slate-50 ${errors.degree ? 'ring-2 ring-red-200' : ''}`}
                           placeholder="e.g., Bachelor's, Master's"
                         />
 
@@ -1571,7 +1631,7 @@ export default function StudentProfile() {
                             name="degreeLevel"
                             value={newEducation.degreeLevel || ''}
                             onChange={handleEducationChange}
-                            className="w-full p-3 border border-purple-300 bg-purple-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${errors.degreeLevel ? 'border-red-500 bg-red-50' : 'border-purple-300 bg-purple-50'}`}
                           >
                             <option value="">Select Degree Level</option>
                             <option value="HIGH_SCHOOL">High School Diploma</option>
@@ -1584,20 +1644,23 @@ export default function StudentProfile() {
                         </div>
 
                         <Input
-                          label="Field of Study"
+                          label="Field of Study *"
                           name="field"
                           value={newEducation.field}
                           onChange={handleEducationChange}
-                          className="bg-slate-50"
+                          error={errors.field}
+                          className={`bg-slate-50 ${errors.field ? 'ring-2 ring-red-200' : ''}`}
                           placeholder="e.g., Computer Science, Engineering"
                         />
                         <Input
-                          label="Start Date"
+                          label="Start Date *"
                           name="startDate"
                           type="date"
                           value={newEducation.startDate}
                           onChange={handleEducationChange}
-                          className="bg-slate-50"
+                          error={errors.startDate}
+                          max={new Date().toISOString().split('T')[0]}
+                          className={`bg-slate-50 ${errors.startDate ? 'ring-2 ring-red-200' : ''}`}
                         />
                         <Input
                           label="End Date (Optional)"
@@ -1605,7 +1668,8 @@ export default function StudentProfile() {
                           type="date"
                           value={newEducation.endDate}
                           onChange={handleEducationChange}
-                          className="bg-slate-50"
+                          error={errors.endDate}
+                          className={`bg-slate-50 ${errors.endDate ? 'ring-2 ring-red-200' : ''}`}
                         />
                       </div>
 
@@ -1844,25 +1908,29 @@ export default function StudentProfile() {
 
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <Input
-                          label="Certification Name"
+                          label="Certification Name *"
                           placeholder="e.g., AWS Certified Developer"
                           value={newCertification.name}
                           onChange={(e) => setNewCertification(prev => ({ ...prev, name: e.target.value }))}
-                          className="bg-slate-50"
+                          error={errors.name}
+                          className={`bg-slate-50 ${errors.name ? 'ring-2 ring-red-200' : ''}`}
                         />
                         <Input
-                          label="Credential URL"
+                          label="Credential URL *"
                           placeholder="https://credential-url.com"
                           value={newCertification.credentialUrl}
                           onChange={(e) => setNewCertification(prev => ({ ...prev, credentialUrl: e.target.value }))}
-                          className="bg-slate-50"
+                          error={errors.credentialUrl}
+                          className={`bg-slate-50 ${errors.credentialUrl ? 'ring-2 ring-red-200' : ''}`}
                         />
                         <Input
-                          label="Issue Date"
+                          label="Issue Date *"
                           type="date"
                           value={newCertification.issuedDate}
                           onChange={(e) => setNewCertification(prev => ({ ...prev, issuedDate: e.target.value }))}
-                          className="bg-slate-50"
+                          error={errors.issuedDate}
+                          max={new Date().toISOString().split('T')[0]}
+                          className={`bg-slate-50 ${errors.issuedDate ? 'ring-2 ring-red-200' : ''}`}
                         />
                       </div>
 

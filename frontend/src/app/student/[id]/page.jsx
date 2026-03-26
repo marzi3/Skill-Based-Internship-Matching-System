@@ -199,9 +199,17 @@ export default function StudentPublicProfile() {
                                 </h2>
                                 <div className="space-y-4">
                                     {profile.certifications.map((cert, idx) => (
-                                        <div key={idx}>
+                                        <div key={idx} className="pb-3 border-b last:border-0 border-gray-50">
                                             <h3 className="font-bold text-gray-900">{cert.name}</h3>
-                                            <p className="text-sm text-gray-500">Issued: {new Date(cert.issuedDate).toLocaleDateString()}</p>
+                                            <div className="flex flex-col gap-1 mt-1">
+                                                <p className="text-xs text-gray-400 font-medium tracking-tight uppercase">Issued: {new Date(cert.issuedDate).toLocaleDateString([], { month: 'long', year: 'numeric' })}</p>
+                                                {cert.credentialUrl && (
+                                                    <a href={cert.credentialUrl.startsWith('http') ? cert.credentialUrl : `https://${cert.credentialUrl}`} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 mt-1 group">
+                                                        <LinkIcon size={12} className="group-hover:rotate-12 transition-transform" /> 
+                                                        Verify Credential
+                                                    </a>
+                                                )}
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
