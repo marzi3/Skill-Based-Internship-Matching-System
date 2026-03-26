@@ -48,7 +48,7 @@ passport.use(new GoogleStrategy({
                 // Requirement says "After successful OAuth... Check if user exists... If new -> create... Store role"
                 // This implies we might need a state param or a redirect to role selection if strict.
                 // For now defaulting to student, but will allow role update if 'none'.
-                verificationStatus: 'none',
+                verificationStatus: 'unverified',
                 isVerified: false,
                 profilePicture: profile.photos[0].value
             });
@@ -87,7 +87,7 @@ passport.use(new LinkedInStrategy({
             oauthProvider: 'linkedin',
             providerId: profile.id,
             role: 'student', // Default
-            verificationStatus: 'none',
+            verificationStatus: 'unverified',
             isVerified: false,
             profilePicture: profile.photos[0].value
         });
