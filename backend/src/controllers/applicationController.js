@@ -125,12 +125,47 @@ exports.getEmployerApplications = async (req, res) => {
     try {
         const applications = await Application.find({ employer: req.user.id })
             .populate('student', 'name email profilePicture')
-            .populate('internship', 'positionTitle domain');
+            .populate('internship', 'positionTitle domain')
+            .sort({ lastMessageAt: -1 });
+
+        // Synchronization Protocol: Fetch latest Match Intelligence for each application
+        const studentIds = applications.map(app => app.student?._id || app.student).filter(Boolean);
+        const uniqueStudents = await Student.find({ userId: { $in: studentIds } });
+        const studentToProfileMap = new Map(uniqueStudents.map(s => [s.userId.toString(), s]));
+        
+        const internshipIds = applications.map(app => app.internship?._id || app.internship).filter(Boolean);
+        const matches = await Match.find({ 
+            student: { $in: uniqueStudents.map(s => s._id) },
+            internship: { $in: internshipIds }
+        }).lean();
+
+        const matchMap = new Map();
+        matches.forEach(m => matchMap.set(`${m.student.toString()}_${m.internship.toString()}`, m));
+
+        const syncedApplications = applications.map(app => {
+            const appObj = app.toObject();
+            const studentId = (app.student?._id || app.student).toString();
+            const studentProfile = studentToProfileMap.get(studentId);
+            const internshipId = (app.internship?._id || app.internship).toString();
+            
+            if (studentProfile) {
+                const match = matchMap.get(`${studentProfile._id.toString()}_${internshipId}`);
+                if (match) {
+                    appObj.matchScore = match.normalizedScore;
+                    appObj.matchAnalysis = {
+                        tier: match.tier,
+                        score: match.normalizedScore,
+                        explanation: match.explanations
+                    };
+                }
+            }
+            return appObj;
+        });
 
         res.status(200).json({
             success: true,
-            count: applications.length,
-            data: applications
+            count: syncedApplications.length,
+            data: syncedApplications
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -270,7 +305,9 @@ exports.withdrawApplication = async (req, res) => {
 // @access  Private (Student)
 exports.getStudentStats = async (req, res) => {
     try {
-        const applicationsCount = await Application.countDocuments({ student: req.user.id });
+        const allApplications = await Application.find({ student: req.user.id }).populate('internship');
+        const validApplications = allApplications.filter(app => app.internship);
+        const applicationsCount = validApplications.length;
         
         const Student = require('../models/Student');
         const student = await Student.findOne({ userId: req.user.id });
@@ -306,15 +343,43 @@ exports.getStudentStats = async (req, res) => {
 // @access  Private (Student)
 exports.getStudentApplications = async (req, res) => {
     try {
-        const applications = await Application.find({ student: req.user.id })
+        let applications = await Application.find({ student: req.user.id })
             .populate('employer', 'companyName profilePicture')
             .populate('internship', 'positionTitle company location')
-            .sort({ createdAt: -1 });
+            .sort({ lastMessageAt: -1 });
+
+        // Filter out applications for non-existent internships
+        applications = applications.filter(app => app.internship);
+
+        // Synchronization Protocol: Ensure student dashboard shows latest Match Intelligence
+        const student = await Student.findOne({ userId: req.user.id });
+        let syncedApplications = applications;
+        
+        if (student) {
+            const matches = await Match.find({ student: student._id }).lean();
+            const matchMap = new Map(matches.map(m => [m.internship.toString(), m]));
+            
+            syncedApplications = applications.map(app => {
+                const appObj = app.toObject();
+                const internshipId = (app.internship?._id || app.internship).toString();
+                const match = matchMap.get(internshipId);
+                
+                if (match) {
+                    appObj.matchScore = match.normalizedScore;
+                    appObj.matchAnalysis = {
+                        tier: match.tier,
+                        score: match.normalizedScore,
+                        explanation: match.explanations
+                    };
+                }
+                return appObj;
+            });
+        }
 
         res.status(200).json({
             success: true,
-            count: applications.length,
-            data: applications
+            count: syncedApplications.length,
+            data: syncedApplications
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });

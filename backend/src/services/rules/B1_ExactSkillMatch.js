@@ -66,7 +66,7 @@ const rule = {
         requiredSkills.forEach(req => {
             const reqName = typeof req === 'string' ? req : req?.name;
             if (reqName && studentSkillNames.includes(reqName.toLowerCase())) {
-                totalScore += 15;
+                totalScore += 20;
                 explanations.push(`Exact skill match: ${reqName}`);
             }
         });

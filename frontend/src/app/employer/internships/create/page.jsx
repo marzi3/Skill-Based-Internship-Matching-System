@@ -61,7 +61,7 @@ const CreateInternshipPage = () => {
     educationRequirements: '',
     requiredDegreeField: [],
     isGpaMandatory: false,
-    minimumGPA: '',
+    minimumGPA: '0.0',
     prefersExperienced: false,
     stipendAmount: '',
   });
@@ -271,7 +271,7 @@ const CreateInternshipPage = () => {
         prefersExperienced: formData.prefersExperienced,
         educationRequirements: formData.educationRequirements,
         requiredDegreeField: formData.requiredDegreeField,
-        minimumGPA: formData.isGpaMandatory && formData.minimumGPA ? parseFloat(formData.minimumGPA) : null,
+        minimumGPA: formData.minimumGPA ? parseFloat(formData.minimumGPA) : 0,
         stipend: {
           amount: parseInt(formData.stipendAmount) || 0,
           currency: 'RS'
@@ -594,23 +594,27 @@ const CreateInternshipPage = () => {
 
                         <div className="grid grid-cols-2 gap-10">
                           <div className="space-y-4">
-                            <label className="flex items-center gap-3 cursor-pointer group mt-7 p-4 bg-slate-50 rounded-2xl border border-slate-200 hover:border-[#6366F1]/30 transition-all">
+                            <label className="flex items-center gap-3 cursor-pointer group p-4 bg-slate-50 rounded-2xl border border-slate-200 hover:border-[#6366F1]/30 transition-all">
                               <div
-                                onClick={() => setFormData(prev => ({ ...prev, isGpaMandatory: !prev.isGpaMandatory, minimumGPA: prev.isGpaMandatory ? '' : prev.minimumGPA }))}
+                                onClick={() => setFormData(prev => ({ 
+                                  ...prev, 
+                                  isGpaMandatory: !prev.isGpaMandatory,
+                                  minimumGPA: !prev.isGpaMandatory ? prev.minimumGPA : '0.0'
+                                }))}
                                 className={`w-10 h-6 flex-shrink-0 rounded-full flex items-center p-1 transition-colors ${formData.isGpaMandatory ? 'bg-[#6366F1]' : 'bg-slate-300'}`}
                               >
                                 <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${formData.isGpaMandatory ? 'translate-x-4' : 'translate-x-0'}`} />
                               </div>
                               <div>
                                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-900 block">Require Minimum GPA</span>
-                                <span className="text-[9px] font-semibold text-slate-400 uppercase">Make GPA mandatory for applicants</span>
+                                <span className="text-[9px] font-semibold text-slate-400 uppercase">Enforce a grade threshold for applicants</span>
                               </div>
                             </label>
 
                             {formData.isGpaMandatory && (
                               <div className="animate-in fade-in slide-in-from-top-2 duration-300">
                                 <CustomInput
-                                  label="Minimum GPA (Max 4.0)"
+                                  label="Minimum GPA Requirement (0.0 to 4.0) *"
                                   icon={GraduationCap}
                                   name="minimumGPA"
                                   value={formData.minimumGPA}
@@ -626,13 +630,13 @@ const CreateInternshipPage = () => {
                             )}
                           </div>
                           <CustomInput
-                            label="Academic Standard"
-                            icon={GraduationCap}
-                            name="educationRequirements"
-                            value={formData.educationRequirements}
-                            onChange={handleInputChange}
-                            placeholder="e.g. Master's in Design"
-                          />
+                             label="Academic Standard"
+                             icon={GraduationCap}
+                             name="educationRequirements"
+                             value={formData.educationRequirements}
+                             onChange={handleInputChange}
+                             placeholder="e.g. Master's in Design"
+                           />
                         </div>
                       </div>
                     )}

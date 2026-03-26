@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import axios from '@/services/apiClient';
+import { useState, useEffect, useCallback } from 'react';
+import internshipService from '@/services/internshipService';
+import SearchBar from '@/components/internship/SearchBar';
 import {
-    Search,
     MapPin,
     Clock,
     Briefcase,
@@ -31,48 +31,47 @@ export default function InternshipSearch() {
         duration: ''
     });
 
-    const fetchInternships = async () => {
+    const fetchInternships = useCallback(async (query = searchQuery) => {
         try {
             setLoading(true);
-            const res = await axios.get('internships', {
-                params: { q: searchQuery, ...filters }
+            const data = await internshipService.searchInternships({ 
+                q: query, 
+                ...filters 
             });
-            setInternships(res.data.data || []);
-            setLoading(false);
+            setInternships(data.data || []);
         } catch (err) {
             console.error('Failed to fetch internships:', err);
+        } finally {
             setLoading(false);
         }
-    };
+    }, [filters, searchQuery]);
 
+    // Remove automatic reactive search on searchQuery change
     useEffect(() => {
         fetchInternships();
-    }, [filters]);
+    }, [filters, fetchInternships]); // Only fetch on filters change, or manual trigger
 
-    const handleSearch = (e) => {
-        e.preventDefault();
-        fetchInternships();
+    const handleSearchChange = (query) => {
+        setSearchQuery(query);
     };
 
     return (
         <div className="p-8 max-w-7xl mx-auto space-y-8">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                <div>
+                <div className="space-y-1">
                     <h1 className="text-4xl font-black text-gray-900 tracking-tight">Active Opportunities</h1>
                     <p className="text-gray-500 font-medium">Synchronize your skills with verified industrial protocols</p>
                 </div>
                 <div className="flex gap-4 w-full md:w-auto">
-                    <form onSubmit={handleSearch} className="relative flex-1 md:w-80">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                        <input
-                            type="text"
-                            placeholder="Search by position or skill..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-12 pr-4 py-4 bg-white border border-gray-200 rounded-2xl focus:ring-4 focus:ring-primary-500/10 focus:outline-none transition-all font-bold shadow-sm"
+                    <div className="flex-1 md:w-96">
+                        <SearchBar 
+                            placeholder="Search by position, skill, or company..."
+                            initialValue={searchQuery}
+                            onSearch={handleSearchChange}
+                            isLoading={loading}
                         />
-                    </form>
-                    <button className="p-4 bg-gray-900 text-white rounded-2xl hover:bg-black transition-all shadow-lg">
+                    </div>
+                    <button className="p-4 bg-gray-900 text-white rounded-2xl hover:bg-black transition-all shadow-lg flex items-center justify-center">
                         <SlidersHorizontal size={24} />
                     </button>
                 </div>
@@ -145,8 +144,8 @@ export default function InternshipSearch() {
                                         </div>
 
                                         <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-400 font-bold">
-                                            <div className="flex items-center gap-1"><MapPin size={16} /> Navi Mumbai</div>
-                                            <div className="flex items-center gap-1"><Clock size={16} /> {job.duration} Months</div>
+                                            <div className="flex items-center gap-1"><MapPin size={16} /> {job.location || job.workEnvironment || 'Remote'}</div>
+                                            <div className="flex items-center gap-1"><Clock size={16} /> {job.duration}</div>
                                             <div className="flex items-center gap-1 text-emerald-500"><Zap size={16} fill="currentColor" /> FAST RESPONSE</div>
                                         </div>
 

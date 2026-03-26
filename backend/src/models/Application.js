@@ -54,6 +54,10 @@ const applicationSchema = new mongoose.Schema({
     matchScore: {
         type: Number,
         default: 0
+    },
+    lastMessageAt: {
+        type: Date,
+        default: Date.now
     }
 }, {
     timestamps: true

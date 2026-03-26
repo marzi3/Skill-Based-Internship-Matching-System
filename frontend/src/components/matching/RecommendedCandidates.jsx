@@ -63,7 +63,7 @@ export default function RecommendedCandidates({ candidates = [] }) {
                         </div>
                     </div>
                     <div className="mt-3 pt-3 border-t border-gray-100 flex gap-2">
-                        <Link href={`/students/${c.studentId}`} className="flex-1">
+                        <Link href={`/student/${c.studentId}`} className="flex-1">
                             <button className="w-full py-2 text-sm font-bold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
                                 View Profile
                             </button>

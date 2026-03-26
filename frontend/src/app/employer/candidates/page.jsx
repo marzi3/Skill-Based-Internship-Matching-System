@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, MapPin, Star, SlidersHorizontal, Zap, Loader2, ArrowLeft, X, ChevronDown, GraduationCap } from 'lucide-react';
+import { Search, MapPin, Star, SlidersHorizontal, Zap, Loader2, ArrowLeft, X, ChevronDown, GraduationCap, Users } from 'lucide-react';
 import axios from '@/services/apiClient';
 import Cookies from 'js-cookie';
 import Card from '@/components/common/Card';
@@ -25,9 +25,10 @@ const CandidateSearchPage = () => {
 
     // Advanced filters
     const [showFilters, setShowFilters] = useState(false);
-    const [minGpa, setMinGpa] = useState('');
     const [fieldFilter, setFieldFilter] = useState('');
     const [locationFilter, setLocationFilter] = useState('');
+    const [isSearching, setIsSearching] = useState(false);
+    const [results, setResults] = useState(null);
 
     // Rapid Match
     const [rapidMatchLoading, setRapidMatchLoading] = useState(false);
@@ -44,7 +45,12 @@ const CandidateSearchPage = () => {
     const fetchStudents = async () => {
         try {
             const res = await axios.get('/auth/students');
-            if (res.data.success) setCandidates(res.data.data || []);
+            if (res.data.success) {
+                const fetched = res.data.data || [];
+                setCandidates(fetched);
+                // Initialize results with all candidates so they show up immediately
+                setResults(fetched);
+            }
         } catch (err) {
             console.error('Failed to fetch students:', err);
         } finally {
@@ -87,24 +93,32 @@ const CandidateSearchPage = () => {
         setSelectedInternship('');
     };
 
-    // Apply filters
-    const filteredCandidates = candidates.filter(c => {
-        const matchSearch = !searchTerm ||
-            c.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            c.skills?.some(s => s.toLowerCase().includes(searchTerm.toLowerCase()));
-        const matchGpa = !minGpa || (c.gpa && c.gpa >= parseFloat(minGpa));
-        const matchField = !fieldFilter || c.fieldOfStudy?.toLowerCase().includes(fieldFilter.toLowerCase());
-        const matchLocation = !locationFilter || c.location?.toLowerCase().includes(locationFilter.toLowerCase());
-        return matchSearch && matchGpa && matchField && matchLocation;
-    });
+    const handleSearchExecution = () => {
+        setIsSearching(true);
+        // Simulate a brief delay for premium feel
+        setTimeout(() => {
+            const filtered = candidates.filter(c => {
+                const matchesSearch = !searchTerm ||
+                    c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    c.skills?.some(s => s.toLowerCase().includes(searchTerm.toLowerCase()));
+
+                const matchesField = !fieldFilter || (c.fieldOfStudy && c.fieldOfStudy.toLowerCase().includes(fieldFilter.toLowerCase()));
+                const matchesLocation = !locationFilter || (c.location && c.location.toLowerCase().includes(locationFilter.toLowerCase()));
+
+                return matchesSearch && matchesField && matchesLocation;
+            });
+            setResults(filtered);
+            setIsSearching(false);
+        }, 600);
+    };
+
+    const displayCandidates = rapidMatchResults || results || [];
 
     const getScoreColor = (score) => {
         if (score >= 80) return 'text-emerald-600 bg-emerald-50 border-emerald-200';
         if (score >= 60) return 'text-amber-600 bg-amber-50 border-amber-200';
         return 'text-rose-600 bg-rose-50 border-rose-200';
     };
-
-    const displayList = rapidMatchResults || filteredCandidates;
 
     return (
         <div className="space-y-6">
@@ -161,13 +175,23 @@ const CandidateSearchPage = () => {
             {/* Search & Filters */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
                 <div className="flex flex-col md:flex-row gap-4">
-                    <div className="flex-1 relative">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <div className="flex-1 relative group">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
                         <input
-                            type="text" placeholder="Search by skill, name, or field…"
-                            value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
-                            className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all font-medium text-sm"
+                            type="text"
+                            placeholder="Find talent by name or skills (e.g. React, UX Design)..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSearchExecution()}
+                            className="w-full pl-12 pr-32 py-5 bg-white border border-gray-100 rounded-3xl text-sm font-bold text-gray-800 placeholder:text-gray-300 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all shadow-sm"
                         />
+                        <button
+                            onClick={handleSearchExecution}
+                            disabled={isSearching}
+                            className="absolute right-2 top-2 bottom-2 px-6 bg-indigo-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50"
+                        >
+                            {isSearching ? <Loader2 size={16} className="animate-spin" /> : 'Search'}
+                        </button>
                     </div>
                     <button
                         onClick={() => setShowFilters(!showFilters)}
@@ -186,13 +210,7 @@ const CandidateSearchPage = () => {
                             exit={{ height: 0, opacity: 0 }}
                             className="overflow-hidden"
                         >
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 pt-4 border-t border-gray-100">
-                                <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Min GPA</label>
-                                    <input type="number" step="0.1" min="0" max="4" value={minGpa} onChange={e => setMinGpa(e.target.value)}
-                                        placeholder="e.g. 3.0"
-                                        className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
-                                </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-100">
                                 <div>
                                     <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Field of Study</label>
                                     <input type="text" value={fieldFilter} onChange={e => setFieldFilter(e.target.value)}
@@ -207,7 +225,7 @@ const CandidateSearchPage = () => {
                                 </div>
                             </div>
                             <div className="flex justify-end mt-3">
-                                <button onClick={() => { setMinGpa(''); setFieldFilter(''); setLocationFilter(''); }}
+                                <button onClick={() => { setFieldFilter(''); setLocationFilter(''); }}
                                     className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors">
                                     Clear All Filters
                                 </button>
@@ -222,14 +240,17 @@ const CandidateSearchPage = () => {
                 <div className="flex items-center justify-center py-20">
                     <Loader2 className="animate-spin text-indigo-600" size={32} />
                 </div>
-            ) : displayList.length === 0 ? (
-                <div className="text-center py-20 text-gray-400">
-                    <Search size={48} className="mx-auto mb-3 opacity-20" />
-                    <p className="font-medium">No candidates found matching your criteria.</p>
+            ) : !loading && displayCandidates.length === 0 ? (
+                <div className="py-24 text-center bg-white rounded-[3rem] border border-gray-100 shadow-sm animate-in fade-in zoom-in duration-500">
+                    <div className="w-20 h-20 bg-indigo-50 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                        <Users className="w-10 h-10 text-indigo-300" />
+                    </div>
+                    <h3 className="text-2xl font-black text-gray-900 mb-2">No Candidates Found</h3>
+                    <p className="text-gray-500 font-bold max-w-sm mx-auto">Try adjusting your search protocol or filters to expand your talent pool.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
-                    {displayList.map((candidate, idx) => {
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {displayCandidates.map((candidate, idx) => {
                         const isMatchResult = rapidMatchResults !== null;
                         const name = isMatchResult ? candidate.studentName : candidate.name;
                         const id = isMatchResult ? candidate.studentId : candidate._id;
@@ -266,9 +287,11 @@ const CandidateSearchPage = () => {
                                                 >
                                                     <Flag size={14} />
                                                 </button>
-                                                <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-black border ${getScoreColor(score)}`}>
-                                                    <Star size={14} fill="currentColor" /> {score}%
-                                                </span>
+                                                {isMatchResult && (
+                                                    <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-black border ${getScoreColor(score)}`}>
+                                                        <Star size={14} fill="currentColor" /> {score}%
+                                                    </span>
+                                                )}
                                                 {isMatchResult && candidate.tier && (
                                                     <span className="text-[10px] font-bold text-gray-400 uppercase">{candidate.tier}</span>
                                                 )}
@@ -295,7 +318,7 @@ const CandidateSearchPage = () => {
                                         </div>
 
                                         <div className="pt-4 border-t border-gray-100">
-                                            <Link href={`/students/${id}`} className="block w-full text-center bg-gray-900 text-white py-3 rounded-xl font-bold text-sm hover:bg-black transition-all shadow-md">
+                                            <Link href={`/student/${id}`} className="block w-full text-center bg-gray-900 text-white py-3 rounded-xl font-bold text-sm hover:bg-black transition-all shadow-md">
                                                 View Profile
                                             </Link>
                                         </div>

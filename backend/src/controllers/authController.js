@@ -144,6 +144,11 @@ const loginUser = async (req, res) => {
         const user = await User.findOne({ email }).select('+password');
 
         if (user && (await user.comparePassword(password))) {
+            // Check if user is suspended
+            if (user.status === 'suspended') {
+                return res.status(403).json({ message: 'Your account has been suspended by an administrator. Please contact support for more information.' });
+            }
+
             const token = generateToken(user._id, user.role, user.isVerified, user.verificationStatus);
 
             res.cookie('jwt', token, {
@@ -325,16 +330,17 @@ const resetPassword = async (req, res) => {
 const getStudents = async (req, res) => {
     try {
         const Student = require('../models/Student');
-        const users = await User.find({ role: 'student' }).select('name email profilePicture bio location');
+        const users = await User.find({ role: 'student', status: { $ne: 'suspended' } }).select('name email profilePicture bio location');
 
         // Enrich each user with skills from the Student profile
         const enrichedStudents = await Promise.all(
             users.map(async (u) => {
-                const studentProfile = await Student.findOne({ userId: u._id }).select('skills personalInfo education gpa fieldOfStudy');
+                const studentProfile = await Student.findOne({ userId: u._id }).select('skills personalInfo education gpa');
                 const plain = u.toObject();
                 plain.skills = studentProfile?.skills?.map(s => s.name) || [];
                 plain.gpa = studentProfile?.gpa;
-                plain.fieldOfStudy = studentProfile?.fieldOfStudy;
+                // Extract field of study from the most recent education entry
+                plain.fieldOfStudy = studentProfile?.education?.[0]?.field || '';
                 plain.location = plain.location || studentProfile?.personalInfo?.location || '';
                 return plain;
             })

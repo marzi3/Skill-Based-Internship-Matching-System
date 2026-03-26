@@ -53,7 +53,7 @@ loadRules();
  * Max: B1(+15*n)+B2(+10*n)+B3(+20)+B4(+25)+C1(+5)+C2(+5)+C3(+10)+C4(+8)+D1(+8)+D2(+6)+D3(+7)+D4(+5)+E1(+3)+E2(+4)+E3(+3)+E4(+5)
  * Simplified static normalization scale for dynamic rules: 140 points is considered "Excellent" 100% benchmark.
  */
-const MAX_THEORETICAL_SCORE = 140;
+const MAX_THEORETICAL_SCORE = 110;
 
 /**
  * Normalizes a raw score to a 0-100 scale.
@@ -89,33 +89,38 @@ function determineTier(normalizedScore, disqualified) {
  * @param {Object} student 
  */
 function flattenStudent(student) {
-    if (!student || student._flattened) return student;
+    if (!student) return null;
+    
+    // Ensure we are working with a plain object if it's a Mongoose document
+    let studentObj = typeof student.toObject === 'function' ? student.toObject() : student;
+    
+    if (studentObj._flattened) return studentObj;
 
     // Convert string duration to { min, max } object
     let durationRange = { min: 4, max: 12 };
-    if (student.personalInfo?.durationPreference === '3-6 months') durationRange = { min: 12, max: 24 };
-    if (student.personalInfo?.durationPreference === '6-12 months') durationRange = { min: 24, max: 52 };
-    if (student.personalInfo?.durationPreference === '1+ years') durationRange = { min: 52, max: 104 };
+    if (studentObj.personalInfo?.durationPreference === '3-6 months') durationRange = { min: 12, max: 24 };
+    if (studentObj.personalInfo?.durationPreference === '6-12 months') durationRange = { min: 24, max: 52 };
+    if (studentObj.personalInfo?.durationPreference === '1+ years') durationRange = { min: 52, max: 104 };
 
     // Handle Database Enum to Engine DTO mapping
-    const rawDegree = student.education?.[0]?.degreeLevel || 'BACHELOR';
+    const rawDegree = studentObj.education?.[0]?.degreeLevel || 'BACHELOR';
     const mappedDegree = rawDegree === 'BACHELOR' ? 'BACHELORS' : (rawDegree === 'MASTER' ? 'MASTERS' : rawDegree);
 
     return {
-        ...student,
+        ...studentObj,
         _flattened: true,
-        gpa: student.gpa || student.personalInfo?.gpa,
-        degreeField: student.education?.[0]?.field,
+        gpa: studentObj.gpa || studentObj.personalInfo?.gpa,
+        degreeField: studentObj.education?.[0]?.field,
         educationLevel: mappedDegree,
-        preferredLocation: student.personalInfo?.preferredLocation,
+        preferredLocation: studentObj.personalInfo?.preferredLocation,
         preferredDurationRange: durationRange,
-        industriesOfInterest: student.personalInfo?.industriesOfInterest,
-        previousInternships: student.personalInfo?.previousInternshipsCount || 1,
+        industriesOfInterest: studentObj.personalInfo?.industriesOfInterest,
+        previousInternships: studentObj.personalInfo?.previousInternshipsCount || 0,
         recentApplicationCount: 2, // Mocking recent activity to satisfy E1
-        resumeUrl: student.resume?.filePath || student.resumeUrl,
-        portfolioUrl: student.personalInfo?.portfolioUrl || student.portfolio?.portfolio || student.portfolioUrl,
-        avatarUrl: student.profileImage?.filePath || student.avatarUrl,
-        profileCompleteness: student.profileCompletion?.overall || student.profileCompleteness,
+        resumeUrl: studentObj.resume?.filePath || studentObj.resumeUrl,
+        portfolioUrl: studentObj.personalInfo?.portfolioUrl || studentObj.portfolio?.portfolio || studentObj.portfolioUrl,
+        avatarUrl: studentObj.profileImage?.filePath || studentObj.avatarUrl,
+        profileCompleteness: studentObj.profileCompletion?.overall || studentObj.profileCompleteness,
         // skills array is preserved, handle skill formatting if needed in rules
     };
 }
@@ -130,10 +135,13 @@ function flattenStudent(student) {
 function evaluatePair(student, internship) {
     const flatStudent = flattenStudent(student);
     
+    // Ensure we are working with a plain object for internship if it's a Mongoose document
+    const internshipObj = typeof internship.toObject === 'function' ? internship.toObject() : internship;
+
     // Normalize Internship DTO as well
     const flatInternship = {
-        ...internship,
-        requiredEducationLevel: internship.educationRequirements || 'BACHELORS',
+        ...internshipObj,
+        requiredEducationLevel: internshipObj.educationRequirements || 'BACHELORS',
     };
 
     const facts = { student: flatStudent, internship: flatInternship };

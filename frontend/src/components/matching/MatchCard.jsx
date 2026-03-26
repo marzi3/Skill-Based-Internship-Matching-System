@@ -99,7 +99,7 @@ export default function MatchCard({ match, studentSkills = [], isEmployerMode = 
 
                     {/* Footer Actions */}
                     <div className="pt-4 flex justify-end gap-3">
-                        <Link href={isEmployerMode ? `/students/${target?._id}` : `/internships/${target?._id}`}>
+                        <Link href={isEmployerMode ? `/student/${target?._id}` : `/internships/${target?._id}`}>
                             <button className="px-5 py-2.5 rounded-xl font-bold text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors flex items-center gap-2 text-sm">
                                 <Search size={16} /> View Details
                             </button>

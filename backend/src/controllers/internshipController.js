@@ -21,10 +21,21 @@ exports.getInternships = async (req, res) => {
             expiryDate: { $gte: new Date() }
         };
 
+        const andConditions = [];
 
-        
         if (q) {
-            query.$text = { $search: q };
+            const searchRegex = new RegExp(q, 'i');
+            andConditions.push({
+                $or: [
+                    { positionTitle: searchRegex },
+                    { company: searchRegex },
+                    { description: searchRegex },
+                    { domain: searchRegex },
+                    { location: searchRegex },
+                    { requiredSkills: searchRegex },
+                    { 'requiredSkills.name': searchRegex }
+                ]
+            });
         }
 
         // Handle comma-separated domains/industries
@@ -46,20 +57,31 @@ exports.getInternships = async (req, res) => {
 
         // Handle free-text location search
         if (location) {
-            // Search in Location OR workEnvironment if it matches Remote/On-site/Hybrid
-            query.$or = query.$or || [];
-            query.$or.push({ location: new RegExp(location, 'i') });
-            query.$or.push({ workEnvironment: new RegExp(location, 'i') });
+            const locRegex = new RegExp(location, 'i');
+            andConditions.push({
+                $or: [
+                    { location: locRegex },
+                    { workEnvironment: locRegex }
+                ]
+            });
         }
 
         if (skill) {
-            query.$or = query.$or || [];
-            query.$or.push({ requiredSkills: new RegExp(skill, 'i') });
-            query.$or.push({ 'requiredSkills.name': new RegExp(skill, 'i') });
+            const skillRegex = new RegExp(skill, 'i');
+            andConditions.push({
+                $or: [
+                    { requiredSkills: skillRegex },
+                    { 'requiredSkills.name': skillRegex }
+                ]
+            });
         }
 
         if (duration) {
             query.duration = duration;
+        }
+
+        if (andConditions.length > 0) {
+            query.$and = andConditions;
         }
 
         // Handle sorting options: newest (createdAt), deadline (expiryDate), etc.
@@ -75,14 +97,12 @@ exports.getInternships = async (req, res) => {
             } else if (sort === 'Salary') {
                 sortOption = { 'stipend.amount': -1 };
             } else if (sort === 'Best Matches' && q) {
-                sortOption = { score: { $meta: "textScore" } };
+                // $text search was removed to support partial matching, so fallback to Newest for "Best Matches"
+                sortOption = { createdAt: -1 };
             }
         }
 
         let projection = {};
-        if (sort === 'Best Matches' && q) {
-            projection = { score: { $meta: "textScore" } };
-        }
 
         const internships = await Internship.find(query, projection).sort(sortOption).populate('employer', 'name email companyName profilePicture companyDescription');
         
@@ -149,6 +169,15 @@ exports.getInternship = async (req, res) => {
                 message: 'Internship not found'
             });
         }
+
+        // Increment views if not an employer viewing their own posting
+        // Or if it's a public/student view
+        const isOwner = req.user && internship.employer.toString() === req.user.id;
+        if (!isOwner) {
+            internship.views = (internship.views || 0) + 1;
+            await internship.save({ validateBeforeSave: false });
+        }
+
         res.status(200).json({
             success: true,
             data: internship

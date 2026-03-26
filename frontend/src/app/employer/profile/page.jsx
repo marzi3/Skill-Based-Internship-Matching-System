@@ -130,7 +130,7 @@ const ProfilePage = () => {
     };
 
     return (
-        <div className="p-8 space-y-8 max-w-7xl mx-auto">
+        <div className="px-6 md:px-12 lg:px-20 py-8 space-y-8 max-w-6xl mx-auto">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="flex items-center gap-4">
                     <button onClick={() => router.push('/employer/dashboard')} className="w-10 h-10 flex items-center justify-center rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-md text-gray-600 transition-all group">
@@ -181,7 +181,7 @@ const ProfilePage = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
                 {/* Visual Identity Card */}
-                <Card shadow="none" rounded="xl" padding="none" className="lg:col-span-4 bg-white/50 backdrop-blur-xl border border-gray-100/50 p-10 flex flex-col items-center text-center space-y-8">
+                <Card shadow="none" rounded="xl" padding="none" className="lg:col-span-3 lg:col-start-2 bg-white/50 backdrop-blur-xl border border-gray-100/50 p-10 flex flex-col items-center text-center space-y-8">
                     <div className="relative group">
                         <div className="absolute inset-0 bg-primary-500/10 blur-3xl rounded-full scale-150 opacity-0 group-hover:opacity-100 transition-opacity" />
                         <div className="w-44 h-44 rounded-[3.5rem] p-1 bg-gradient-to-br from-primary-500 via-indigo-500 to-purple-500 shadow-2xl relative z-10">
@@ -261,7 +261,7 @@ const ProfilePage = () => {
                 </Card>
 
                 {/* Technical Specifications Card */}
-                <Card shadow="none" rounded="xl" padding="none" className="lg:col-span-8 bg-white border border-gray-100/50 overflow-hidden flex flex-col">
+                <Card shadow="none" rounded="xl" padding="none" className="lg:col-span-7 bg-white border border-gray-100/50 overflow-hidden flex flex-col">
                     <div className="p-10 lg:p-12 space-y-12 flex-1">
                         {/* Core Profiles Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">

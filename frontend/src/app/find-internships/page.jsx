@@ -19,6 +19,7 @@ import {
     ArrowLeft,
     LogOut,
 } from 'lucide-react';
+import SearchBar from '@/components/internship/SearchBar';
 import Avatar from '@/components/common/Avatar';
 
 function FindInternshipsContent() {
@@ -38,34 +39,32 @@ function FindInternshipsContent() {
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api/v1';
 
-    const fetchInternships = async () => {
+    const fetchInternships = async (query = searchQuery, location = locationQuery) => {
         try {
             setLoading(true);
             const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
             const user = userStr ? JSON.parse(userStr) : null;
 
-            if (sort === 'Best Matches' && user && user.role === 'student' && !searchQuery) {
+            if (sort === 'Best Matches' && user && user.role === 'student' && !query) {
                 // Use GET request with authentication header for personalized matches
                 const token = localStorage.getItem('token');
-                const config = {
-                    headers: { Authorization: `Bearer ${token}` }
-                };
-
-                const res = await axios.get(`/matching/best-matches`);
-                if (res.data.success && res.data.data) {
-                    const matchedInternships = res.data.data.map(m => ({
-                        ...m.internship,
-                        matchScore: m.score || m.matchScore
-                    }));
-                    setInternships(matchedInternships);
-                    setLoading(false);
-                    return;
+                if (token) {
+                    const res = await axios.get(`/matching/best-matches`);
+                    if (res.data.success && res.data.data) {
+                        const matchedInternships = res.data.data.map(m => ({
+                            ...m.internship,
+                            matchScore: m.score || m.matchScore
+                        }));
+                        setInternships(matchedInternships);
+                        setLoading(false);
+                        return;
+                    }
                 }
             }
 
             const params = {};
-            if (searchQuery) params.q = searchQuery;
-            if (locationQuery) params.location = locationQuery;
+            if (query) params.q = query;
+            if (location) params.location = location;
             if (filters.jobType.length > 0) params.workEnvironment = filters.jobType.join(',');
             if (filters.industry.length > 0) params.domain = filters.industry.join(',');
             if (sort && sort !== 'Best Matches') params.sort = sort;
@@ -80,10 +79,10 @@ function FindInternshipsContent() {
         }
     };
 
-    const updateURL = () => {
+    const updateURL = (query = searchQuery, location = locationQuery) => {
         const params = new URLSearchParams();
-        if (searchQuery) params.set('q', searchQuery);
-        if (locationQuery) params.set('location', locationQuery);
+        if (query) params.set('q', query);
+        if (location) params.set('location', location);
         if (filters.jobType.length > 0) params.set('jobType', filters.jobType.join(','));
         if (filters.industry.length > 0) params.set('industry', filters.industry.join(','));
         if (sort !== 'Best Matches') params.set('sort', sort);
@@ -92,21 +91,21 @@ function FindInternshipsContent() {
     };
 
     useEffect(() => {
-        const delayDebounceFn = setTimeout(() => {
-            fetchInternships();
-        }, 300);
-        return () => clearTimeout(delayDebounceFn);
-    }, [searchQuery, locationQuery, filters, sort]);
+        // Only fetch on filters or sort change, manual search handles query and location
+        fetchInternships();
+    }, [filters, sort]);
 
     // Keep URL in sync without triggering full re-renders if possible
     useEffect(() => {
         updateURL();
     }, [searchQuery, locationQuery, filters, sort]);
 
-    const handleSearch = (e) => {
-        e.preventDefault();
-        updateURL();
-        fetchInternships();
+    const handleSearch = (query) => {
+        setSearchQuery(query);
+    };
+
+    const handleLocationChange = (e) => {
+        setLocationQuery(e.target.value);
     };
 
     const toggleFilter = (category, value) => {
@@ -200,33 +199,37 @@ function FindInternshipsContent() {
                         Discover thousands of verified internships tailored to your unique skill set.
                     </p>
 
-                    {/* Search Bar */}
-                    <form onSubmit={handleSearch} className="bg-white rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 p-2 flex items-center gap-2">
-                        <div className="flex items-center gap-2 flex-1 px-4">
-                            <Search className="w-5 h-5 text-gray-300 shrink-0" />
-                            <input
-                                type="text"
+                    {/* Search Bar Container */}
+                    <form 
+                        onSubmit={(e) => { e.preventDefault(); fetchInternships(searchQuery, locationQuery); }}
+                        className="bg-white rounded-[2.5rem] shadow-2xl shadow-gray-200/50 border border-gray-100 p-2 flex flex-col sm:flex-row items-center gap-2 max-w-4xl mx-auto"
+                    >
+                        <div className="flex-[1.5] w-full">
+                            <SearchBar 
                                 placeholder="Job title, keywords, or company"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none font-medium bg-transparent appearance-none"
+                                initialValue={searchQuery}
+                                onSearch={handleSearch}
+                                isLoading={loading}
+                                className="!border-none !shadow-none !ring-0"
+                                showSubmitButton={false}
                             />
                         </div>
-                        <div className="hidden sm:flex items-center gap-2 border-l border-gray-100 flex-1 px-4">
+                        <div className="hidden sm:flex items-center gap-4 border-l border-gray-100 flex-1 px-6">
                             <MapPin className="w-5 h-5 text-gray-300 shrink-0" />
                             <input
                                 type="text"
                                 placeholder="Location or Remote"
                                 value={locationQuery}
-                                onChange={(e) => setLocationQuery(e.target.value)}
-                                className="w-full py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none font-medium bg-transparent appearance-none"
+                                onChange={handleLocationChange}
+                                className="w-full py-4 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none font-bold bg-transparent appearance-none"
                             />
                         </div>
                         <button
                             type="submit"
-                            className="px-8 py-3 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 shrink-0"
+                            disabled={loading}
+                            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-[2rem] text-sm font-black uppercase tracking-widest transition-all shadow-xl shadow-indigo-200 active:scale-95 disabled:opacity-50"
                         >
-                            Search
+                            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Search size={18} /> Search</>}
                         </button>
                     </form>
                 </div>
@@ -356,7 +359,7 @@ function FindInternshipsContent() {
                                                         <span>•</span>
                                                         <span className="flex items-center gap-1">
                                                             <MapPin className="w-3.5 h-3.5" />
-                                                            {job.workEnvironment || 'Remote'}
+                                                            {job.location || job.workEnvironment || 'Remote'}
                                                         </span>
                                                     </div>
 
@@ -384,12 +387,9 @@ function FindInternshipsContent() {
 
                                             {/* Right actions */}
                                             <div className="flex flex-col items-end gap-3 shrink-0">
-                                                <button className="text-gray-300 hover:text-indigo-500 transition-colors">
-                                                    <Bookmark className="w-5 h-5" />
-                                                </button>
                                                 <Link
                                                     href={`/internships/${job._id}?from=search`}
-                                                    className="flex items-center gap-1 text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
+                                                    className="flex items-center gap-1 text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-all"
                                                 >
                                                     Apply <ChevronRight className="w-4 h-4" />
                                                 </Link>

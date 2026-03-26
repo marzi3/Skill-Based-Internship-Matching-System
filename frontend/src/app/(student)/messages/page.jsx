@@ -32,10 +32,16 @@ const StudentMessagesPage = () => {
         if (!socket) return;
 
         const handleNewMessage = (msg) => {
-            // Only add if it's for the currently open conversation
+            // Update conversation list to move this app to the top
+            setApplications(prev => {
+                const existing = prev.find(a => a._id === msg.applicationId);
+                if (!existing) return prev;
+                const filtered = prev.filter(a => a._id !== msg.applicationId);
+                return [existing, ...filtered];
+            });
+
             if (selectedApp && msg.applicationId === selectedApp._id) {
-                setMessages((prev) => [...prev, msg]);
-                setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+                setMessages((prev) => [msg, ...prev]); // Prepend for reversed order
                 
                 // If the message is from the other party and the chat is open, mark as read
                 if (msg.senderId?._id !== user?._id && msg.senderId !== user?._id) {
@@ -91,7 +97,6 @@ const StudentMessagesPage = () => {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setMessages(res.data.data || res.data.messages || []);
-            setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
             // Mark all received messages as read
             await axios.patch(`messages/${app._id}/read-all`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -123,9 +128,15 @@ const StudentMessagesPage = () => {
                 headers: { Authorization: `Bearer ${token}` },
             });
             const sent = res.data.data || res.data.message;
-            if (sent) setMessages(prev => [...prev, sent]);
+            if (sent) {
+                setMessages(prev => [sent, ...prev]); // Prepend for reversed order
+                // Move current app to top of sidebar
+                setApplications(prev => {
+                    const filtered = prev.filter(a => a._id !== selectedApp._id);
+                    return [selectedApp, ...filtered];
+                });
+            }
             setNewMessage('');
-            setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
         } catch (err) {
             console.error('Failed to send message:', err);
             alert('Failed to send message. Please try again.');
@@ -183,17 +194,24 @@ const StudentMessagesPage = () => {
                                         onClick={() => selectConversation(app)}
                                         className={`w-full text-left p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors ${isSelected ? 'bg-indigo-50 border-l-2 border-l-indigo-500' : ''}`}
                                     >
-                                        <div className="flex items-center gap-3">
-                                            <Avatar
-                                                src={app.employer?.profilePicture}
-                                                name={employerName} size="md"
-                                                className="rounded-xl border border-gray-100"
-                                            />
-                                            <div className="min-w-0">
-                                                <p className="font-bold text-gray-900 text-sm truncate">{employerName}</p>
-                                                <p className="text-xs text-gray-400 truncate">{position}</p>
+                                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                <Avatar
+                                                    src={app.employer?.profilePicture}
+                                                    name={employerName} size="md"
+                                                    className="rounded-xl border border-gray-100"
+                                                />
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex justify-between items-baseline gap-2">
+                                                        <p className="font-bold text-gray-900 text-sm truncate">{employerName}</p>
+                                                        {app.lastMessageAt && (
+                                                            <span className="text-[10px] text-gray-400 whitespace-nowrap">
+                                                                {new Date(app.lastMessageAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <p className="text-xs text-indigo-500 font-medium truncate">{position}</p>
+                                                </div>
                                             </div>
-                                        </div>
                                     </button>
                                 );
                             })

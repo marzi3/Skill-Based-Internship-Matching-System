@@ -239,7 +239,7 @@ export default function ApplicationDetailView({ application, role, onStatusUpdat
                                 </div>
                                 <div className="w-full pt-4 border-t border-slate-50 flex flex-col gap-3">
                                     <Link 
-                                        href={`/students/${student?._id}`}
+                                        href={`/student/${student?._id}`}
                                         className="flex items-center justify-center gap-2 py-3 bg-slate-900 text-white rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-black transition-all"
                                     >
                                         Inspect Full Profile <ExternalLink size={12} />

@@ -1,5 +1,10 @@
 const logger = require('../utils/logger');
 const mongoose = require('mongoose');
+const dns = require('dns');
+
+// Force use of Google DNS to resolve Atlas SRV records
+// This fixes querySrv ETIMEOUT issues in some environments.
+dns.setServers(['8.8.8.8', '8.8.4.4']);
 
 const connectDB = async () => {
   try {

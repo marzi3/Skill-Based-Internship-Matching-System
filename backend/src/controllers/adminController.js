@@ -141,11 +141,19 @@ exports.updateEmployerStatus = async (req, res) => {
         }
 
         employer.status = status;
+
+        // Permanent Fix: Delete internships if suspended
+        if (status === 'suspended') {
+            await Internship.deleteMany({ employer: employer._id });
+            await Application.deleteMany({ employer: employer._id });
+            logger.info(`Admin ${req.user.id} suspended employer ${employer._id} - deleted all associated internships and applications.`);
+        }
+
         await employer.save();
 
         // Log the action
         const action = status === 'approved' ? 'APPROVE_EMPLOYER' : 'SUSPEND_EMPLOYER';
-        await logAdminAction(req.user.id, action, 'User', employer._id, `Changed status to ${status}`);
+        await logAdminAction(req.user.id, action, 'User', employer._id, `Changed status to ${status}${status === 'suspended' ? ' and deleted all postings' : ''}`);
 
         // Notify Employer
         try {
@@ -540,9 +548,9 @@ exports.deleteUser = async (req, res) => {
 
         // Perform hard delete based on role
         if (userRole === 'employer') {
-            // Delete all internships owned by this employer
+            // Delete all internships and applications owned by this employer
             await Internship.deleteMany({ employer: user._id });
-            // Applications to those internships might be invalidated, or we leave them as history
+            await Application.deleteMany({ employer: user._id });
         }
 
         // Finally delete the user document

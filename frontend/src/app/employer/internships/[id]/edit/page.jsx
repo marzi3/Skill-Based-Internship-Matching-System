@@ -62,8 +62,8 @@ const EditInternshipPage = () => {
         educationRequirements: '',
         requiredDegreeField: [],
         stipendAmount: '',
-        isGpaMandatory: false,
-        minimumGPA: '',
+        isGpaMandatory: true,
+        minimumGPA: '0.0',
         prefersExperienced: false,
     });
 
@@ -115,8 +115,8 @@ const EditInternshipPage = () => {
                     educationRequirements: data.educationRequirements || '',
                     requiredDegreeField: data.requiredDegreeField || [],
                     stipendAmount: data.stipend?.amount || '',
-                    isGpaMandatory: !!data.minimumGPA,
-                    minimumGPA: data.minimumGPA || '',
+                    isGpaMandatory: data.minimumGPA > 0,
+                    minimumGPA: data.minimumGPA || '0.0',
                     prefersExperienced: data.prefersExperienced || false,
                 });
                 setFetching(false);
@@ -262,7 +262,7 @@ const EditInternshipPage = () => {
                 experienceLevel: formData.experienceLevel,
                 educationRequirements: formData.educationRequirements,
                 requiredDegreeField: formData.requiredDegreeField,
-                minimumGPA: formData.isGpaMandatory && formData.minimumGPA ? parseFloat(formData.minimumGPA) : null,
+                minimumGPA: formData.minimumGPA ? parseFloat(formData.minimumGPA) : 0,
                 prefersExperienced: formData.prefersExperienced || false,
                 stipend: {
                     amount: parseInt(formData.stipendAmount) || 0,
@@ -490,23 +490,27 @@ const EditInternshipPage = () => {
 
                                             <div className="grid grid-cols-2 gap-10">
                                                 <div className="space-y-4">
-                                                    <label className="flex items-center gap-3 cursor-pointer group mt-7 p-4 bg-slate-50 rounded-2xl border border-slate-200 hover:border-[#6366F1]/30 transition-all">
+                                                    <label className="flex items-center gap-3 cursor-pointer group p-4 bg-slate-50 rounded-2xl border border-slate-200 hover:border-[#6366F1]/30 transition-all">
                                                         <div
-                                                            onClick={() => setFormData(prev => ({ ...prev, isGpaMandatory: !prev.isGpaMandatory, minimumGPA: prev.isGpaMandatory ? '' : prev.minimumGPA }))}
+                                                            onClick={() => setFormData(prev => ({ 
+                                                                ...prev, 
+                                                                isGpaMandatory: !prev.isGpaMandatory,
+                                                                minimumGPA: !prev.isGpaMandatory ? prev.minimumGPA : '0.0'
+                                                            }))}
                                                             className={`w-10 h-6 flex-shrink-0 rounded-full flex items-center p-1 transition-colors ${formData.isGpaMandatory ? 'bg-[#6366F1]' : 'bg-slate-300'}`}
                                                         >
                                                             <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${formData.isGpaMandatory ? 'translate-x-4' : 'translate-x-0'}`} />
                                                         </div>
                                                         <div>
                                                             <span className="text-[10px] font-black uppercase tracking-widest text-slate-900 block">Require Minimum GPA</span>
-                                                            <span className="text-[9px] font-semibold text-slate-400 uppercase">Make GPA mandatory</span>
+                                                            <span className="text-[9px] font-semibold text-slate-400 uppercase">Enforce a grade threshold for applicants</span>
                                                         </div>
                                                     </label>
 
                                                     {formData.isGpaMandatory && (
                                                         <div className="animate-in fade-in slide-in-from-top-2 duration-300">
                                                             <CustomInput
-                                                                label="Minimum GPA (Max 4.0)"
+                                                                label="Minimum GPA Requirement (0.0 to 4.0) *"
                                                                 icon={GraduationCap}
                                                                 name="minimumGPA"
                                                                 value={formData.minimumGPA}

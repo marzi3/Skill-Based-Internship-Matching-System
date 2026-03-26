@@ -3,9 +3,9 @@
  * Priority: 9 (Core Skill Matching)
  * 
  * Compute: coverageRatio = matchedSkills.length / internship.requiredSkills.length
- * IF coverageRatio >= 0.75 → +20 points (Strong Coverage)
- * IF coverageRatio >= 0.50 → +10 points (Moderate Coverage)
- * IF coverageRatio >= 0.25 → +5 points (Partial Coverage)
+ * IF coverageRatio >= 0.75 → +30 points (Strong Coverage)
+ * IF coverageRatio >= 0.50 → +15 points (Moderate Coverage)
+ * IF coverageRatio >= 0.25 → +10 points (Partial Coverage)
  * 
  * @module B3_PartialSkillCoverage
  */
@@ -93,9 +93,9 @@ const rule = {
         const ratio = requiredSkills.length > 0 ? matchedSkills.length / requiredSkills.length : 0;
         let points = 0;
 
-        if (ratio >= 0.75) points = 20;
-        else if (ratio >= 0.50) points = 10;
-        else if (ratio >= 0.25) points = 5;
+        if (ratio >= 0.75) points = 30;
+        else if (ratio >= 0.50) points = 15;
+        else if (ratio >= 0.25) points = 10;
 
         const ratioPercentage = Math.round(ratio * 100);
         const explanation = missingSkills.length > 0 

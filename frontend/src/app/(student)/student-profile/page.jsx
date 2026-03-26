@@ -1397,13 +1397,13 @@ export default function StudentProfile() {
 
                         {/* CRITICAL MATCHING FIELDS */}
                         <Input
-                          label="GPA *"
+                          label="GPA"
                           type="number"
                           name="gpa"
                           value={personalInfo.gpa || ''}
                           onChange={handlePersonalInfoChange}
-                          className="bg-yellow-50 border-yellow-300"
-                          placeholder="3.75"
+                          className="bg-slate-50 border-slate-200"
+                          placeholder="e.g. 3.5 (Optional)"
                           min="0.0"
                           max="4.0"
                           step="0.01"

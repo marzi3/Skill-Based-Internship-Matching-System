@@ -24,7 +24,7 @@ const getMessagesByApplication = asyncHandler(async (req, res) => {
     // Assuming basic RBAC or ownership logic is handled elsewhere, or we just rely on matching sender/receiver
 
     const messages = await Message.find({ applicationId })
-        .sort({ timestamp: 1 }) // Chronological order
+        .sort({ timestamp: -1 }) // Newest first as requested
         .populate('senderId', 'name profilePicture isStudent isEmployer')
         .populate('receiverId', 'name profilePicture isStudent isEmployer');
 
@@ -50,6 +50,11 @@ const sendMessage = asyncHandler(async (req, res) => {
         receiverId,
         applicationId,
         content
+    });
+
+    // Update lastMessageAt in Application for sorting
+    await Application.findByIdAndUpdate(applicationId, { 
+        lastMessageAt: Date.now() 
     });
 
     // Populate sender details for real-time pushing and immediate response

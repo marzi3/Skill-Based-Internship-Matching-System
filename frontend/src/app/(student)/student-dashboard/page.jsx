@@ -35,7 +35,6 @@ import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import NotificationBell from '@/components/notifications/NotificationBell';
 import RecommendedInternships from '@/components/matching/RecommendedInternships';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import OnboardingTour from '@/components/OnboardingTour';
 
 export default function StudentDashboard() {
@@ -48,7 +47,6 @@ export default function StudentDashboard() {
         skillMatches: 0,
         verificationPoints: 0
     });
-    const [appStats, setAppStats] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showTour, setShowTour] = useState(false);
 
@@ -83,14 +81,6 @@ export default function StudentDashboard() {
                 if (appsRes.data.success) {
                     setApplications(appsRes.data.data?.slice(0, 3) || []);
                 }
-                
-                // Fetch analytic stats
-                try {
-                    const analyticsRes = await axios.get('analytics/student/applications');
-                    if (analyticsRes.data.success) {
-                        setAppStats(analyticsRes.data.data);
-                    }
-                } catch (e) { console.error('Analytics failed', e); }
             } catch (err) {
                 console.error('Failed to fetch dashboard data:', err);
             } finally {
@@ -228,40 +218,7 @@ export default function StudentDashboard() {
                         </Card>
                     </div>
 
-                    {/* Analytics Section */}
-                    {appStats.length > 0 && (
-                        <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
-                            <Card className="p-6 border border-gray-100">
-                                <h2 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
-                                    <TrendingUp className="text-primary-600" size={20} /> Application Funnel
-                                </h2>
-                                <div className="h-[300px] w-full">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <PieChart>
-                                            <Pie
-                                                data={appStats}
-                                                cx="50%"
-                                                cy="50%"
-                                                innerRadius={60}
-                                                outerRadius={80}
-                                                paddingAngle={5}
-                                                dataKey="count"
-                                                nameKey="status"
-                                            >
-                                                {appStats.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={['#6366f1', '#10b981', '#f59e0b', '#ef4444'][index % 4]} />
-                                                ))}
-                                            </Pie>
-                                            <Tooltip 
-                                                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                                            />
-                                            <Legend verticalAlign="bottom" height={36}/>
-                                        </PieChart>
-                                    </ResponsiveContainer>
-                                </div>
-                            </Card>
-                        </div>
-                    )}
+
 
                     {/* Recent Applications Section */}
                     <div className="space-y-6">

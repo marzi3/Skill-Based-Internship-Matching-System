@@ -48,7 +48,18 @@ apiClient.interceptors.response.use(
 
                 // If we aren't already on the login page or a public page, redirect to login
                 const currentPath = window.location.pathname;
-                if (!['/login', '/register', '/'].includes(currentPath)) {
+                
+                const isPublicPath = [
+                    '/login', 
+                    '/register', 
+                    '/', 
+                    '/forgot-password'
+                ].includes(currentPath) || 
+                currentPath.startsWith('/reset-password') || 
+                currentPath.startsWith('/verify') || 
+                currentPath.startsWith('/find-internships');
+
+                if (!isPublicPath) {
                     window.location.href = '/login?session_expired=true';
                 }
             }

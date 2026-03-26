@@ -29,9 +29,9 @@ const rule = {
             return false;
         }
 
-        // Treat a missing student GPA as failing the requirement
-        if (student?.gpa === undefined || student?.gpa === null) {
-            return true;
+        // If student GPA is missing, don't disqualify (since GPA is optional for students)
+        if (student?.gpa === undefined || student?.gpa === null || student?.gpa === '') {
+            return false;
         }
 
         // Compare numeric values

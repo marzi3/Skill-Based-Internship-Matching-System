@@ -1,4 +1,9 @@
 require('dotenv').config();
+const dns = require('dns');
+
+// Force use of Google DNS to resolve Atlas SRV records
+// Must be set before any other modules that might use DNS.
+dns.setServers(['8.8.8.8', '8.8.4.4']);
 const express = require('express');
 const app = require('./src/app');
 const { connectDB, initializeDatabase } = require('./src/config/database');

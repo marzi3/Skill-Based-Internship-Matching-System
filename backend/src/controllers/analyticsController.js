@@ -54,19 +54,19 @@ exports.getEmployerMatchStats = async (req, res) => {
  */
 exports.getStudentApplicationStats = async (req, res) => {
     try {
-        const stats = await Application.aggregate([
-            { $match: { student: req.user.id } },
-            {
-                $group: {
-                    _id: "$status",
-                    count: { $sum: 1 }
-                }
-            }
-        ]);
+        // First find valid internship IDs for matching applications
+        const applications = await Application.find({ student: req.user.id }).populate('internship');
+        const validApplications = applications.filter(app => app.internship);
+        
+        // Group status counts from filtered list
+        const statusMap = {};
+        validApplications.forEach(app => {
+            statusMap[app.status] = (statusMap[app.status] || 0) + 1;
+        });
 
-        const data = stats.map(s => ({
-            status: s._id,
-            count: s.count
+        const data = Object.keys(statusMap).map(status => ({
+            status,
+            count: statusMap[status]
         }));
 
         res.status(200).json({ success: true, data });
