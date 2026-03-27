@@ -383,7 +383,14 @@ const updateProfile = async (req, res) => {
         if (req.body.location !== undefined) user.location = req.body.location;
         if (req.body.industry !== undefined) user.industry = req.body.industry;
         if (req.body.companySize !== undefined) user.companySize = req.body.companySize;
-        if (req.body.foundedYear !== undefined) user.foundedYear = req.body.foundedYear;
+        if (req.body.foundedYear !== undefined) {
+            const currentYear = new Date().getFullYear();
+            const year = parseInt(req.body.foundedYear);
+            if (isNaN(year) || year > currentYear || year < 1800) {
+                return res.status(400).json({ message: `Founded year must be a valid year between 1800 and ${currentYear}` });
+            }
+            user.foundedYear = req.body.foundedYear;
+        }
 
         const updatedUser = await user.save();
         res.status(200).json(updatedUser);

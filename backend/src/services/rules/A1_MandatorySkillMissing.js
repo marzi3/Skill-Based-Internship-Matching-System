@@ -8,6 +8,8 @@
  * @module A1_MandatorySkillMissing
  */
 
+const { normalizeSkill } = require('../../utils/skillUtils');
+
 const rule = {
     name: "A1_MandatorySkillMissing",
     priority: 10,
@@ -38,13 +40,11 @@ const rule = {
         // Extract just the names of the student's skills for easier matching
         // (assuming student.skills is an array of objects like { name: 'React', proficiency: '...' })
         // If it's an array of strings, we handle that as well.
-        const studentSkillNames = studentSkills.map(s =>
-            (typeof s === 'string' ? s : s.name).toLowerCase()
-        );
+        const studentSkillNames = studentSkills.map(s => normalizeSkill(s));
 
         // Check if the student is missing ANY of the mandatory skills
         const missingAny = mandatorySkills.some(mandatorySkill => {
-            const mandatoryName = (typeof mandatorySkill === 'string' ? mandatorySkill : mandatorySkill.name).toLowerCase();
+            const mandatoryName = normalizeSkill(mandatorySkill);
             return !studentSkillNames.includes(mandatoryName);
         });
 
@@ -63,13 +63,11 @@ const rule = {
         const studentSkills = student?.skills || [];
 
         const mandatorySkills = requiredSkills.filter(s => s.mandatory);
-        const studentSkillNames = studentSkills.map(s =>
-            (typeof s === 'string' ? s : s.name).toLowerCase()
-        );
+        const studentSkillNames = studentSkills.map(s => normalizeSkill(s));
 
         // Find exactly which ones are missing for the explanation
         const missingSkills = mandatorySkills
-            .filter(ms => !studentSkillNames.includes((typeof ms === 'string' ? ms : ms.name).toLowerCase()))
+            .filter(ms => !studentSkillNames.includes(normalizeSkill(ms)))
             .map(ms => typeof ms === 'string' ? ms : ms.name);
 
         // Hard disqualification yields -Infinity

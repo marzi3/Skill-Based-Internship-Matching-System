@@ -116,7 +116,7 @@ export default function NotificationBell() {
                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.1 } }}
-                        className="absolute right-0 mt-2 w-80 sm:w-96 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl z-50 border border-gray-100 overflow-hidden flex flex-col max-h-[80vh]"
+                        className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] z-[100] border border-gray-100 overflow-hidden flex flex-col max-h-[85vh]"
                     >
                         <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                             <h3 className="font-bold text-gray-900 text-lg">Notifications</h3>
@@ -149,15 +149,30 @@ export default function NotificationBell() {
                                                 <p className="text-xs text-gray-400 mt-2 font-medium">
                                                     {new Date(notif.createdAt).toLocaleDateString()} • {new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                 </p>
-                                                {notif.link && (
-                                                    <Link
-                                                        href={notif.link}
-                                                        className="inline-flex items-center gap-1.5 text-xs text-indigo-600 font-bold mt-3 hover:text-indigo-800 transition-colors bg-indigo-50 px-2 py-1 rounded-md"
-                                                        onClick={() => { if (!notif.isRead) markAsRead(notif._id); setIsOpen(false); }}
-                                                    >
-                                                        View Details <ExternalLink size={12} />
-                                                    </Link>
+                                                {notif.metadata && (
+                                                    <div className="mt-4 space-y-2.5 p-4 bg-white rounded-2xl border border-indigo-100/60 shadow-sm relative overflow-hidden group/meta">
+                                                        <div className="absolute top-0 left-0 w-1 h-full bg-indigo-600/20" />
+                                                        <div className="flex items-center justify-between gap-4">
+                                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 whitespace-nowrap">
+                                                                <div className="w-1 h-1 rounded-full bg-indigo-400" /> Date
+                                                            </span>
+                                                            <span className="text-xs font-black text-slate-900 truncate">{notif.metadata.date}</span>
+                                                        </div>
+                                                        <div className="flex items-center justify-between gap-4 py-2 border-y border-indigo-50/50">
+                                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 whitespace-nowrap">
+                                                                <div className="w-1 h-1 rounded-full bg-indigo-400" /> Time
+                                                            </span>
+                                                            <span className="text-xs font-black text-slate-900 truncate">{notif.metadata.time}</span>
+                                                        </div>
+                                                        <div className="flex items-center justify-between gap-4">
+                                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 whitespace-nowrap">
+                                                                <div className="w-1 h-1 rounded-full bg-indigo-400" /> Location
+                                                            </span>
+                                                            <span className="text-[10px] font-black text-indigo-600 truncate max-w-[150px]">{notif.metadata.location}</span>
+                                                        </div>
+                                                    </div>
                                                 )}
+
                                             </div>
                                         </div>
 

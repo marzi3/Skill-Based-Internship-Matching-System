@@ -58,6 +58,20 @@ exports.applyToInternship = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Student profile not found. Please complete your profile.' });
         }
 
+        // Check if student is verified (Profile, Email, and ID)
+        const userDetails = await User.findById(req.user.id);
+        if (student.status !== 'verified' || !userDetails.isVerified || userDetails.verificationStatus !== 'approved') {
+            let detail = '';
+            if (!userDetails.isVerified) detail = 'Email verification is required.';
+            else if (userDetails.verificationStatus !== 'approved') detail = 'ID verification is required.';
+            else detail = 'Admin profile verification is required.';
+
+            return res.status(403).json({ 
+                success: false, 
+                message: `Your account must be fully verified before you can apply for internships. ${detail}` 
+            });
+        }
+
         // Perform final match calculation for snapshot
         const analysis = matchingEngine.explainMatch(student, internship);
 
@@ -238,10 +252,46 @@ exports.updateApplicationStatus = async (req, res) => {
             return res.status(401).json({ success: false, message: 'Unauthorized' });
         }
 
+        // 1. Define the valid sequence
+        const statusOrder = ['Applied', 'Reviewing', 'Shortlisted', 'Interviewing', 'Offered', 'Accepted'];
+        const currentStatus = application.status;
+        
+        // Normalize for case-insensitivity if needed, but here we use TitleCase as per enum
+        const currentIndex = statusOrder.indexOf(currentStatus);
+        const targetIndex = statusOrder.indexOf(status);
+
+        // 2. Validate Transition
+        if (status === 'Rejected') {
+            if (currentStatus === 'Accepted' || currentStatus === 'Rejected') {
+                return res.status(400).json({ success: false, message: 'Protocol is already in a terminal state.' });
+            }
+        } else if (targetIndex === -1) {
+            // Probably 'Withdrawn' or something else not in the main flow
+            return res.status(400).json({ success: false, message: 'Invalid target status.' });
+        } else if (targetIndex !== currentIndex + 1) {
+            const nextValid = statusOrder[currentIndex + 1] || 'None';
+            return res.status(400).json({ 
+                success: false, 
+                message: `Protocol synchronization failed: Invalid status transition from ${currentStatus} to ${status}. Next valid status in the sequence is: ${nextValid}.` 
+            });
+        }
+
         application.status = status;
+        if (status === 'Interviewing' && req.body.interviewDetails) {
+            const { date } = req.body.interviewDetails;
+            const interviewDate = new Date(date);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            if (interviewDate < today) {
+                return res.status(400).json({ success: false, message: 'Interview date cannot be in the past.' });
+            }
+            application.interviewDetails = req.body.interviewDetails;
+        }
+
         application.statusHistory.push({
             status,
-            comment: comment || `Status updated to ${status}`,
+            comment: comment || `Candidate moved to ${status} phase.`,
             updatedAt: Date.now()
         });
         
@@ -250,12 +300,19 @@ exports.updateApplicationStatus = async (req, res) => {
         // Notify Student
         try {
             await application.populate('internship', 'positionTitle');
-            const type = status === 'Interview' ? 'INTERVIEW_SCHEDULED' : 'APPLICATION_STATUS';
+            const type = status === 'Interviewing' ? 'INTERVIEW_SCHEDULED' : 'APPLICATION_STATUS';
+            const metadata = status === 'Interviewing' && application.interviewDetails ? {
+                date: new Date(application.interviewDetails.date).toLocaleDateString(),
+                time: application.interviewDetails.time,
+                location: application.interviewDetails.location
+            } : null;
+
             await sendNotification({
                 userId: application.student,
                 type,
                 message: `Your application status for ${application.internship.positionTitle} has been updated to: ${status}.`,
-                link: `/applications/${application._id}`
+                link: `/applications/${application._id}`,
+                metadata
             });
         } catch (err) { logger.error('Notification failed', err); }
 

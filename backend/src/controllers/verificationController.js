@@ -23,7 +23,8 @@ const submitStudentVerification = async (req, res) => {
         }
 
         user.studentId = studentId;
-        user.studentIdImage = req.file.path;
+        // Normalize path for cross-platform URL compatibility (replace backslashes with forward slashes)
+        user.studentIdImage = req.file.path.replace(/\\/g, '/');
         user.verificationStatus = 'pending';
         user.isVerified = false; // reset in case they re-submit
 
@@ -131,6 +132,14 @@ const approveVerification = async (req, res) => {
         user.verificationStatus = 'approved';
         user.isVerified = true;
         await user.save();
+
+        // Propagation: Update Student profile status if it exists
+        const Student = require('../models/Student');
+        const student = await Student.findOne({ userId: user._id });
+        if (student) {
+            student.status = 'verified';
+            await student.save({ validateBeforeSave: false });
+        }
 
         // Notify User
         try {

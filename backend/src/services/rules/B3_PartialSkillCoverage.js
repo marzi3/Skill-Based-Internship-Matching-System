@@ -10,6 +10,8 @@
  * @module B3_PartialSkillCoverage
  */
 
+const { normalizeSkill } = require('../../utils/skillUtils');
+
 const rule = {
     name: "B3_PartialSkillCoverage",
     priority: 9,
@@ -30,16 +32,13 @@ const rule = {
             return { ratio: 0, matchedCount: 0, totalCount: 0 };
         }
 
-        const studentSkillNames = studentSkills.map(s => {
-            const name = typeof s === 'string' ? s : s?.name;
-            return (name || '').toLowerCase();
-        });
+        const studentSkillNames = studentSkills.map(s => normalizeSkill(s));
 
         let matchedCount = 0;
 
         requiredSkills.forEach(req => {
             const reqName = typeof req === 'string' ? req : req?.name;
-            if (reqName && studentSkillNames.includes(reqName.toLowerCase())) {
+            if (reqName && studentSkillNames.includes(normalizeSkill(reqName))) {
                 matchedCount++;
             }
         });
@@ -72,10 +71,7 @@ const rule = {
         const requiredSkills = internship?.requiredSkills || [];
         const studentSkills = student?.skills || [];
         
-        const studentSkillNames = studentSkills.map(s => {
-            const name = typeof s === 'string' ? s : s?.name;
-            return (name || '').toLowerCase();
-        });
+        const studentSkillNames = studentSkills.map(s => normalizeSkill(s));
 
         const matchedSkills = [];
         const missingSkills = [];
@@ -83,7 +79,7 @@ const rule = {
         requiredSkills.forEach(req => {
             const reqName = typeof req === 'string' ? req : req?.name;
             const displayName = typeof req === 'string' ? req : req?.name;
-            if (reqName && studentSkillNames.includes(reqName.toLowerCase())) {
+            if (reqName && studentSkillNames.includes(normalizeSkill(reqName))) {
                 matchedSkills.push(displayName);
             } else if (reqName) {
                 missingSkills.push(displayName);

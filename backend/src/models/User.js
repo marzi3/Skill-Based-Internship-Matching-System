@@ -122,6 +122,8 @@ const userSchema = new mongoose.Schema({
   },
   foundedYear: {
     type: Number,
+    min: [1800, 'Founding year must be after 1800'],
+    max: [new Date().getFullYear(), 'Founding year cannot be in the future']
   },
   resetPasswordToken: String,
   resetPasswordExpire: Date,

@@ -213,8 +213,10 @@ const EditInternshipPage = () => {
             if (!formData.position) errors.position = true;
             if (!formData.category) errors.category = true;
             if (!formData.locationType) errors.locationType = true;
+            if (!formData.location) errors.location = true;
             if (!formData.duration) errors.duration = true;
             if (!formData.numberOfOpenings) errors.numberOfOpenings = true;
+            if (!formData.deadline) errors.deadline = true;
         }
         if (step === 2) {
             if (formData.requiredSkills.length === 0) errors.requiredSkills = true;
@@ -375,8 +377,9 @@ const EditInternshipPage = () => {
                                                 name="location"
                                                 value={formData.location}
                                                 onChange={handleInputChange}
+                                                error={validationErrors.location}
                                                 placeholder={formData.locationType === 'Remote' ? "e.g. US Only, Worldwide" : "e.g. San Francisco, CA"}
-                                                required={formData.locationType !== 'Remote'}
+                                                required
                                             />
                                             <div className="grid grid-cols-2 gap-10">
                                                 <CustomSelect
@@ -408,6 +411,8 @@ const EditInternshipPage = () => {
                                                 value={formData.deadline}
                                                 onChange={handleInputChange}
                                                 min={new Date().toISOString().split('T')[0]}
+                                                error={validationErrors.deadline}
+                                                required
                                             />
                                         </div>
                                     )}
@@ -415,7 +420,9 @@ const EditInternshipPage = () => {
                                     {currentStep === 2 && (
                                         <div className="space-y-10">
                                             <div className="space-y-4">
-                                                <label className={`block text-xs font-black uppercase tracking-widest text-slate-900 mb-2`}>Skills Assessment *</label>
+                                                                                                <label className={`block text-xs font-black uppercase tracking-widest text-slate-900 mb-2.5 ml-1`}>
+                                                    Skills Assessment <span className="text-rose-500 ml-1 font-bold text-sm">*</span>
+                                                </label>
                                                 <div className="flex gap-4">
                                                     <input
                                                         type="text"
@@ -442,7 +449,9 @@ const EditInternshipPage = () => {
 
                                             {/* REQUIRED DEGREES CACHE */}
                                             <div className="space-y-4">
-                                                <label className={`block text-xs font-black uppercase tracking-widest ml-1 mb-2.5 ${validationErrors.requiredDegreeField ? 'text-rose-500' : 'text-slate-900'}`}>Accepted Degree Fields *</label>
+                                                                                                <label className={`block text-xs font-black uppercase tracking-widest ml-1 mb-2.5 ${validationErrors.requiredDegreeField ? 'text-rose-500' : 'text-slate-900'}`}>
+                                                    Accepted Degree Fields <span className="text-rose-500 ml-1 font-bold text-sm">*</span>
+                                                </label>
                                                 <div className="flex gap-4">
                                                     <input
                                                         type="text"
@@ -510,7 +519,7 @@ const EditInternshipPage = () => {
                                                     {formData.isGpaMandatory && (
                                                         <div className="animate-in fade-in slide-in-from-top-2 duration-300">
                                                             <CustomInput
-                                                                label="Minimum GPA Requirement (0.0 to 4.0) *"
+                                                                label="Minimum GPA Requirement (0.0 to 4.0)"
                                                                 icon={GraduationCap}
                                                                 name="minimumGPA"
                                                                 value={formData.minimumGPA}
@@ -520,7 +529,6 @@ const EditInternshipPage = () => {
                                                                 step="0.01"
                                                                 min="0"
                                                                 max="4.0"
-                                                                required
                                                             />
                                                         </div>
                                                     )}
@@ -552,7 +560,9 @@ const EditInternshipPage = () => {
                                     {currentStep === 3 && (
                                         <div className="space-y-10">
                                             <div className="space-y-4">
-                                                <label className="block text-xs font-black uppercase tracking-widest text-slate-900">Role Intelligence (Description)</label>
+                                                                                                <label className="block text-xs font-black uppercase tracking-widest text-slate-900 mb-2.5 ml-1">
+                                                    Role Intelligence (Description) <span className="text-rose-500 ml-1 font-bold text-sm">*</span>
+                                                </label>
                                                 <textarea
                                                     name="description"
                                                     value={formData.description}

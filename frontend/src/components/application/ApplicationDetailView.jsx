@@ -23,7 +23,7 @@ import Card from '@/components/common/Card';
 export default function ApplicationDetailView({ application, role, onStatusUpdate, onWithdraw }) {
     if (!application) return null;
 
-    const { internship, student, employer, matchAnalysis, statusHistory, status, coverLetter, appliedDate } = application;
+    const { internship, student, employer, matchAnalysis, statusHistory, status, coverLetter, appliedDate, interviewDetails } = application;
 
     const timelineSteps = [
         { id: 'Applied', label: 'Submitted', description: 'Application received by system' },
@@ -128,6 +128,49 @@ export default function ApplicationDetailView({ application, role, onStatusUpdat
                             </div>
                          </div>
                     </Card>
+                    
+                    {/* Interview Details (if scheduled) */}
+                    {status === 'Interviewing' && interviewDetails && (
+                        <Card rounded="3xl" padding="8" shadow="sm" className="border-indigo-100 bg-indigo-50/30 overflow-hidden relative">
+                            <div className="absolute top-0 right-0 p-8 opacity-5 text-indigo-600">
+                                <Calendar size={120} />
+                            </div>
+                            <div className="relative z-10 p-8">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="p-2 bg-indigo-600 rounded-lg text-white">
+                                        <Clock size={16} />
+                                    </div>
+                                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-600">Upcoming Interview Protocol</h3>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                    <div className="space-y-1">
+                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Date</p>
+                                        <p className="text-sm font-black text-slate-900">{new Date(interviewDetails.date).toLocaleDateString()}</p>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Time</p>
+                                        <p className="text-sm font-black text-slate-900">{interviewDetails.time}</p>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Location</p>
+                                        <p className="text-sm font-black text-indigo-600 underline font-bold truncate">
+                                            {interviewDetails.location.includes('http') ? (
+                                                <a href={interviewDetails.location} target="_blank" rel="noopener noreferrer">{interviewDetails.location}</a>
+                                            ) : (
+                                                interviewDetails.location
+                                            )}
+                                        </p>
+                                    </div>
+                                </div>
+                                {interviewDetails.notes && (
+                                    <div className="mt-8 pt-6 border-t border-indigo-100/50">
+                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-2">Protocol Notes</p>
+                                        <p className="text-[11px] font-medium text-slate-600 italic">"{interviewDetails.notes}"</p>
+                                    </div>
+                                )}
+                            </div>
+                        </Card>
+                    )}
 
                     {/* Technical Breakdown (Copy of logic from matchingEngine.js) */}
                     <Card rounded="3xl" padding="8" shadow="sm" className="bg-slate-900 border-none">

@@ -24,6 +24,7 @@ const internshipSchema = new mongoose.Schema({
     },
     location: {
         type: String,
+        required: [true, 'Specific location is required'],
         trim: true
     },
     duration: {

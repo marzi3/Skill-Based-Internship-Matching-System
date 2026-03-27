@@ -36,6 +36,7 @@ export default function InternshipDetailPage({ params }) {
     const [showReport, setShowReport] = useState(false);
     const [showApplyModal, setShowApplyModal] = useState(false);
     const [submittedAppId, setSubmittedAppId] = useState(null);
+    const [studentProfile, setStudentProfile] = useState(null);
 
     useEffect(() => {
         const fetchDetails = async () => {
@@ -61,6 +62,12 @@ export default function InternshipDetailPage({ params }) {
                     setApplied(isApplied);
                     setApplicationStatus(appStatus);
                     if (applicationId) setSubmittedAppId(applicationId);
+                }
+
+                // 4. Fetch Student Profile for Verification Status
+                const profileRes = await axios.get('students/profile');
+                if (profileRes.data.success) {
+                    setStudentProfile(profileRes.data.data);
                 }
 
             } catch (err) {
@@ -392,6 +399,21 @@ export default function InternshipDetailPage({ params }) {
                                         className="w-full group bg-[#6366F1] text-white py-5 px-6 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] hover:bg-[#4F46E5] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-indigo-600/20 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {applying ? <Loader2 className="animate-spin" size={16} /> : <>Re-initialize Protocol <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" /></>}
+                                    </button>
+                                </div>
+                            ) : (studentProfile?.status !== 'verified' || !user?.isVerified || user?.verificationStatus !== 'approved') ? (
+                                <div className="text-center space-y-4">
+                                    <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <AlertTriangle className="text-amber-500" size={28} />
+                                    </div>
+                                    <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest">Verification Required</h4>
+                                    <p className="text-xs font-bold text-slate-500 leading-relaxed">
+                                        {!user?.isVerified ? "Please verify your email address to continue." : 
+                                         user?.verificationStatus !== 'approved' ? "Your ID must be verified by an administrator before you can apply." : 
+                                         "Your profile synchronization is awaiting administrative approval."}
+                                    </p>
+                                    <button disabled className="w-full mt-4 bg-slate-100 text-slate-400 font-black uppercase tracking-widest text-[10px] py-5 rounded-2xl cursor-not-allowed">
+                                        Awaiting Verification
                                     </button>
                                 </div>
                             ) : (

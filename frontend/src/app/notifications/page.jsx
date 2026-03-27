@@ -127,14 +127,7 @@ export default function NotificationsPage() {
                                         <p className="text-sm text-gray-400 mt-2 font-medium">
                                             {new Date(notif.createdAt).toLocaleDateString()} at {new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                         </p>
-                                        {notif.link && (
-                                            <Link
-                                                href={notif.link}
-                                                className="inline-flex items-center gap-1.5 text-sm text-indigo-600 font-bold mt-3 hover:text-indigo-800 transition-colors bg-indigo-50 px-3 py-1.5 rounded-lg"
-                                            >
-                                                View Details <ExternalLink size={14} />
-                                            </Link>
-                                        )}
+
                                     </div>
 
                                     <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">

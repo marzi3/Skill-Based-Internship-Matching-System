@@ -500,6 +500,19 @@ exports.updateStudentStatus = async (req, res) => {
         student.status = status;
         await student.save();
 
+        // Propagation: Update Student profile status if it exists
+        const Student = require('../models/Student');
+        const studentProfile = await Student.findOne({ userId: student._id });
+        if (studentProfile) {
+            // Map 'approved' to 'verified' for the Student model
+            if (status === 'approved') {
+                studentProfile.status = 'verified';
+            } else if (status === 'suspended') {
+                studentProfile.status = 'incomplete'; // Or another suitable status
+            }
+            await studentProfile.save({ validateBeforeSave: false });
+        }
+
         const action = status === 'approved' ? 'ACTIVATE_STUDENT' : 'SUSPEND_STUDENT';
         await logAdminAction(req.user.id, action, 'User', student._id, `Changed student status to ${status}`);
 

@@ -38,6 +38,11 @@ const notificationSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
         expires: 60 * 60 * 24 * 30 // Auto-delete after 30 days
+    },
+    metadata: {
+        date: String,
+        time: String,
+        location: String
     }
 });
 

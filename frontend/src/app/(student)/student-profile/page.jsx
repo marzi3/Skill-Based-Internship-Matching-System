@@ -280,7 +280,7 @@ export default function StudentProfile() {
     if (!newCertification.name) certErrors.name = 'Certification name is required';
     if (!newCertification.credentialUrl) certErrors.credentialUrl = 'Link is required';
     if (!newCertification.issuedDate) certErrors.issuedDate = 'Issue date is required';
-    
+
     if (Object.keys(certErrors).length > 0) {
       setErrors(certErrors);
       setMessage('Error: Please fill in all required fields');
@@ -501,10 +501,14 @@ export default function StudentProfile() {
   const handleSavePersonalInfo = async () => {
     // Basic validation for critical fields
     const personalErrors = {};
-    if (!personalInfo.fullName) personalErrors.fullName = 'Full Name is required';
+    if (!personalInfo.fullName) {
+        personalErrors.fullName = 'Full Name is required';
+    } else if (!/^[A-Za-z\s\-']+$/.test(personalInfo.fullName)) {
+        personalErrors.fullName = 'Name can only contain letters, spaces, and hyphens';
+    }
     if (!personalInfo.portfolioUrl) personalErrors.portfolioUrl = 'Portfolio URL is required';
     if (!personalInfo.preferredLocation) personalErrors.preferredLocation = 'Preferred Location is required';
-    
+
     if (Object.keys(personalErrors).length > 0) {
       setErrors(personalErrors);
       setMessage('Error: Please fill in all required fields marked with *');
@@ -1358,12 +1362,12 @@ export default function StudentProfile() {
                           <button
                             onClick={() => setActiveStep(step.id)}
                             className={`w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${isCompleted
-                                ? 'bg-green-500 border-green-500 text-white'
-                                : isActive
-                                  ? 'border-indigo-600 bg-indigo-600 text-white'
-                                  : isPast
-                                    ? 'border-slate-300 bg-white text-slate-400'
-                                    : 'border-slate-300 bg-white text-slate-400 hover:border-indigo-300'
+                              ? 'bg-green-500 border-green-500 text-white'
+                              : isActive
+                                ? 'border-indigo-600 bg-indigo-600 text-white'
+                                : isPast
+                                  ? 'border-slate-300 bg-white text-slate-400'
+                                  : 'border-slate-300 bg-white text-slate-400 hover:border-indigo-300'
                               }`}
                           >
                             {isCompleted ? (
@@ -1381,8 +1385,8 @@ export default function StudentProfile() {
                         {index < steps.length - 1 && (
                           <div className="flex-1 h-0.5 mx-4 mb-6">
                             <div className={`h-full transition-colors ${index < currentStepIndex || isCompleted
-                                ? 'bg-green-500'
-                                : 'bg-slate-200'
+                              ? 'bg-green-500'
+                              : 'bg-slate-200'
                               }`} />
                           </div>
                         )}
@@ -1488,12 +1492,8 @@ export default function StudentProfile() {
                           >
                             <option value="">Select Location</option>
                             <option value="Remote">Remote</option>
-                            <option value="New York">New York</option>
-                            <option value="San Francisco">San Francisco</option>
-                            <option value="London">London</option>
-                            <option value="Toronto">Toronto</option>
-                            <option value="Berlin">Berlin</option>
-                            <option value="Other">Other</option>
+                            <option value="Onsite">Onsite</option>
+                            <option value="Hybrid">Hybrid</option>
                           </select>
                         </div>
 
@@ -1520,9 +1520,9 @@ export default function StudentProfile() {
                           </label>
                           <div className="grid grid-cols-2 gap-2 p-3 border border-green-300 bg-green-50 rounded-lg">
                             {[
-                                'Web Development', 'Mobile App Development', 'UI/UX Design',
-                                'Data Science', 'Backend Development', 'Frontend Development',
-                                'DevOps', 'Machine Learning', 'Cloud Architecture', 'Database Design'
+                              'Web Development', 'Mobile App Development', 'UI/UX Design',
+                              'Data Science', 'Backend Development', 'Frontend Development',
+                              'DevOps', 'Machine Learning', 'Cloud Architecture', 'Database Design'
                             ].map(industry => (
                               <label key={industry} className="flex items-center cursor-pointer">
                                 <input
@@ -1785,15 +1785,15 @@ export default function StudentProfile() {
                             <div
                               key={index}
                               className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${(skill.proficiency === 'ADVANCED' || skill.proficiency === 'EXPERT')
-                                  ? 'border-green-300 bg-green-50'
-                                  : 'border-slate-200 bg-slate-50'
+                                ? 'border-green-300 bg-green-50'
+                                : 'border-slate-200 bg-slate-50'
                                 } hover:bg-slate-100`}
                             >
                               <div className="min-w-0">
                                 <p className="text-sm font-medium text-slate-900">{skill.name}</p>
                                 <p className={`text-xs font-semibold ${(skill.proficiency === 'ADVANCED' || skill.proficiency === 'EXPERT')
-                                    ? 'text-green-700'
-                                    : 'text-slate-600'
+                                  ? 'text-green-700'
+                                  : 'text-slate-600'
                                   }`}>
                                   {skill.proficiency}
                                   {(skill.proficiency === 'ADVANCED' || skill.proficiency === 'EXPERT') && ' 🏆'}

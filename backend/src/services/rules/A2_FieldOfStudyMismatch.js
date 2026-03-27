@@ -53,7 +53,9 @@ const rule = {
 
         // Check if ANY of the student's fields match ANY of the required fields
         return !reqFields.some(req => {
-            const reqLower = String(req).trim().toLowerCase();
+            // Support both string-based and object-based requirements
+            const reqName = typeof req === 'string' ? req : (req.name || String(req));
+            const reqLower = reqName.trim().toLowerCase();
             return studentFields.some(sField => sField.includes(reqLower) || reqLower.includes(sField));
         });
     },

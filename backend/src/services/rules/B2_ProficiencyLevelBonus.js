@@ -9,6 +9,8 @@
  * @module B2_ProficiencyLevelBonus
  */
 
+const { isSkillMatch } = require('../../utils/skillUtils');
+
 const rule = {
     name: "B2_ProficiencyLevelBonus",
     priority: 8,
@@ -38,7 +40,7 @@ const rule = {
                 // If studentSkill is just a string, it has no proficiency recorded natively
                 if (typeof studentSkill === 'string') return false;
 
-                const isNameMatch = studentSkill.name.toLowerCase() === reqName.toLowerCase();
+                const isNameMatch = isSkillMatch(studentSkill, reqName);
                 const hasHighProficiency = ['ADVANCED', 'EXPERT'].includes(studentSkill.proficiency?.toUpperCase());
 
                 return isNameMatch && hasHighProficiency;

@@ -8,6 +8,8 @@
  * @module B4_BonusSkillMatch
  */
 
+const { normalizeSkill } = require('../../utils/skillUtils');
+
 const rule = {
     name: "B4_BonusSkillMatch",
     priority: 8,
@@ -28,13 +30,11 @@ const rule = {
             return [];
         }
 
-        const studentSkillNames = studentSkills.map(s =>
-            (typeof s === 'string' ? s : s.name).toLowerCase()
-        );
+        const studentSkillNames = studentSkills.map(s => normalizeSkill(s));
 
         return preferredSkills.filter(pref => {
-            const prefName = typeof pref === 'string' ? pref : pref.name;
-            return studentSkillNames.includes(prefName.toLowerCase());
+            const prefName = normalizeSkill(pref);
+            return studentSkillNames.includes(prefName);
         }).map(pref => typeof pref === 'string' ? pref : pref.name);
     },
 

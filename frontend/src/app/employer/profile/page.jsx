@@ -72,6 +72,22 @@ const ProfilePage = () => {
     };
 
     const handleSave = async () => {
+        // Validation for Founding Year
+        if (formData.foundedYear) {
+            const currentYear = new Date().getFullYear();
+            const year = parseInt(formData.foundedYear);
+            if (isNaN(year) || year > currentYear || year < 1800) {
+                setMessage({ type: 'error', text: `Founded year must be between 1800 and ${currentYear}` });
+                return;
+            }
+        }
+
+        // Validation for Company Description
+        if (formData.companyDescription && formData.companyDescription.length && formData.companyDescription.length < 30) {
+            setMessage({ type: 'error', text: 'Company description is too brief. Please provide at least 30 characters.' });
+            return;
+        }
+
         setIsLoading(true);
         setMessage({ type: '', text: '' });
         try {
@@ -227,7 +243,7 @@ const ProfilePage = () => {
                                 value={formData.companyDescription}
                                 onChange={handleChange}
                                 className="w-full mt-6 text-center border-2 border-gray-100 rounded-3xl p-6 focus:border-primary-500 outline-none text-sm bg-gray-50/50 font-medium leading-relaxed transition-all resize-none h-40"
-                                placeholder="Describe your company's mission, values, and the opportunities you offer to students..."
+                                placeholder="Describe your company's mission, values, and the opportunities..."
                             />
                         ) : (
                             <p className="text-gray-500 text-base font-medium leading-[1.8] px-2 italic">

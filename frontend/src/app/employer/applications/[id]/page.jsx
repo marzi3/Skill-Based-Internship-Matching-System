@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, CheckCircle2, XCircle, Clock, Loader2, ChevronDown, UserCircle } from 'lucide-react';
 import axios from '@/services/apiClient';
 import ApplicationDetailView from '@/components/application/ApplicationDetailView';
+import InterviewModal from '@/components/application/InterviewModal';
 import { PageLoader } from '@/components/common/Loader';
 import Link from 'next/link';
 
@@ -21,6 +22,7 @@ export default function EmployerApplicationDetailPage({ params }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [updating, setUpdating] = useState(false);
+    const [showInterviewModal, setShowInterviewModal] = useState(false);
 
     const statusOptions = [
         'Applied', 'Reviewing', 'Shortlisted', 'Interviewing', 'Offered', 'Accepted', 'Rejected'
@@ -44,23 +46,51 @@ export default function EmployerApplicationDetailPage({ params }) {
         if (id) fetchApplication();
     }, [id]);
 
-    const handleStatusUpdate = async (newStatus) => {
+    const handleStatusUpdate = async (newStatus, interviewDetails = null) => {
+        if (newStatus === 'Interviewing' && !interviewDetails) {
+            setShowInterviewModal(true);
+            return;
+        }
+
         try {
             setUpdating(true);
-            const res = await axios.patch(`/applications/${id}/status`, { 
+            const payload = { 
                 status: newStatus,
                 comment: `Candidate moved to ${newStatus} phase.`
-            });
+            };
+            if (interviewDetails) payload.interviewDetails = interviewDetails;
+
+            const res = await axios.patch(`/applications/${id}/status`, payload);
             if (res.data.success) {
                 // Refresh data to show in history
                 const updated = await axios.get(`/applications/${id}`);
                 setApplication(updated.data.data);
+                setShowInterviewModal(false);
             }
         } catch (err) {
-            alert('Status update failed');
+            const msg = err.response?.data?.message || 'Status update failed';
+            alert(msg);
         } finally {
             setUpdating(false);
         }
+    };
+
+    const isOptionDisabled = (opt) => {
+        const statusOrder = ['Applied', 'Reviewing', 'Shortlisted', 'Interviewing', 'Offered', 'Accepted'];
+        const current = application.status;
+        const currentIndex = statusOrder.indexOf(current);
+        
+        // current status is selected but not clickable
+        if (opt === current) return true;
+        
+        // Rejected is always available unless protocol is terminal
+        if (opt === 'Rejected') {
+            return current === 'Accepted' || current === 'Rejected';
+        }
+
+        // Only allow next sequential status
+        const targetIndex = statusOrder.indexOf(opt);
+        return targetIndex !== currentIndex + 1;
     };
 
     if (loading) return <PageLoader />;
@@ -107,7 +137,14 @@ export default function EmployerApplicationDetailPage({ params }) {
                                 className="appearance-none bg-slate-900 text-white pl-6 pr-12 py-3.5 rounded-2xl font-black uppercase tracking-widest text-[9px] hover:bg-black transition-all cursor-pointer disabled:opacity-50"
                             >
                                 {statusOptions.map(opt => (
-                                    <option key={opt} value={opt}>{opt}</option>
+                                    <option 
+                                        key={opt} 
+                                        value={opt} 
+                                        disabled={isOptionDisabled(opt)}
+                                        className={application.status === opt ? "bg-slate-100 font-bold" : ""}
+                                    >
+                                        {opt} {application.status === opt ? '(Current)' : ''}
+                                    </option>
                                 ))}
                             </select>
                             <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
@@ -115,6 +152,13 @@ export default function EmployerApplicationDetailPage({ params }) {
                         </div>
                     </div>
                 </div>
+
+                <InterviewModal 
+                    isOpen={showInterviewModal}
+                    onClose={() => setShowInterviewModal(false)}
+                    onConfirm={(details) => handleStatusUpdate('Interviewing', details)}
+                    application={application}
+                />
 
                 <ApplicationDetailView 
                     application={application} 

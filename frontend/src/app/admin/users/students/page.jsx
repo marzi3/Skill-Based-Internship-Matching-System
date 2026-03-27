@@ -104,9 +104,9 @@ export default function StudentManagement() {
                         onChange={(e) => setStatusFilter(e.target.value)}
                     >
                         <option value="">All Statuses</option>
-                        <option value="active">Active</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
                         <option value="suspended">Suspended</option>
-                        <option value="banned">Banned</option>
                     </select>
 
                     <button
@@ -167,10 +167,10 @@ export default function StudentManagement() {
                                         </td>
                                         <td className="px-6 py-3">
                                             <Badge variant={
-                                                student.status === 'active' ? 'success' :
-                                                    student.status === 'suspended' ? 'warning' : 'error'
+                                                student.status === 'approved' ? 'success' :
+                                                    student.status === 'pending' ? 'warning' : 'error'
                                             }>
-                                                {student.status || 'active'}
+                                                {student.status || 'pending'}
                                             </Badge>
                                         </td>
                                         <td className="px-6 py-3 text-gray-500">
@@ -178,23 +178,23 @@ export default function StudentManagement() {
                                         </td>
                                         <td className="px-6 py-3 text-right">
                                             <div className="flex items-center justify-end gap-2 transition-opacity">
-                                                {student.status !== 'active' && (
+                                                {student.status !== 'approved' && (
                                                     <button
-                                                        onClick={() => handleStatusChange(student._id, 'active')}
+                                                        onClick={() => handleStatusChange(student._id, 'approved')}
                                                         disabled={actionLoading === student._id}
                                                         className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors border border-transparent hover:border-green-200"
-                                                        title="Activate"
+                                                        title="Approve / Activate"
                                                     >
                                                         {actionLoading === student._id ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
                                                     </button>
                                                 )}
-
-                                                {student.status === 'active' && (
+                                                
+                                                {student.status === 'approved' && (
                                                     <button
                                                         onClick={() => handleStatusChange(student._id, 'suspended')}
                                                         disabled={actionLoading === student._id}
                                                         className="p-1.5 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors border border-transparent hover:border-orange-200"
-                                                        title="Suspend"
+                                                        title="Suspend Account"
                                                     >
                                                         {actionLoading === student._id ? <Loader2 size={16} className="animate-spin" /> : <Ban size={16} />}
                                                     </button>

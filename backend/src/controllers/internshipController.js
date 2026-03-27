@@ -18,7 +18,7 @@ exports.getInternships = async (req, res) => {
         let query = { 
             status: { $in: ['Hiring', 'Active'] },
             isDeleted: { $ne: true },
-            expiryDate: { $gte: new Date() }
+            expiryDate: { $gte: new Date() } // VALIDATION: Ensure only non-expired internships are retrieved
         };
 
         const andConditions = [];
@@ -200,7 +200,7 @@ exports.createInternship = async (req, res) => {
         if (user.role !== 'employer') {
             return res.status(403).json({
                 success: false,
-                message: 'Only registered employers can post internships'
+                message: 'Only registered employers can post internships' // VALIDATION: Role-based access control
             });
         }
 
@@ -212,9 +212,10 @@ exports.createInternship = async (req, res) => {
         const activeStatuses = ['Active', 'Hiring', 'Reviewing'];
         if (activeStatuses.includes(req.body.status) || !req.body.status) {
             if (user.verificationStatus !== 'approved') {
+                // VALIDATION: Force 'Draft' status for unverified employers to prevent public visibility
                 req.body.status = 'Draft';
             } else if (!req.body.status) {
-                req.body.status = 'Hiring'; // Default active status
+                req.body.status = 'Hiring'; // DEFAULT: Active status for verified employers
             }
         }
 

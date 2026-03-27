@@ -88,14 +88,15 @@ const sendEmailWithRetry = async (to, subject, html, retries = 3) => {
 /**
  * Main function to create in-app notification and dispatch email if permitted
  */
-const send = async ({ userId, type, message, link, sendEmail = true, subject }) => {
+const send = async ({ userId, type, message, link, sendEmail = true, subject, metadata }) => {
     try {
         // 1. Create In-App Notification Record
         const notification = await Notification.create({
             userId,
             type,
             message,
-            link
+            link,
+            metadata
         });
 
         // 1.5 Emit Socket event for real-time UI update

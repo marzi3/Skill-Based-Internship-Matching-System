@@ -58,6 +58,12 @@ const applicationSchema = new mongoose.Schema({
     lastMessageAt: {
         type: Date,
         default: Date.now
+    },
+    interviewDetails: {
+        date: Date,
+        time: String,
+        location: String,
+        notes: String
     }
 }, {
     timestamps: true

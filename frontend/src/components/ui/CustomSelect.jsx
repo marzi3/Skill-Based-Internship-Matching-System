@@ -19,7 +19,7 @@ const CustomSelect = ({
         <div className={`space-y-0 ${className}`}>
             {label && (
                 <label className={`block text-xs font-black uppercase tracking-widest mb-2.5 ml-1 ${error ? 'text-rose-500' : 'text-slate-900'}`}>
-                    {label} {required && <span className="text-rose-500">*</span>}
+                    {label} {required && <span className="text-rose-500 ml-1 font-bold text-sm">*</span>}
                 </label>
             )}
             <div className="relative group">

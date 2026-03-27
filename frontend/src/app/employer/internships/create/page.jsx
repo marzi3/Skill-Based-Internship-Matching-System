@@ -107,6 +107,7 @@ const CreateInternshipPage = () => {
   };
 
   const handleGpaChange = (e) => {
+    // VALIDATION: Clamp GPA between 0.0 and 4.0
     let val = parseFloat(e.target.value);
     if (val > 4.0) e.target.value = 4.0;
     if (val < 0) e.target.value = 0;
@@ -208,20 +209,24 @@ const CreateInternshipPage = () => {
 
   const validateStep = (step) => {
     const errors = {};
+    // SUB-PROTOCOL 1: Basic Identifiers
     if (step === 1) {
       if (!formData.position || formData.position.length > 100) errors.position = true;
       if (!formData.category) errors.category = true;
       if (!formData.locationType) errors.locationType = true;
+      if (!formData.location) errors.location = true;
       if (!formData.duration) errors.duration = true;
       if (!formData.numberOfOpenings) errors.numberOfOpenings = true;
       if (!formData.deadline) errors.deadline = true;
     }
+    // SUB-PROTOCOL 2: Professional Prerequisites
     if (step === 2) {
       if (formData.requiredSkills.length === 0) errors.requiredSkills = true;
       if (formData.requiredDegreeField.length === 0) errors.requiredDegreeField = true;
       if (!formData.experienceLevel) errors.experienceLevel = true;
     }
-
+    
+    // VISUAL FEEDBACK: Trigger state update for erroneous inputs
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -244,7 +249,7 @@ const CreateInternshipPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Final security check: Ensure description is present before deployment
+    // FINAL VALIDATION: Ensure qualitative description meets threshold
     if (!formData.description || formData.description.length < 20) {
       setError('Final clearance failed: INTERNSHIP DESCRIPTION must be at least 20 characters.');
       setValidationErrors({ description: true });
@@ -401,8 +406,9 @@ const CreateInternshipPage = () => {
                           name="location"
                           value={formData.location}
                           onChange={handleInputChange}
+                          error={validationErrors.location}
                           placeholder={formData.locationType === 'Remote' ? "e.g. US Only, Worldwide" : "e.g. San Francisco, CA"}
-                          required={formData.locationType !== 'Remote'}
+                          required
                         />
                         <div className="grid grid-cols-2 gap-10">
                           <CustomSelect
@@ -446,7 +452,9 @@ const CreateInternshipPage = () => {
                     {currentStep === 2 && (
                       <div className="space-y-10">
                         <div className="space-y-4">
-                          <label className={`block text-xs font-black uppercase tracking-widest ml-1 mb-2.5 ${validationErrors.requiredSkills ? 'text-rose-500' : 'text-slate-900'}`}>Prerequisite Skills *</label>
+                                                    <label className={`block text-xs font-black uppercase tracking-widest ml-1 mb-2.5 ${validationErrors.requiredSkills ? 'text-rose-500' : 'text-slate-900'}`}>
+                            Prerequisite Skills <span className="text-rose-500 ml-1 font-bold text-sm">*</span>
+                          </label>
                           <div className="flex gap-4">
                             <input
                               type="text"
@@ -533,7 +541,9 @@ const CreateInternshipPage = () => {
 
                         {/* REQUIRED DEGREES CACHE */}
                         <div className="space-y-4">
-                          <label className={`block text-xs font-black uppercase tracking-widest ml-1 mb-2.5 ${validationErrors.requiredDegreeField ? 'text-rose-500' : 'text-slate-900'}`}>Accepted Degree Fields *</label>
+                                                    <label className={`block text-xs font-black uppercase tracking-widest ml-1 mb-2.5 ${validationErrors.requiredDegreeField ? 'text-rose-500' : 'text-slate-900'}`}>
+                            Accepted Degree Fields <span className="text-rose-500 ml-1 font-bold text-sm">*</span>
+                          </label>
                           <div className="flex gap-4">
                             <input
                               type="text"
@@ -614,7 +624,7 @@ const CreateInternshipPage = () => {
                             {formData.isGpaMandatory && (
                               <div className="animate-in fade-in slide-in-from-top-2 duration-300">
                                 <CustomInput
-                                  label="Minimum GPA Requirement (0.0 to 4.0) *"
+                                  label="Minimum GPA Requirement (0.0 to 4.0)"
                                   icon={GraduationCap}
                                   name="minimumGPA"
                                   value={formData.minimumGPA}
@@ -624,7 +634,6 @@ const CreateInternshipPage = () => {
                                   step="0.01"
                                   min="0"
                                   max="4.0"
-                                  required
                                 />
                               </div>
                             )}
@@ -645,7 +654,9 @@ const CreateInternshipPage = () => {
                     {currentStep === 3 && (
                       <div className="space-y-10">
                         <div className="space-y-4">
-                          <label className={`block text-xs font-black uppercase tracking-widest ml-1 mb-2.5 ${validationErrors.description ? 'text-rose-500' : 'text-slate-900'}`}>INTERNSHIP DESCRIPTION *</label>
+                                                    <label className={`block text-xs font-black uppercase tracking-widest ml-1 mb-2.5 ${validationErrors.description ? 'text-rose-500' : 'text-slate-900'}`}>
+                            INTERNSHIP DESCRIPTION <span className="text-rose-500 ml-1 font-bold text-sm">*</span>
+                          </label>
                           <textarea
                             name="description"
                             value={formData.description}

@@ -32,6 +32,7 @@ import Card from '@/components/common/Card';
 import Badge from '@/components/common/Badge';
 import Avatar from '@/components/common/Avatar';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import NotificationBell from '@/components/notifications/NotificationBell';
 import RecommendedInternships from '@/components/matching/RecommendedInternships';
@@ -39,6 +40,7 @@ import OnboardingTour from '@/components/OnboardingTour';
 
 export default function StudentDashboard() {
     const { user, logout } = useAuth();
+    const router = useRouter();
     const [matches, setMatches] = useState([]);
     const [applications, setApplications] = useState([]);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -163,15 +165,15 @@ export default function StudentDashboard() {
             </nav>
 
             {/* Main Content */}
-            <main className="flex-1 overflow-y-auto pb-24 md:pb-0">
-                <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 px-4 md:px-8 py-4 md:py-6 flex items-center justify-between sticky top-0 z-10 transition-all">
+            <main className="flex-1 overflow-y-auto pb-24 md:pb-0 relative">
+                <header className="bg-white border-b border-gray-100 px-4 md:px-8 py-4 md:py-6 flex items-center justify-between sticky top-0 z-50 transition-all shadow-sm">
                     <div>
                         <h1 className="text-xl md:text-2xl font-bold text-gray-900">Dashboard</h1>
                         <p className="text-xs md:text-sm text-gray-500 font-medium">Welcome back, {user?.name}</p>
                     </div>
                     <div className="flex items-center gap-2 md:gap-4">
                         {!localStorage.getItem('hasSeenStudentTour') && (
-                            <button 
+                            <button
                                 onClick={() => setShowTour(true)}
                                 className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors"
                             >
@@ -183,7 +185,50 @@ export default function StudentDashboard() {
                     </div>
                 </header>
 
-                <div className="p-4 md:p-8 space-y-6 md:space-y-8">
+                <div className="relative z-0 p-4 md:p-8 space-y-6 md:space-y-8">
+                    {/* Upcoming Interviews Protocol (if any) */}
+                    {applications.some(app => app.status === 'Interviewing') && (
+                        <div className="space-y-4">
+                            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 italic">
+                                <Clock className="text-indigo-600" size={20} /> Upcoming Interviews
+                            </h2>
+                            <div className="space-y-4">
+                                {applications.filter(app => app.status === 'Interviewing').map(app => (
+                                    <div key={app._id} onClick={() => router.push(`/applications/${app._id}`)} className="cursor-pointer">
+                                        <Card className="p-8 border-indigo-100 bg-white relative overflow-hidden group hover:shadow-xl transition-all border-l-4 border-l-indigo-600">
+                                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
+                                                <div className="flex items-center gap-6 flex-1">
+                                                    <Avatar name={app.employer?.companyName} src={app.employer?.profilePicture} size="lg" />
+                                                    <div className="space-y-1">
+                                                        <h3 className="font-black text-slate-900 uppercase tracking-widest text-lg">{app.internship?.positionTitle}</h3>
+                                                        <p className="text-sm font-black text-indigo-600 uppercase tracking-[0.2em]">{app.employer?.companyName}</p>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="flex items-center gap-4 lg:gap-12 w-full md:w-auto mt-4 md:mt-0 pt-4 md:pt-0 border-t border-slate-50 md:border-0">
+                                                    <div className="hidden sm:flex flex-col items-center min-w-[90px]">
+                                                        <p className="text-[10px] font-black text-slate-300 uppercase underline decoration-indigo-500/30 underline-offset-4 mb-2">Status</p>
+                                                        <Badge variant="primary">{app.status}</Badge>
+                                                    </div>
+                                                    <div className="hidden lg:flex flex-col items-center min-w-[100px]">
+                                                        <p className="text-[10px] font-black text-slate-300 uppercase underline decoration-indigo-500/30 underline-offset-4 mb-2">Applied</p>
+                                                        <p className="text-sm font-black text-slate-900 tracking-tighter">{new Date(app.createdAt).toLocaleDateString()}</p>
+                                                    </div>
+                                                    <div className="flex items-center gap-6 ml-auto">
+                                                        <span onClick={(e) => { e.stopPropagation(); router.push(`/internships/${app.internship?._id}`); }} className="hidden sm:inline-block text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline cursor-pointer whitespace-nowrap">View Spec</span>
+                                                        <div className="p-3 bg-slate-900 text-white rounded-2xl group-hover:bg-indigo-600 group-hover:scale-110 group-hover:rotate-12 transition-all shadow-lg shadow-indigo-100 flex items-center justify-center">
+                                                            <ChevronRight size={18} />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </Card>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     {/* Stats Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <Card className="bg-gradient-to-br from-indigo-500 to-indigo-600 text-white p-6 relative overflow-hidden group">
@@ -233,21 +278,36 @@ export default function StudentDashboard() {
                                 <div className="py-10 text-center"><Loader size={32} className="animate-spin mx-auto text-primary-600" /></div>
                             ) : applications.length > 0 ? (
                                 applications.map((app) => (
-                                    <Link key={app._id} href={`/internships/${app.internship?._id || ''}?from=dashboard`} className="block group">
-                                        <Card className="p-4 flex flex-col md:flex-row md:items-center justify-between hover:shadow-md hover:border-primary-200 transition-all border border-gray-100 gap-4 md:gap-0">
-                                            <div className="flex items-center gap-4">
-                                                <Avatar name={app.employer?.companyName} src={app.employer?.profilePicture} size="md" />
-                                                <div>
-                                                    <h3 className="font-bold text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-1">{app.internship?.positionTitle || 'Unknown Position'}</h3>
-                                                    <p className="text-sm text-gray-500 line-clamp-1">{app.employer?.companyName || 'Unknown Company'}</p>
+                                    <div key={app._id} onClick={() => router.push(`/applications/${app._id}`)} className="cursor-pointer">
+                                        <Card className="p-8 border-slate-100 bg-white relative overflow-hidden group hover:shadow-xl transition-all border-l-4 border-l-indigo-600 hover:border-indigo-100">
+                                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
+                                                <div className="flex items-center gap-6 flex-1">
+                                                    <Avatar name={app.employer?.companyName} src={app.employer?.profilePicture} size="lg" />
+                                                    <div className="space-y-1">
+                                                        <h3 className="font-black text-slate-900 uppercase tracking-widest text-lg">{app.internship?.positionTitle || 'Unknown Position'}</h3>
+                                                        <p className="text-sm font-black text-indigo-600 uppercase tracking-[0.2em]">{app.employer?.companyName || 'Unknown Company'}</p>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="flex items-center gap-4 lg:gap-12 w-full md:w-auto mt-4 md:mt-0 pt-4 md:pt-0 border-t border-slate-50 md:border-0">
+                                                    <div className="hidden sm:flex flex-col items-center min-w-[90px]">
+                                                        <p className="text-[10px] font-black text-slate-300 uppercase underline decoration-indigo-500/30 underline-offset-4 mb-2">Status</p>
+                                                        <Badge variant={app.status === 'Applied' ? 'secondary' : app.status === 'Selected' ? 'success' : 'primary'}>{app.status}</Badge>
+                                                    </div>
+                                                    <div className="hidden lg:flex flex-col items-center min-w-[100px]">
+                                                        <p className="text-[10px] font-black text-slate-300 uppercase underline decoration-indigo-500/30 underline-offset-4 mb-2">Applied</p>
+                                                        <p className="text-sm font-black text-slate-900 tracking-tighter">{new Date(app.createdAt).toLocaleDateString()}</p>
+                                                    </div>
+                                                    <div className="flex items-center gap-6 ml-auto">
+                                                        <span onClick={(e) => { e.stopPropagation(); router.push(`/internships/${app.internship?._id}`); }} className="hidden sm:inline-block text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline cursor-pointer whitespace-nowrap">View Spec</span>
+                                                        <div className="p-3 bg-slate-900 text-white rounded-2xl group-hover:bg-indigo-600 group-hover:scale-110 group-hover:rotate-12 transition-all shadow-lg shadow-indigo-100 flex items-center justify-center">
+                                                            <ChevronRight size={18} />
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center justify-between md:justify-end w-full md:w-auto gap-4 mt-2 md:mt-0">
-                                                <Badge variant={app.status === 'Applied' ? 'secondary' : app.status === 'Selected' ? 'success' : 'primary'}>{app.status}</Badge>
-                                                <div className="text-gray-400 group-hover:text-primary-600 flex bg-gray-50 p-2 rounded-lg md:bg-transparent group-hover:translate-x-1 transition-all"><ChevronRight size={20} /></div>
-                                            </div>
                                         </Card>
-                                    </Link>
+                                    </div>
                                 ))
                             ) : (
                                 <div className="py-10 bg-white rounded-2xl border border-dashed border-gray-200 text-center">

@@ -2,9 +2,7 @@ const logger = require('../utils/logger');
 const mongoose = require('mongoose');
 const dns = require('dns');
 
-// Force use of Google DNS to resolve Atlas SRV records
-// This fixes querySrv ETIMEOUT issues in some environments.
-dns.setServers(['8.8.8.8', '8.8.4.4']);
+// dns.setServers(['8.8.8.8', '8.8.4.4']);
 
 const connectDB = async () => {
   try {
@@ -12,7 +10,9 @@ const connectDB = async () => {
       throw new Error('MONGODB_URI is not defined in environment variables');
     }
 
-    const conn = await mongoose.connect(process.env.MONGODB_URI);
+    const conn = await mongoose.connect(process.env.MONGODB_URI, {
+      serverSelectionTimeoutMS: 5000, // Fail fast (5s) to identify whitelist issues
+    });
     
     return conn;
   } catch (error) {
