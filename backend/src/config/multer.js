@@ -1,66 +1,72 @@
 const multer = require('multer');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('cloudinary').v2;
 const path = require('path');
-const fs = require('fs');
+require('dotenv').config();
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 // Set storage engine
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        // Use different directories based on field name
-        let uploadDir = 'uploads/';
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: async (req, file) => {
+    let folder = 'internmatch';
 
-        if (file.fieldname === 'profileImage') {
-            uploadDir = 'uploads/profile-images/';
-        } else if (file.fieldname === 'resume') {
-            uploadDir = 'uploads/resumes/';
-        } else if (file.fieldname === 'companyLogo') {
-            uploadDir = 'uploads/company-logos/';
-        }
-
-        // Create directory if it doesn't exist
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
-        }
-        cb(null, uploadDir);
-    },
-    filename: function (req, file, cb) {
-        cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+    if (file.fieldname === 'profileImage') {
+      folder = 'internmatch/profile-images';
+    } else if (file.fieldname === 'resume') {
+      folder = 'internmatch/resumes';
+    } else if (file.fieldname === 'companyLogo') {
+      folder = 'internmatch/company-logos';
     }
+
+    return {
+      folder: folder,
+      resource_type: 'auto', // Important for PDF support
+      public_id: file.fieldname + '-' + Date.now(),
+    };
+  },
 });
 
 // Check file type
 function checkFileType(file, cb) {
-    // Allowed exact MIME types
-    const allowedMimeTypes = [
-        'image/jpeg',
-        'image/png',
-        'image/gif',
-        'image/webp',
-        'application/pdf'
-    ];
+  // Allowed exact MIME types
+  const allowedMimeTypes = [
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'application/pdf'
+  ];
 
-    // Allowed extensions
-    const filetypes = /jpeg|jpg|png|gif|webp|pdf/;
+  // Allowed extensions
+  const filetypes = /jpeg|jpg|png|gif|webp|pdf/i;
 
-    // Check ext
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+  // Check ext
+  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
 
-    // Check exact mime
-    const mimetype = allowedMimeTypes.includes(file.mimetype);
+  // Check exact mime
+  const mimetype = allowedMimeTypes.includes(file.mimetype);
 
-    if (mimetype && extname) {
-        return cb(null, true);
-    } else {
-        cb(new Error('Invalid file type! Only strict images (JPEG, PNG, GIF) and PDFs are allowed.'));
-    }
+  if (mimetype && extname) {
+    return cb(null, true);
+  } else {
+    cb(new Error('Invalid file type! Only strict images (JPEG, PNG, GIF) and PDFs are allowed.'));
+  }
 }
 
 // Init upload
 const upload = multer({
-    storage: storage,
-    limits: { fileSize: 5000000 }, // 5MB limit
-    fileFilter: function (req, file, cb) {
-        checkFileType(file, cb);
-    }
+  storage: storage,
+  limits: { fileSize: 5000000 }, // 5MB limit
+  fileFilter: function (req, file, cb) {
+    checkFileType(file, cb);
+  }
 });
 
 module.exports = upload;
