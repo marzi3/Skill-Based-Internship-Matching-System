@@ -96,7 +96,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             router.push(getRoleDashboard(data.role));
             return { success: true };
         } catch (error: any) {
-            console.error('Login Error:', error.response?.data || error.message);
+            console.warn('Login Warning:', error.response?.data || error.message);
             const errorMessage = error.response?.data?.message || 
                                (error.response?.data?.errors && Array.isArray(error.response.data.errors) 
                                 ? error.response.data.errors[0].msg 
