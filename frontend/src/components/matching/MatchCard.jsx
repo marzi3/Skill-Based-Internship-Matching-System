@@ -10,15 +10,38 @@ import Badge from '@/components/common/Badge';
 import { Briefcase, MapPin, Search } from 'lucide-react';
 import Link from 'next/link';
 
+/**
+ * MATCH CARD COMPONENT
+ * 
+ * DESIGN RATIONALE:
+ * This is a "Polymorphic" component. It renders differently depending on 
+ * whether the viewer is a Student or an Employer.
+ * It serves as the primary "Explainability Hub", collecting and 
+ * displaying individual match reasons from the backend.
+ * 
+ * @param {Object} props.match - The match record from the database
+ * @param {Array} props.studentSkills - Full skill list for comparison
+ * @param {boolean} props.isEmployerMode - Toggle for Role-Based rendering
+ */
 export default function MatchCard({ match, studentSkills = [], isEmployerMode = false }) {
     if (!match) return null;
 
+    /**
+     * DATA NORMALIZATION:
+     * Depending on who is looking, the 'target' of the card changes.
+     * Employer looks at a Student; Student looks at an Internship.
+     */
     const target = isEmployerMode ? match.student : match.internship;
     const title = target?.positionTitle || target?.name || 'Unknown Position';
     const subtitle = target?.employer?.companyName || target?.company || target?.fieldOfStudy || 'Unknown Details';
     const avatarName = subtitle;
 
-    // Use Set intersection trick if actual matchedSkills aren't explicitly passed, or rely on explanation details
+    /**
+     * REGEX-BASED TRACEABILITY:
+     * WHY?: The backend sends raw text reasons. We use Regex to "mine" 
+     * specific skill names out of those strings so we can highlight them 
+     * in the UI without needing a complex joined query.
+     */
     const matchedSkillsFromExplanation = (match.explanationData || match.explanations || [])
         .filter(e => e.rule === 'B1_ExactSkillMatch' || e.rule === 'B3_PartialSkillCoverage')
         .map(e => {
@@ -27,12 +50,12 @@ export default function MatchCard({ match, studentSkills = [], isEmployerMode = 
         })
         .filter(Boolean);
 
-    // Filter to unique
+    // UNIQUE SET: Ensure we don't list the same skill twice if multiple rules fired
     const matchedSkills = [...new Set(matchedSkillsFromExplanation)];
 
     return (
         <motion.div
-            layout
+            layout // Framer Motion: Re-animates smoothly when items are added/removed
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
@@ -41,12 +64,11 @@ export default function MatchCard({ match, studentSkills = [], isEmployerMode = 
         >
             <div className="flex flex-col md:flex-row gap-6 items-start">
 
-                {/* Score Indicator */}
+                {/* VISUAL FEEDBACK: The MatchScore dial gives immediate emotional context */}
                 <div className="shrink-0 flex self-center md:self-start">
                     <MatchScore score={match.score} size={110} strokeWidth={6} label="Match" />
                 </div>
 
-                {/* Main Content Info */}
                 <div className="flex-1 space-y-4 w-full">
                     <div className="flex justify-between items-start gap-4">
                         <div>
@@ -62,6 +84,8 @@ export default function MatchCard({ match, studentSkills = [], isEmployerMode = 
                                 )}
                             </div>
                         </div>
+                        
+                        {/* TIER BADGE: Qualitative validation of the numeric score */}
                         {match.tier && (
                             <div className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest border ${match.tier === 'EXCELLENT' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
                                     match.tier === 'GOOD' ? 'bg-blue-50 text-blue-600 border-blue-100' :
@@ -81,9 +105,9 @@ export default function MatchCard({ match, studentSkills = [], isEmployerMode = 
                         {(target?.requiredSkills?.length > 3) && <Badge variant="secondary" size="sm">+{target.requiredSkills.length - 3} more</Badge>}
                     </div>
 
-                    {/* Explanations & Comparisons */}
+                    {/* DEEP-DIVE ANALYSIS SECTION */}
                     <div className="space-y-4 pt-4 border-t border-gray-100/60">
-                        {/* Only show SkillComparison if we have data for both sides. Internships have requiredSkills. Students have candidateSkills. */}
+                        {/* SKILL COMPARISON: Provides a visual "Delta" between Student and Requirement */}
                         {!isEmployerMode && target?.requiredSkills && (
                             <SkillComparison
                                 requiredSkills={target.requiredSkills}
@@ -92,12 +116,12 @@ export default function MatchCard({ match, studentSkills = [], isEmployerMode = 
                             />
                         )}
 
+                        {/* MATCH EXPLANATION: Hidden in an accordion to keep the UI clean but accessible */}
                         {(match.explanationData || match.explanations) && (
                             <MatchExplanation explanations={match.explanationData || match.explanations} />
                         )}
                     </div>
 
-                    {/* Footer Actions */}
                     <div className="pt-4 flex justify-end gap-3">
                         <Link href={isEmployerMode ? `/student/${target?._id}` : `/internships/${target?._id}`}>
                             <button className="px-5 py-2.5 rounded-xl font-bold text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors flex items-center gap-2 text-sm">

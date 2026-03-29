@@ -1,78 +1,64 @@
 'use client';
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { registerSchema } from '@/lib/validationSchemas';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { Mail, Lock, User, ArrowRight, AlertCircle, Briefcase, Eye, EyeOff, Check, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Mail, Lock, User, ArrowRight, AlertCircle, Briefcase, Eye, EyeOff, Check } from 'lucide-react';
 
 export default function Register() {
-    const { register } = useAuth();
-    const [role, setRole] = useState('student'); // student or employer
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        password: '',
-        confirmPassword: ''
-    });
-    const [error, setError] = useState(null);
+    const { register: authRegister } = useAuth();
+    const [role, setRole] = useState('student');
+    const [serverError, setServerError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    const [passwordValidation, setPasswordValidation] = useState({
-        length: false,
-        number: false,
-        special: false
+
+    const {
+        register,
+        handleSubmit,
+        watch,
+        setValue,
+        formState: { errors },
+    } = useForm({
+        resolver: zodResolver(registerSchema),
+        mode: 'onBlur',
+        defaultValues: {
+            name: '',
+            email: '',
+            password: '',
+            confirmPassword: '',
+            role: 'student',
+        },
     });
 
-    const validatePassword = (pass) => {
-        setPasswordValidation({
-            length: pass.length >= 8,
-            number: /\d/.test(pass),
-            special: /[!@#$%^&*]/.test(pass)
-        });
+    const passwordValue = watch('password', '');
+    const passwordValidation = {
+        length: passwordValue.length >= 8,
+        number: /\d/.test(passwordValue),
+        special: /[!@#$%^&*]/.test(passwordValue),
     };
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
-        if (name === 'password') {
-            validatePassword(value);
-        }
+    // Keep role in sync with the card selector
+    const handleRoleSelect = (selectedRole) => {
+        setRole(selectedRole);
+        setValue('role', selectedRole, { shouldValidate: true });
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError(null);
-
-        if (formData.name.trim().length < 2 || formData.name.length > 100) {
-            setError('Name must be between 2 and 100 characters');
-            return;
-        }
-
-        if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
-            setError('Please enter a valid email address');
-            return;
-        }
-
-        if (formData.password !== formData.confirmPassword) {
-            setError('Passwords do not match');
-            return;
-        }
-
-        if (!passwordValidation.length || !passwordValidation.number || !passwordValidation.special) {
-            setError('Password does not meet security requirements');
-            return;
-        }
-
+    const onSubmit = async (data) => {
+        setServerError(null);
         setIsLoading(true);
-        const result = await register({
-            name: formData.name,
-            email: formData.email,
-            password: formData.password,
-            role: role
+
+        const result = await authRegister({
+            name: data.name,
+            email: data.email,
+            password: data.password,
+            role: data.role,
         });
 
         if (!result.success) {
-            setError(result.error);
+            setServerError(result.error);
             setIsLoading(false);
         }
     };
@@ -96,18 +82,18 @@ export default function Register() {
                     </div>
 
                     <div className="relative z-10 my-12 space-y-6">
-                        <div className={`p-4 rounded-xl border transition-all cursor-pointer ${role === 'student' ? 'bg-white/20 border-white/40 shadow-lg' : 'bg-transparent border-transparent opacity-60 hover:opacity-100'}`} onClick={() => setRole('student')}>
+                        <div className={`p-4 rounded-xl border transition-all cursor-pointer ${role === 'student' ? 'bg-white/20 border-white/40 shadow-lg' : 'bg-transparent border-transparent opacity-60 hover:opacity-100'}`} onClick={() => handleRoleSelect('student')}>
                             <div className="flex items-center space-x-3 mb-2">
                                 <div className="p-2 bg-white/20 rounded-lg"><User size={20} /></div>
-                                <h3 className="font-semibold text-lg">I'm a Student</h3>
+                                <h3 className="font-semibold text-lg">I&apos;m a Student</h3>
                             </div>
                             <p className="text-xs text-indigo-100">Looking for internships and skill verification.</p>
                         </div>
 
-                        <div className={`p-4 rounded-xl border transition-all cursor-pointer ${role === 'employer' ? 'bg-white/20 border-white/40 shadow-lg' : 'bg-transparent border-transparent opacity-60 hover:opacity-100'}`} onClick={() => setRole('employer')}>
+                        <div className={`p-4 rounded-xl border transition-all cursor-pointer ${role === 'employer' ? 'bg-white/20 border-white/40 shadow-lg' : 'bg-transparent border-transparent opacity-60 hover:opacity-100'}`} onClick={() => handleRoleSelect('employer')}>
                             <div className="flex items-center space-x-3 mb-2">
                                 <div className="p-2 bg-white/20 rounded-lg"><Briefcase size={20} /></div>
-                                <h3 className="font-semibold text-lg">I'm an Employer</h3>
+                                <h3 className="font-semibold text-lg">I&apos;m an Employer</h3>
                             </div>
                             <p className="text-xs text-indigo-100">Hiring talent and posting internships.</p>
                         </div>
@@ -128,43 +114,72 @@ export default function Register() {
 
                     <h2 className="text-2xl font-bold text-gray-800 mb-6">Create your account</h2>
 
-                    {error && (
-                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="bg-red-50 text-red-600 p-3 rounded-lg text-sm flex items-center mb-6 border border-red-100">
-                            <AlertCircle size={16} className="mr-2 flex-shrink-0" /> {error}
-                        </motion.div>
-                    )}
+                    <AnimatePresence>
+                        {serverError && (
+                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="bg-red-50 text-red-600 p-3 rounded-lg text-sm flex items-center mb-6 border border-red-100">
+                                <AlertCircle size={16} className="mr-2 flex-shrink-0" /> {serverError}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
-                    <form onSubmit={handleSubmit} className="space-y-5">
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                        {/* Name */}
                         <div className="space-y-1">
-                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Full Name</label>
+                            <label htmlFor="name" className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Full Name</label>
                             <div className="relative group">
                                 <User className="absolute left-3 top-3.5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
-                                <input name="name" type="text" required value={formData.name} onChange={handleChange}
-                                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm group-hover:bg-white" placeholder="John Doe" />
+                                <input
+                                    {...register('name')}
+                                    id="name"
+                                    type="text"
+                                    aria-invalid={errors.name ? 'true' : undefined}
+                                    aria-describedby={errors.name ? 'name-error' : undefined}
+                                    className={`w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 transition-all shadow-sm group-hover:bg-white ${errors.name ? 'border-red-500 focus:ring-red-500/50' : 'border-gray-200 focus:ring-indigo-500/50 focus:border-indigo-500'}`}
+                                    placeholder="John Doe"
+                                />
                             </div>
+                            <AnimatePresence>
+                                {errors.name && (
+                                    <motion.p id="name-error" role="alert" initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="text-rose-500 text-xs font-bold mt-1 ml-1">{errors.name.message}</motion.p>
+                                )}
+                            </AnimatePresence>
                         </div>
 
+                        {/* Email */}
                         <div className="space-y-1">
-                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Email Address</label>
+                            <label htmlFor="email" className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Email Address</label>
                             <div className="relative group">
                                 <Mail className="absolute left-3 top-3.5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
-                                <input name="email" type="email" required value={formData.email} onChange={handleChange}
-                                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm group-hover:bg-white" placeholder="you@example.com" />
+                                <input
+                                    {...register('email')}
+                                    id="email"
+                                    type="email"
+                                    aria-invalid={errors.email ? 'true' : undefined}
+                                    aria-describedby={errors.email ? 'email-error' : undefined}
+                                    className={`w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 transition-all shadow-sm group-hover:bg-white ${errors.email ? 'border-red-500 focus:ring-red-500/50' : 'border-gray-200 focus:ring-indigo-500/50 focus:border-indigo-500'}`}
+                                    placeholder="you@example.com"
+                                />
                             </div>
+                            <AnimatePresence>
+                                {errors.email && (
+                                    <motion.p id="email-error" role="alert" initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="text-rose-500 text-xs font-bold mt-1 ml-1">{errors.email.message}</motion.p>
+                                )}
+                            </AnimatePresence>
                         </div>
 
+                        {/* Password Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div className="space-y-1">
-                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Password</label>
+                                <label htmlFor="password" className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Password</label>
                                 <div className="relative group">
                                     <Lock className="absolute left-3 top-3.5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
                                     <input
-                                        name="password"
+                                        {...register('password')}
+                                        id="password"
                                         type={showPassword ? "text" : "password"}
-                                        required
-                                        value={formData.password}
-                                        onChange={handleChange}
-                                        className="w-full pl-10 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm group-hover:bg-white"
+                                        aria-invalid={errors.password ? 'true' : undefined}
+                                        aria-describedby={errors.password ? 'password-error' : undefined}
+                                        className={`w-full pl-10 pr-10 py-3 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 transition-all shadow-sm group-hover:bg-white ${errors.password ? 'border-red-500 focus:ring-red-500/50' : 'border-gray-200 focus:ring-indigo-500/50 focus:border-indigo-500'}`}
                                         placeholder="••••••••"
                                     />
                                     <button
@@ -190,14 +205,31 @@ export default function Register() {
                                         Special (!@#$)
                                     </div>
                                 </div>
+                                <AnimatePresence>
+                                    {errors.password && (
+                                        <motion.p id="password-error" role="alert" initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="text-rose-500 text-xs font-bold mt-1 ml-1">{errors.password.message}</motion.p>
+                                    )}
+                                </AnimatePresence>
                             </div>
                             <div className="space-y-1">
-                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Confirm Password</label>
+                                <label htmlFor="confirmPassword" className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Confirm Password</label>
                                 <div className="relative group">
                                     <Lock className="absolute left-3 top-3.5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
-                                    <input name="confirmPassword" type="password" required value={formData.confirmPassword} onChange={handleChange}
-                                        className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm group-hover:bg-white" placeholder="••••••••" />
+                                    <input
+                                        {...register('confirmPassword')}
+                                        id="confirmPassword"
+                                        type="password"
+                                        aria-invalid={errors.confirmPassword ? 'true' : undefined}
+                                        aria-describedby={errors.confirmPassword ? 'confirmPassword-error' : undefined}
+                                        className={`w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 transition-all shadow-sm group-hover:bg-white ${errors.confirmPassword ? 'border-red-500 focus:ring-red-500/50' : 'border-gray-200 focus:ring-indigo-500/50 focus:border-indigo-500'}`}
+                                        placeholder="••••••••"
+                                    />
                                 </div>
+                                <AnimatePresence>
+                                    {errors.confirmPassword && (
+                                        <motion.p id="confirmPassword-error" role="alert" initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="text-rose-500 text-xs font-bold mt-1 ml-1">{errors.confirmPassword.message}</motion.p>
+                                    )}
+                                </AnimatePresence>
                             </div>
                         </div>
 

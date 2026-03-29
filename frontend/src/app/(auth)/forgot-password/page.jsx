@@ -1,22 +1,33 @@
 'use client';
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { forgotPasswordSchema } from '@/lib/validationSchemas';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { Mail, ArrowRight, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Mail, ArrowRight, AlertCircle, CheckCircle } from 'lucide-react';
 
 export default function ForgotPassword() {
     const { forgotPassword } = useAuth();
-    const [email, setEmail] = useState('');
-    const [status, setStatus] = useState('idle'); // idle, loading, success, error
+    const [status, setStatus] = useState('idle');
     const [message, setMessage] = useState('');
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm({
+        resolver: zodResolver(forgotPasswordSchema),
+        mode: 'onBlur',
+        defaultValues: { email: '' },
+    });
+
+    const onSubmit = async (data) => {
         setStatus('loading');
         setMessage('');
 
-        const result = await forgotPassword(email);
+        const result = await forgotPassword(data.email);
 
         if (result.success) {
             setStatus('success');
@@ -40,13 +51,13 @@ export default function ForgotPassword() {
                     <div className="relative z-10">
                         <img src="/images/logo.png" alt="InternMatch Logo" className="h-16 w-auto object-contain mb-6 drop-shadow-md bg-white/20 p-2 rounded-xl backdrop-blur-sm" />
                         <h1 className="text-3xl font-bold mb-2">Back on track</h1>
-                        <p className="text-indigo-100">Don't worry, even the best of us forget sometimes.</p>
+                        <p className="text-indigo-100">Don&apos;t worry, even the best of us forget sometimes.</p>
                     </div>
 
                     <div className="relative z-10 mt-12 md:mt-0">
                         <div className="glass bg-white/10 p-5 rounded-2xl border-white/10">
                             <p className="text-sm font-medium leading-relaxed italic opacity-90">
-                                "Security is our priority. Your password reset link is encrypted and valid for 1 hour."
+                                &quot;Security is our priority. Your password reset link is encrypted and valid for 1 hour.&quot;
                             </p>
                         </div>
                     </div>
@@ -59,7 +70,7 @@ export default function ForgotPassword() {
                     </Link>
 
                     <h2 className="text-2xl font-bold text-gray-800 mb-2 mt-4 md:mt-0">Forgot Password?</h2>
-                    <p className="text-gray-500 text-sm mb-8">Enter your registered email and we'll send a recovery link.</p>
+                    <p className="text-gray-500 text-sm mb-8">Enter your registered email and we&apos;ll send a recovery link.</p>
 
                     {status === 'success' ? (
                         <motion.div 
@@ -80,26 +91,34 @@ export default function ForgotPassword() {
                             </button>
                         </motion.div>
                     ) : (
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            {status === 'error' && (
-                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-red-50 text-red-600 p-3 rounded-xl border border-red-100 text-sm flex items-center">
-                                    <AlertCircle size={16} className="mr-2 flex-shrink-0" /> {message}
-                                </motion.div>
-                            )}
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                            <AnimatePresence>
+                                {status === 'error' && (
+                                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="bg-red-50 text-red-600 p-3 rounded-xl border border-red-100 text-sm flex items-center">
+                                        <AlertCircle size={16} className="mr-2 flex-shrink-0" /> {message}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
 
                             <div className="space-y-1">
-                                <label className="text-xs font-semibold text-gray-400 uppercase tracking-widest ml-1">Email Address</label>
+                                <label htmlFor="email" className="text-xs font-semibold text-gray-400 uppercase tracking-widest ml-1">Email Address</label>
                                 <div className="relative group">
                                     <Mail className="absolute left-3 top-3.5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
                                     <input
+                                        {...register('email')}
+                                        id="email"
                                         type="email"
-                                        required
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-3.5 bg-gray-50 border border-transparent rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:bg-white transition-all shadow-sm"
+                                        aria-invalid={errors.email ? 'true' : undefined}
+                                        aria-describedby={errors.email ? 'email-error' : undefined}
+                                        className={`w-full pl-10 pr-4 py-3.5 bg-gray-50 border rounded-2xl focus:outline-none focus:ring-2 focus:bg-white transition-all shadow-sm ${errors.email ? 'border-red-500 focus:ring-red-500/50' : 'border-transparent focus:ring-indigo-500/50'}`}
                                         placeholder="you@domain.com"
                                     />
                                 </div>
+                                <AnimatePresence>
+                                    {errors.email && (
+                                        <motion.p id="email-error" role="alert" initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="text-rose-500 text-xs font-bold mt-1 ml-1">{errors.email.message}</motion.p>
+                                    )}
+                                </AnimatePresence>
                             </div>
 
                             <button

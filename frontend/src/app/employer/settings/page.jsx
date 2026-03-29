@@ -1,9 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { employerProfileSchema, employerPasswordSchema } from '@/lib/validationSchemas';
 import { Settings as SettingsIcon, Bell, Shield, User, CreditCard, Save, Loader2, Moon, Sun, ArrowLeft } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { motion, AnimatePresence } from 'framer-motion';
 import Card from '@/components/common/Card';
 import { useAuth } from '@/context/AuthContext';
 import axios from '@/services/apiClient';
@@ -17,14 +21,9 @@ const SettingsPage = () => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api/v1';
     const imageBaseUrl = apiUrl.includes('/api/v1') ? apiUrl.replace('/api/v1', '') : apiUrl;
 
-    // Forms State
-    const [profileData, setProfileData] = useState({
-        name: user?.name || '',
-        companyDescription: user?.companyDescription || '',
-        profilePicture: user?.profilePicture || '',
-        positionInCompany: user?.positionInCompany || ''
-    });
-    const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    // Profile picture (not part of Zod schema — file uploads handled separately)
+    const [profilePictureFile, setProfilePictureFile] = useState(null);
+    const [currentProfilePicture, setCurrentProfilePicture] = useState(user?.profilePicture || '');
 
     // UI State
     const [isLoading, setIsLoading] = useState(false);
@@ -32,9 +31,37 @@ const SettingsPage = () => {
     const { theme, setTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
 
-    // Hydration fix for next-themes
-    import('react').then(React => {
-        React.useEffect(() => setMounted(true), []);
+    useEffect(() => setMounted(true), []);
+
+    // ─── Profile Form (useForm + Zod) ────────────────────────────────────────
+    const {
+        register: registerProfile,
+        handleSubmit: handleProfileSubmit,
+        formState: { errors: profileErrors },
+    } = useForm({
+        resolver: zodResolver(employerProfileSchema),
+        mode: 'onBlur',
+        defaultValues: {
+            name: user?.name || '',
+            positionInCompany: user?.positionInCompany || '',
+            companyDescription: user?.companyDescription || '',
+        },
+    });
+
+    // ─── Password Form (useForm + Zod) ───────────────────────────────────────
+    const {
+        register: registerPassword,
+        handleSubmit: handlePasswordSubmit,
+        reset: resetPasswordForm,
+        formState: { errors: passwordErrors },
+    } = useForm({
+        resolver: zodResolver(employerPasswordSchema),
+        mode: 'onBlur',
+        defaultValues: {
+            currentPassword: '',
+            newPassword: '',
+            confirmPassword: '',
+        },
     });
 
     const showMessage = (type, text) => {
@@ -44,26 +71,23 @@ const SettingsPage = () => {
 
     const handleFileChange = (e) => {
         if (e.target.files && e.target.files[0]) {
-            setProfileData({ ...profileData, profilePicture: e.target.files[0] });
+            setProfilePictureFile(e.target.files[0]);
         }
     };
 
-    const handleProfileSubmit = async (e) => {
-        e.preventDefault();
+    const onProfileSubmit = async (data) => {
         setIsLoading(true);
         try {
-            const data = new FormData();
-            Object.keys(profileData).forEach(key => {
-                if (key === 'profilePicture' && profileData[key] instanceof File) {
-                    data.append('profilePicture', profileData[key]);
-                } else if (profileData[key] !== null && profileData[key] !== undefined) {
-                    data.append(key, profileData[key]);
-                }
-            });
+            const formData = new FormData();
+            formData.append('name', data.name);
+            if (data.positionInCompany) formData.append('positionInCompany', data.positionInCompany);
+            if (data.companyDescription) formData.append('companyDescription', data.companyDescription);
+            if (profilePictureFile instanceof File) {
+                formData.append('profilePicture', profilePictureFile);
+            }
 
-            const res = await axios.put('/auth/profile', data);
+            await axios.put('/auth/profile', formData);
             
-            // Refresh auth context
             if (typeof checkUserLoggedIn === 'function') {
                 checkUserLoggedIn();
             }
@@ -76,23 +100,15 @@ const SettingsPage = () => {
         }
     };
 
-    const handlePasswordSubmit = async (e) => {
-        e.preventDefault();
-        if (passwordData.newPassword !== passwordData.confirmPassword) {
-            return showMessage('error', 'New passwords do not match.');
-        }
-        if (passwordData.newPassword.length < 8) {
-            return showMessage('error', 'Password must be at least 8 characters long.');
-        }
-
+    const onPasswordSubmit = async (data) => {
         setIsLoading(true);
         try {
             await axios.put('/auth/password', {
-                currentPassword: passwordData.currentPassword,
-                newPassword: passwordData.newPassword
+                currentPassword: data.currentPassword,
+                newPassword: data.newPassword,
             });
             showMessage('success', 'Password changed successfully. Please use it next time you log in.');
-            setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+            resetPasswordForm();
         } catch (error) {
             showMessage('error', error.response?.data?.message || 'Failed to change password.');
         } finally {
@@ -149,26 +165,32 @@ const SettingsPage = () => {
                     {activeTab === 'profile' && (
                         <Card shadow="sm" rounded="lg" padding="lg" className="border border-gray-100">
                             <h2 className="text-xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4">Personal Information</h2>
-                            <form onSubmit={handleProfileSubmit} className="space-y-6">
+                            <form onSubmit={handleProfileSubmit(onProfileSubmit)} className="space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-sm font-bold text-gray-700">Full Name</label>
+                                        <label htmlFor="name" className="text-sm font-bold text-gray-700">Full Name</label>
                                         <input
+                                            {...registerProfile('name')}
+                                            id="name"
                                             type="text"
-                                            value={profileData.name}
-                                            onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                                            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary-100 focus:border-primary-500 outline-none transition-all"
+                                            aria-invalid={profileErrors.name ? 'true' : undefined}
+                                            aria-describedby={profileErrors.name ? 'profile-name-error' : undefined}
+                                            className={`w-full bg-gray-50 border rounded-lg px-4 py-2.5 text-sm focus:ring-2 outline-none transition-all ${profileErrors.name ? 'border-red-500 focus:ring-red-500/50' : 'border-gray-200 focus:ring-primary-100 focus:border-primary-500'}`}
                                             placeholder="Your full name"
-                                            required
                                         />
+                                        <AnimatePresence>
+                                            {profileErrors.name && (
+                                                <motion.p id="profile-name-error" role="alert" initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="text-rose-500 text-xs font-bold">{profileErrors.name.message}</motion.p>
+                                            )}
+                                        </AnimatePresence>
                                         <p className="text-xs text-gray-500">This is how you will appear to potential candidates.</p>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-bold text-gray-700">Position in Company</label>
+                                        <label htmlFor="positionInCompany" className="text-sm font-bold text-gray-700">Position in Company</label>
                                         <input
+                                            {...registerProfile('positionInCompany')}
+                                            id="positionInCompany"
                                             type="text"
-                                            value={profileData.positionInCompany}
-                                            onChange={(e) => setProfileData({ ...profileData, positionInCompany: e.target.value })}
                                             className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary-100 focus:border-primary-500 outline-none transition-all"
                                             placeholder="e.g. HR Manager"
                                         />
@@ -183,15 +205,15 @@ const SettingsPage = () => {
                                         onChange={handleFileChange}
                                         className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary-100 focus:border-primary-500 outline-none transition-all"
                                     />
-                                    {typeof profileData.profilePicture === 'string' && profileData.profilePicture && (
-                                        <p className="text-xs text-gray-400 truncate">Current: {profileData.profilePicture}</p>
+                                    {typeof currentProfilePicture === 'string' && currentProfilePicture && (
+                                        <p className="text-xs text-gray-400 truncate">Current: {currentProfilePicture}</p>
                                     )}
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-bold text-gray-700">Company Description</label>
+                                    <label htmlFor="companyDescription" className="text-sm font-bold text-gray-700">Company Description</label>
                                     <textarea
-                                        value={profileData.companyDescription}
-                                        onChange={(e) => setProfileData({ ...profileData, companyDescription: e.target.value })}
+                                        {...registerProfile('companyDescription')}
+                                        id="companyDescription"
                                         className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary-100 focus:border-primary-500 outline-none transition-all h-24 resize-none"
                                         placeholder="Briefly describe your company's mission and culture..."
                                     />
@@ -240,38 +262,55 @@ const SettingsPage = () => {
                     {activeTab === 'security' && (
                         <Card shadow="sm" rounded="lg" padding="lg" className="border border-gray-100">
                             <h2 className="text-xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4">Change Password</h2>
-                            <form onSubmit={handlePasswordSubmit} className="space-y-6">
+                            <form onSubmit={handlePasswordSubmit(onPasswordSubmit)} className="space-y-6">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-bold text-gray-700">Current Password</label>
+                                    <label htmlFor="currentPassword" className="text-sm font-bold text-gray-700">Current Password</label>
                                     <input
+                                        {...registerPassword('currentPassword')}
+                                        id="currentPassword"
                                         type="password"
-                                        value={passwordData.currentPassword}
-                                        onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary-100 outline-none"
-                                        required
+                                        aria-invalid={passwordErrors.currentPassword ? 'true' : undefined}
+                                        aria-describedby={passwordErrors.currentPassword ? 'currentPassword-error' : undefined}
+                                        className={`w-full bg-gray-50 border rounded-lg px-4 py-2.5 text-sm focus:ring-2 outline-none ${passwordErrors.currentPassword ? 'border-red-500 focus:ring-red-500/50' : 'border-gray-200 focus:ring-primary-100'}`}
                                     />
+                                    <AnimatePresence>
+                                        {passwordErrors.currentPassword && (
+                                            <motion.p id="currentPassword-error" role="alert" initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="text-rose-500 text-xs font-bold">{passwordErrors.currentPassword.message}</motion.p>
+                                        )}
+                                    </AnimatePresence>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-sm font-bold text-gray-700">New Password</label>
+                                        <label htmlFor="newPassword" className="text-sm font-bold text-gray-700">New Password</label>
                                         <input
+                                            {...registerPassword('newPassword')}
+                                            id="newPassword"
                                             type="password"
-                                            value={passwordData.newPassword}
-                                            onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                                            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary-100 outline-none"
-                                            required
-                                            minLength={8}
+                                            aria-invalid={passwordErrors.newPassword ? 'true' : undefined}
+                                            aria-describedby={passwordErrors.newPassword ? 'newPassword-error' : undefined}
+                                            className={`w-full bg-gray-50 border rounded-lg px-4 py-2.5 text-sm focus:ring-2 outline-none ${passwordErrors.newPassword ? 'border-red-500 focus:ring-red-500/50' : 'border-gray-200 focus:ring-primary-100'}`}
                                         />
+                                        <AnimatePresence>
+                                            {passwordErrors.newPassword && (
+                                                <motion.p id="newPassword-error" role="alert" initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="text-rose-500 text-xs font-bold">{passwordErrors.newPassword.message}</motion.p>
+                                            )}
+                                        </AnimatePresence>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-bold text-gray-700">Confirm New Password</label>
+                                        <label htmlFor="confirmPassword" className="text-sm font-bold text-gray-700">Confirm New Password</label>
                                         <input
+                                            {...registerPassword('confirmPassword')}
+                                            id="confirmPassword"
                                             type="password"
-                                            value={passwordData.confirmPassword}
-                                            onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                                            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary-100 outline-none"
-                                            required
+                                            aria-invalid={passwordErrors.confirmPassword ? 'true' : undefined}
+                                            aria-describedby={passwordErrors.confirmPassword ? 'confirmPassword-error' : undefined}
+                                            className={`w-full bg-gray-50 border rounded-lg px-4 py-2.5 text-sm focus:ring-2 outline-none ${passwordErrors.confirmPassword ? 'border-red-500 focus:ring-red-500/50' : 'border-gray-200 focus:ring-primary-100'}`}
                                         />
+                                        <AnimatePresence>
+                                            {passwordErrors.confirmPassword && (
+                                                <motion.p id="confirmPassword-error" role="alert" initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="text-rose-500 text-xs font-bold">{passwordErrors.confirmPassword.message}</motion.p>
+                                            )}
+                                        </AnimatePresence>
                                     </div>
                                 </div>
 

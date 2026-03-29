@@ -38,9 +38,11 @@ export default function StudentProfile() {
                     </div>
                 </div>
 
-                <button className="px-8 py-3 bg-gray-900 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl hover:bg-black transition-all">
-                    Update Profile
-                </button>
+                <Link href="/profile/edit">
+                    <button className="px-8 py-3 bg-gray-900 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl hover:bg-black transition-all">
+                        Update Profile
+                    </button>
+                </Link>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

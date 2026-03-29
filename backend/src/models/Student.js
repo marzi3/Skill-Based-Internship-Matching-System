@@ -300,16 +300,18 @@ studentSchema.methods.calculateProfileCompletion = function () {
         this.profileCompletion.skills * 0.3)
     );
 
-    // Update status based on matching readiness
-    if (this.profileCompletion.overall >= 80 &&
-      this.personalInfo?.gpa &&
-      this.personalInfo?.preferredLocation &&
-      this.personalInfo?.industriesOfInterest?.length > 0 &&
-      this.education && this.education.some(edu => edu.degreeLevel) &&
-      this.skills && this.skills.length >= 3) {
-      this.status = 'complete';
-    } else if (this.profileCompletion.overall > 0) {
-      this.status = 'incomplete';
+    // Update status based on matching readiness - only if not already manually verified
+    if (this.status !== 'verified') {
+      if (this.profileCompletion.overall >= 80 &&
+        this.personalInfo?.gpa &&
+        this.personalInfo?.preferredLocation &&
+        this.personalInfo?.industriesOfInterest?.length > 0 &&
+        this.education && this.education.some(edu => edu.degreeLevel) &&
+        this.skills && this.skills.length >= 3) {
+        this.status = 'complete';
+      } else if (this.profileCompletion.overall > 0) {
+        this.status = 'incomplete';
+      }
     }
 
     return this.profileCompletion;

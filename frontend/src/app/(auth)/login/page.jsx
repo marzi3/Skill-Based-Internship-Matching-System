@@ -1,37 +1,36 @@
 'use client';
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { loginSchema } from '@/lib/validationSchemas';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, AlertCircle, ArrowRight, Eye, EyeOff } from 'lucide-react';
 
 export default function Login() {
     const { login } = useAuth();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState(null);
+    const [serverError, setServerError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        
-        // Client-side Validation
-        if (!/^\S+@\S+\.\S+$/.test(email)) {
-            setError('Please enter a valid email address.');
-            return;
-        }
-        if (password.length < 8) {
-            setError('Password must be at least 8 characters long.');
-            return;
-        }
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm({
+        resolver: zodResolver(loginSchema),
+        mode: 'onBlur',
+        defaultValues: { email: '', password: '' },
+    });
 
+    const onSubmit = async (data) => {
         setIsLoading(true);
-        setError(null);
+        setServerError(null);
 
-        const result = await login(email, password);
+        const result = await login(data.email, data.password);
         if (!result.success) {
-            setError(result.error);
+            setServerError(result.error);
             setIsLoading(false);
         }
     };
@@ -66,7 +65,7 @@ export default function Login() {
 
                     <div className="relative z-10 space-y-6 mt-12 md:mt-0">
                         <div className="glass bg-white/10 p-4 rounded-xl border-white/10">
-                            <p className="text-sm font-medium">"Verified skills get you hired faster. Join thousands of students today."</p>
+                            <p className="text-sm font-medium">&quot;Verified skills get you hired faster. Join thousands of students today.&quot;</p>
                         </div>
                     </div>
                 </div>
@@ -80,44 +79,56 @@ export default function Login() {
                         </Link>
                     </div>
 
-                    {error && (
-                        <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            className="bg-red-50 text-red-600 p-3 rounded-lg text-sm flex items-center mb-6 border border-red-100"
-                        >
-                            <AlertCircle size={16} className="mr-2 flex-shrink-0" />
-                            {error}
-                        </motion.div>
-                    )}
+                    <AnimatePresence>
+                        {serverError && (
+                            <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="bg-red-50 text-red-600 p-3 rounded-lg text-sm flex items-center mb-6 border border-red-100"
+                            >
+                                <AlertCircle size={16} className="mr-2 flex-shrink-0" />
+                                {serverError}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
-                    <form onSubmit={handleSubmit} className="space-y-5">
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                        {/* Email */}
                         <div className="space-y-1">
-                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Email</label>
+                            <label htmlFor="email" className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Email</label>
                             <div className="relative group">
                                 <Mail className="absolute left-3 top-3.5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
                                 <input
+                                    {...register('email')}
+                                    id="email"
                                     type="email"
-                                    required
-                                    className="w-full pl-10 pr-4 py-3 bg-white/80 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm group-hover:bg-white"
+                                    aria-invalid={errors.email ? 'true' : undefined}
+                                    aria-describedby={errors.email ? 'email-error' : undefined}
+                                    className={`w-full pl-10 pr-4 py-3 bg-white/80 border rounded-xl focus:outline-none focus:ring-2 transition-all shadow-sm group-hover:bg-white ${errors.email ? 'border-red-500 focus:ring-red-500/50' : 'border-gray-200 focus:ring-indigo-500/50 focus:border-indigo-500'}`}
                                     placeholder="student@university.edu"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
                                 />
                             </div>
+                            <AnimatePresence>
+                                {errors.email && (
+                                    <motion.p id="email-error" role="alert" initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="text-rose-500 text-xs font-bold mt-1 ml-1">{errors.email.message}</motion.p>
+                                )}
+                            </AnimatePresence>
                         </div>
 
+                        {/* Password */}
                         <div className="space-y-1">
-                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Password</label>
+                            <label htmlFor="password" className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Password</label>
                             <div className="relative group">
                                 <Lock className="absolute left-3 top-3.5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
                                 <input
+                                    {...register('password')}
+                                    id="password"
                                     type={showPassword ? "text" : "password"}
-                                    required
-                                    className="w-full pl-10 pr-10 py-3 bg-white/80 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm group-hover:bg-white"
+                                    aria-invalid={errors.password ? 'true' : undefined}
+                                    aria-describedby={errors.password ? 'password-error' : undefined}
+                                    className={`w-full pl-10 pr-10 py-3 bg-white/80 border rounded-xl focus:outline-none focus:ring-2 transition-all shadow-sm group-hover:bg-white ${errors.password ? 'border-red-500 focus:ring-red-500/50' : 'border-gray-200 focus:ring-indigo-500/50 focus:border-indigo-500'}`}
                                     placeholder="••••••••"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
                                 />
                                 <button
                                     type="button"
@@ -127,8 +138,13 @@ export default function Login() {
                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
                             </div>
-                            <div className="flex justify-end">
-                                <Link href="/forgot-password" className="text-xs text-gray-500 hover:text-indigo-600 font-medium">Forgot password?</Link>
+                            <div className="flex justify-between items-center">
+                                <AnimatePresence>
+                                    {errors.password && (
+                                        <motion.p id="password-error" role="alert" initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="text-rose-500 text-xs font-bold mt-1 ml-1">{errors.password.message}</motion.p>
+                                    )}
+                                </AnimatePresence>
+                                <Link href="/forgot-password" className="text-xs text-gray-500 hover:text-indigo-600 font-medium ml-auto">Forgot password?</Link>
                             </div>
                         </div>
 
