@@ -218,11 +218,13 @@ export default function StudentProfile() {
         setResumeFile(null);
       }
       if (data.profileImage && data.profileImage.filePath) {
-        const fullImageUrl = `${imageBaseUrl}/${data.profileImage.filePath}`;
+        const url = data.profileImage.filePath;
+        const fullImageUrl = url.startsWith('http') ? url : `${imageBaseUrl}/${url}`;
         setStoredProfileImage(fullImageUrl);
       }
       if (data.coverImage && data.coverImage.filePath) {
-        const fullCoverUrl = `${imageBaseUrl}/${data.coverImage.filePath}`;
+        const url = data.coverImage.filePath;
+        const fullCoverUrl = url.startsWith('http') ? url : `${imageBaseUrl}/${url}`;
         setStoredCoverImage(fullCoverUrl);
       }
     } catch (error) {
@@ -375,7 +377,8 @@ export default function StudentProfile() {
   // Download resume function
   const handleResumeDownload = () => {
     if (resumeFile && resumeFile.filePath) {
-      const fullResumeUrl = `${imageBaseUrl}/${resumeFile.filePath}`;
+      const url = resumeFile.filePath;
+      const fullResumeUrl = url.startsWith('http') ? url : `${imageBaseUrl}/${url}`;
       window.open(fullResumeUrl, '_blank');
     }
   };
@@ -1027,7 +1030,8 @@ export default function StudentProfile() {
       }
       // Update stored profile image
       if (response.data.data && response.data.data.student && response.data.data.student.profileImage) {
-        const fullImageUrl = `${imageBaseUrl}/${response.data.data.student.profileImage.filePath}`;
+        const url = response.data.data.student.profileImage.filePath;
+        const fullImageUrl = url.startsWith('http') ? url : `${imageBaseUrl}/${url}`;
         setStoredProfileImage(fullImageUrl);
       }
       // Refresh auth context to update profile picture elsewhere (like Navbar)
@@ -1114,7 +1118,8 @@ export default function StudentProfile() {
       }
       // Update stored cover image
       if (response.data.data && response.data.data.student && response.data.data.student.coverImage) {
-        const fullCoverUrl = `${imageBaseUrl}/${response.data.data.student.coverImage.filePath}`;
+        const url = response.data.data.student.coverImage.filePath;
+        const fullCoverUrl = url.startsWith('http') ? url : `${imageBaseUrl}/${url}`;
         setStoredCoverImage(fullCoverUrl);
       }
       // Refresh auth context
@@ -2376,7 +2381,7 @@ export default function StudentProfile() {
             {/* PDF Viewer */}
             <div className="flex-1 p-4 overflow-hidden">
               <iframe
-                src={`${imageBaseUrl}/${resumeFile.filePath}#toolbar=0&navpanes=0&scrollbar=1`}
+                src={resumeFile.filePath.startsWith('http') ? `${resumeFile.filePath}#toolbar=0&navpanes=0&scrollbar=1` : `${imageBaseUrl}/${resumeFile.filePath}#toolbar=0&navpanes=0&scrollbar=1`}
                 className="w-full h-full border-0 rounded-lg"
                 title="Resume Preview"
                 onError={() => {

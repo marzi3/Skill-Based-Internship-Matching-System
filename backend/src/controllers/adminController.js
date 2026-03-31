@@ -141,6 +141,7 @@ exports.updateEmployerStatus = async (req, res) => {
         }
 
         employer.status = status;
+        employer.verificationStatus = status;
 
         // Permanent Fix: Delete internships if suspended
         if (status === 'suspended') {
@@ -498,6 +499,7 @@ exports.updateStudentStatus = async (req, res) => {
         }
 
         student.status = status;
+        student.verificationStatus = status;
         await student.save();
 
         // Propagation: Update Student profile status if it exists
