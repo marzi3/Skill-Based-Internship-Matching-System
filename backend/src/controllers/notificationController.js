@@ -19,15 +19,16 @@ const getNotifications = asyncHandler(async (req, res) => {
 // @route   PATCH /api/notifications/:id/read
 // @access  Private
 const markAsRead = asyncHandler(async (req, res) => {
-    const notification = await Notification.findOne({ _id: req.params.id, userId: req.user._id });
+    const notification = await Notification.findOneAndUpdate(
+        { _id: req.params.id, userId: req.user._id },
+        { isRead: true },
+        { new: true, runValidators: true }
+    );
 
     if (!notification) {
         res.status(404);
         throw new Error('Notification not found or unauthorized');
     }
-
-    notification.isRead = true;
-    await notification.save();
 
     res.status(200).json({
         success: true,

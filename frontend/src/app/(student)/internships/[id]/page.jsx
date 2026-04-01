@@ -49,25 +49,25 @@ export default function InternshipDetailPage({ params }) {
                 if (!jobRes.data.success) throw new Error('Failed to load internship details');
                 setInternship(jobRes.data.data);
 
-                // 2. Fetch Match Analysis
-                const matchRes = await axios.get(`matching/explain/${user._id}/${id}`);
-                if (matchRes.data.success) {
-                    setAnalysis(matchRes.data.analysis);
-                }
+                // 2. Fetch Match Analysis & Application Status (Student-only Intelligence)
+                if (user?.role === 'student') {
+                    const matchRes = await axios.get(`matching/explain/${user._id}/${id}`);
+                    if (matchRes.data.success) {
+                        setAnalysis(matchRes.data.analysis);
+                    }
 
-                // 3. Check if already applied
-                const checkRes = await axios.get(`applications/check/${id}`);
-                if (checkRes.data.success) {
-                    const { applied: isApplied, applicationId, applicationStatus: appStatus } = checkRes.data;
-                    setApplied(isApplied);
-                    setApplicationStatus(appStatus);
-                    if (applicationId) setSubmittedAppId(applicationId);
-                }
+                    const checkRes = await axios.get(`applications/check/${id}`);
+                    if (checkRes.data.success) {
+                        const { applied: isApplied, applicationId, applicationStatus: appStatus } = checkRes.data;
+                        setApplied(isApplied);
+                        setApplicationStatus(appStatus);
+                        if (applicationId) setSubmittedAppId(applicationId);
+                    }
 
-                // 4. Fetch Student Profile for Verification Status
-                const profileRes = await axios.get('students/profile');
-                if (profileRes.data.success) {
-                    setStudentProfile(profileRes.data.data);
+                    const profileRes = await axios.get('students/profile');
+                    if (profileRes.data.success) {
+                        setStudentProfile(profileRes.data.data);
+                    }
                 }
 
             } catch (err) {

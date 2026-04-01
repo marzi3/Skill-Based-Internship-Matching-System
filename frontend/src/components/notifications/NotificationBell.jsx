@@ -61,8 +61,11 @@ export default function NotificationBell() {
     };
 
     const markAsRead = async (id) => {
+        if (!id) return;
         try {
             const token = Cookies.get('token') || localStorage.getItem('token');
+            if (!token) return;
+
             await axios.patch(`/notifications/${id}/read`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
