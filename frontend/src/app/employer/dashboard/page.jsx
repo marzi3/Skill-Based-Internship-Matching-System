@@ -313,12 +313,18 @@ const EmployerDashboard = () => {
             </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
-              <RadarChart cx="50%" cy="50%" outerRadius="80%" data={displaySkillAnalytics.map(s => ({
-                subject: s.skill,
-                A: s.requested || 0,
-                B: s.available || 0,
-                fullMark: Math.max(s.requested || 0, s.available || 0) + 5
-              }))}>
+              <RadarChart 
+                cx="50%" 
+                cy="50%" 
+                outerRadius="70%" 
+                margin={{ top: 20, right: 40, bottom: 20, left: 40 }}
+                data={displaySkillAnalytics.map(s => ({
+                  subject: s.skill,
+                  A: s.requested || 0,
+                  B: s.available || 0,
+                  fullMark: Math.max(s.requested || 0, s.available || 0) + 5
+                }))}
+            >
                 <PolarGrid stroke="#f3f4f6" />
                 <PolarAngleAxis 
                     dataKey="subject" 

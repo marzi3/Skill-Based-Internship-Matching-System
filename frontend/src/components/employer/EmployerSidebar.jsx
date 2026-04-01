@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
     LayoutDashboard, Briefcase, Plus, Search, FileText, Building,
-    MessageSquare, Bell, Settings, LogOut, ChevronLeft, ChevronRight
+    MessageSquare, Bell, Settings, LogOut, ChevronLeft, ChevronRight, X
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
@@ -14,7 +14,7 @@ import { useAuth } from '@/context/AuthContext';
  * Shared collapsible sidebar for all Employer pages.
  * Shows the InternMatch logo when collapsed, full branding when expanded.
  */
-export default function EmployerSidebar() {
+export default function EmployerSidebar({ closeMobileMenu }) {
     const pathname = usePathname();
     const { logout } = useAuth();
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -34,12 +34,20 @@ export default function EmployerSidebar() {
         <motion.div
             animate={{ width: isCollapsed ? 80 : 256 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="bg-white min-h-screen border-r border-gray-100 flex flex-col p-4 relative hidden md:flex z-20"
+            className="bg-white min-h-screen border-r border-gray-100 flex flex-col p-4 relative flex shadow-2xl md:shadow-none"
         >
-            {/* Collapse Toggle */}
+            {/* Mobile Close Button */}
+            <button 
+                onClick={closeMobileMenu}
+                className="md:hidden absolute right-4 top-4 p-2 text-gray-500 hover:bg-gray-100 rounded-lg"
+            >
+                <X size={18} />
+            </button>
+
+            {/* Collapse Toggle (Desktop only) */}
             <button
                 onClick={() => setIsCollapsed(!isCollapsed)}
-                className="absolute -right-3 top-8 bg-white border border-gray-200 rounded-full p-1 text-gray-500 hover:text-indigo-600 hover:shadow-md transition-all z-30"
+                className="absolute -right-3 top-8 bg-white border border-gray-200 rounded-full p-1 text-gray-500 hover:text-indigo-600 hover:shadow-md transition-all z-30 hidden md:block"
             >
                 {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
             </button>
@@ -67,7 +75,7 @@ export default function EmployerSidebar() {
                     const isActive = pathname === item.path || (item.path !== '/employer/dashboard' && pathname?.startsWith(item.path));
 
                     return (
-                        <Link key={item.path} href={item.path} id={item.id}>
+                        <Link key={item.path} href={item.path} id={item.id} onClick={closeMobileMenu}>
                             <div
                                 className={`flex items-center ${isCollapsed ? 'justify-center' : 'px-4'} py-3 rounded-xl font-bold transition-all duration-200 relative group ${isActive
                                         ? 'text-indigo-600 bg-indigo-50/50'
@@ -103,7 +111,7 @@ export default function EmployerSidebar() {
 
             {/* Settings & Logout */}
             <div className="mt-auto border-t border-gray-100 pt-6 space-y-2">
-                <Link href="/employer/settings">
+                <Link href="/employer/settings" onClick={closeMobileMenu}>
                     <div
                         className={`flex items-center ${isCollapsed ? 'justify-center' : 'px-4'} py-3 rounded-xl font-bold transition-all duration-200 relative group ${pathname === '/employer/settings'
                                 ? 'text-indigo-600 bg-indigo-50/50'
@@ -126,6 +134,7 @@ export default function EmployerSidebar() {
 
                 <button
                     onClick={() => {
+                        closeMobileMenu?.();
                         localStorage.removeItem('user');
                         localStorage.removeItem('authToken');
                         document.cookie = 'token=; Max-Age=0; path=/;';
