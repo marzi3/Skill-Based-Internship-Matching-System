@@ -75,7 +75,7 @@ export default function StudentApplicationDetailPage({ params }) {
             <div className="max-w-6xl mx-auto space-y-8">
                 <Link 
                     href="/applications" 
-                    className="inline-flex items-center gap-3 text-slate-400 hover:text-slate-900 transition-colors font-black uppercase text-[10px] tracking-widest"
+                    className="inline-flex items-center gap-3 text-slate-500 hover:text-slate-900 transition-colors font-black uppercase text-[10px] tracking-widest"
                 >
                     <ArrowLeft size={16} /> Back to Applications
                 </Link>

@@ -70,7 +70,7 @@ export default function SubmitApplicationModal({ isOpen, onClose, onSubmit, inte
                             </motion.div>
                             <div>
                                 <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight mb-2">Transmission Successful</h2>
-                                <p className="text-slate-400 font-bold text-xs uppercase tracking-widest leading-relaxed px-8">
+                                <p className="text-slate-500 font-bold text-xs uppercase tracking-widest leading-relaxed px-8">
                                     Your application protocol has been established and synchronized with the employer node.
                                 </p>
                             </div>
@@ -81,7 +81,7 @@ export default function SubmitApplicationModal({ isOpen, onClose, onSubmit, inte
                                 <h2 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Submit Application</h2>
                                 <button 
                                     onClick={onClose}
-                                    className="p-2 hover:bg-slate-50 rounded-xl transition-colors text-slate-400 hover:text-slate-900"
+                                    className="p-2 hover:bg-slate-50 rounded-xl transition-colors text-slate-500 hover:text-slate-900"
                                 >
                                     <X size={20} />
                                 </button>
@@ -109,7 +109,7 @@ export default function SubmitApplicationModal({ isOpen, onClose, onSubmit, inte
 
                             <form onSubmit={handleSubmit} className="space-y-6">
                                 <div>
-                                    <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">
+                                    <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-3">
                                         Cover Letter (Optional)
                                     </label>
                                     <textarea
@@ -120,7 +120,7 @@ export default function SubmitApplicationModal({ isOpen, onClose, onSubmit, inte
                                         maxLength={2000}
                                     />
                                     <div className="flex justify-end mt-2">
-                                        <span className="text-[10px] font-bold text-slate-300 tracking-widest uppercase">
+                                        <span className="text-[10px] font-bold text-slate-500 tracking-widest uppercase">
                                             {coverLetter.length} / 2000
                                         </span>
                                     </div>
@@ -130,7 +130,7 @@ export default function SubmitApplicationModal({ isOpen, onClose, onSubmit, inte
                                     <button
                                         type="button"
                                         onClick={onClose}
-                                        className="flex-1 py-4 bg-slate-50 text-slate-400 font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-slate-100 transition-all"
+                                        className="flex-1 py-4 bg-slate-50 text-slate-500 font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-slate-100 transition-all"
                                     >
                                         Cancel Protocol
                                     </button>
@@ -142,7 +142,7 @@ export default function SubmitApplicationModal({ isOpen, onClose, onSubmit, inte
                                         {submitting ? (
                                             <Loader2 className="animate-spin" size={14} />
                                         ) : (
-                                            <>Establish Protocol <Send size={14} /></>
+                                            <>Apply <Send size={14} /></>
                                         )}
                                     </button>
                                 </div>

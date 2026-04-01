@@ -100,7 +100,7 @@ export default function EmployerApplicationDetailPage({ params }) {
             <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-8 text-center uppercase tracking-widest">
                 <div className="bg-white p-12 rounded-[3.5rem] shadow-sm max-w-md border border-slate-100">
                     <h2 className="text-xl font-black text-slate-900 mb-4">Transmission Error</h2>
-                    <p className="text-slate-400 font-bold mb-8 text-[10px]">The requested candidate protocol is unreachable or has been terminated.</p>
+                    <p className="text-slate-500 font-bold mb-8 text-[10px]">The requested candidate protocol is unreachable or has been terminated.</p>
                     <Link href="/employer/applications" className="inline-flex items-center gap-2 bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black text-[10px] hover:bg-slate-900 transition-all shadow-xl shadow-indigo-600/20">
                         <ArrowLeft size={14} /> Return to Pipeline
                     </Link>
@@ -116,14 +116,14 @@ export default function EmployerApplicationDetailPage({ params }) {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <Link 
                         href="/employer/applications" 
-                        className="inline-flex items-center gap-3 text-slate-400 hover:text-slate-900 transition-colors font-black uppercase text-[10px] tracking-widest"
+                        className="inline-flex items-center gap-3 text-slate-500 hover:text-slate-900 transition-colors font-black uppercase text-[10px] tracking-widest"
                     >
                         <ArrowLeft size={16} /> Candidate Pipeline
                     </Link>
 
                     <div className="flex items-center gap-4 bg-white/50 backdrop-blur-md p-2 rounded-3xl border border-white">
                         <div className="pl-4 hidden sm:block">
-                            <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mb-0.5 text-right">Protocol Progression</p>
+                            <p className="text-[8px] font-black text-slate-500 uppercase tracking-[0.2em] mb-0.5 text-right">Protocol Progression</p>
                             <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest text-right">Current: {application.status}</p>
                         </div>
                         
@@ -147,7 +147,7 @@ export default function EmployerApplicationDetailPage({ params }) {
                                     </option>
                                 ))}
                             </select>
-                            <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                            <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
                             {updating && <Loader2 size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-indigo-400 animate-spin" />}
                         </div>
                     </div>

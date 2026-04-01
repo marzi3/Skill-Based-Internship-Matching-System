@@ -127,7 +127,7 @@ export default function Register() {
                         <div className="space-y-1">
                             <label htmlFor="name" className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Full Name</label>
                             <div className="relative group">
-                                <User className="absolute left-3 top-3.5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
+                                <User className="absolute left-3 top-3.5 text-gray-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
                                 <input
                                     {...register('name')}
                                     id="name"
@@ -149,7 +149,7 @@ export default function Register() {
                         <div className="space-y-1">
                             <label htmlFor="email" className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Email Address</label>
                             <div className="relative group">
-                                <Mail className="absolute left-3 top-3.5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
+                                <Mail className="absolute left-3 top-3.5 text-gray-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
                                 <input
                                     {...register('email')}
                                     id="email"
@@ -172,7 +172,7 @@ export default function Register() {
                             <div className="space-y-1">
                                 <label htmlFor="password" className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Password</label>
                                 <div className="relative group">
-                                    <Lock className="absolute left-3 top-3.5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
+                                    <Lock className="absolute left-3 top-3.5 text-gray-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
                                     <input
                                         {...register('password')}
                                         id="password"
@@ -185,22 +185,22 @@ export default function Register() {
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3 top-3.5 text-gray-400 hover:text-indigo-600 transition-colors focus:outline-none"
+                                        className="absolute right-3 top-3.5 text-gray-500 hover:text-indigo-600 transition-colors focus:outline-none"
                                     >
                                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                     </button>
                                 </div>
                                 {/* Password Strength Indicators */}
                                 <div className="flex flex-wrap gap-2 mt-2 ml-1">
-                                    <div className={`flex items-center text-[10px] ${passwordValidation.length ? 'text-green-600' : 'text-gray-400'}`}>
+                                    <div className={`flex items-center text-[10px] ${passwordValidation.length ? 'text-green-600' : 'text-gray-500'}`}>
                                         {passwordValidation.length ? <Check size={10} className="mr-1" /> : <div className="w-2.5 h-2.5 rounded-full bg-gray-300 mr-1"></div>}
                                         8+ chars
                                     </div>
-                                    <div className={`flex items-center text-[10px] ${passwordValidation.number ? 'text-green-600' : 'text-gray-400'}`}>
+                                    <div className={`flex items-center text-[10px] ${passwordValidation.number ? 'text-green-600' : 'text-gray-500'}`}>
                                         {passwordValidation.number ? <Check size={10} className="mr-1" /> : <div className="w-2.5 h-2.5 rounded-full bg-gray-300 mr-1"></div>}
                                         Number
                                     </div>
-                                    <div className={`flex items-center text-[10px] ${passwordValidation.special ? 'text-green-600' : 'text-gray-400'}`}>
+                                    <div className={`flex items-center text-[10px] ${passwordValidation.special ? 'text-green-600' : 'text-gray-500'}`}>
                                         {passwordValidation.special ? <Check size={10} className="mr-1" /> : <div className="w-2.5 h-2.5 rounded-full bg-gray-300 mr-1"></div>}
                                         Special (!@#$)
                                     </div>
@@ -214,7 +214,7 @@ export default function Register() {
                             <div className="space-y-1">
                                 <label htmlFor="confirmPassword" className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Confirm Password</label>
                                 <div className="relative group">
-                                    <Lock className="absolute left-3 top-3.5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
+                                    <Lock className="absolute left-3 top-3.5 text-gray-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
                                     <input
                                         {...register('confirmPassword')}
                                         id="confirmPassword"

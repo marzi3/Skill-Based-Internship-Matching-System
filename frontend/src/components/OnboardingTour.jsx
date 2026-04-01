@@ -163,10 +163,10 @@ export default function OnboardingTour({ role, onComplete }) {
                         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                         className="w-full max-w-sm bg-white rounded-[2rem] shadow-2xl overflow-hidden shadow-black/40 border border-slate-100"
                     >
-                        <div className="p-8 relative">
+                        <div className="p-6 relative">
                             <button 
                                 onClick={onComplete}
-                                className="absolute top-6 right-6 text-slate-400 hover:text-slate-600 transition-colors"
+                                className="absolute top-6 right-6 text-slate-500 hover:text-slate-600 transition-colors"
                             >
                                 <X size={18} />
                             </button>
@@ -205,7 +205,7 @@ export default function OnboardingTour({ role, onComplete }) {
                                     {step > 0 && (
                                         <button 
                                             onClick={handleBack}
-                                            className="p-2.5 rounded-xl border border-slate-200 text-slate-400 hover:bg-slate-50 transition-all"
+                                            className="p-2.5 rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 transition-all"
                                         >
                                             <ArrowLeft size={16} />
                                         </button>

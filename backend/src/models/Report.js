@@ -1,29 +1,36 @@
 const mongoose = require('mongoose');
 
 const reportSchema = new mongoose.Schema({
-    reporterId: {
+    reporter: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true
+        required: true,
+        index: true
     },
-    reportedEntity: {
-        type: String,
-        enum: ['User', 'Internship'],
-        required: true
-    },
-    reportedId: {
+    reported: {
         type: mongoose.Schema.Types.ObjectId,
-        refPath: 'reportedEntity',
-        required: true
+        ref: 'User',
+        required: true,
+        index: true
+    },
+    application: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Application',
+        index: true
     },
     reason: {
         type: String,
-        required: true
+        required: [true, 'Please provide a reason for the report'],
+        trim: true
+    },
+    details: {
+        type: String,
+        trim: true
     },
     status: {
         type: String,
-        enum: ['pending', 'resolved', 'dismissed'],
-        default: 'pending'
+        enum: ['Pending', 'Reviewed', 'Resolved', 'Dismissed'],
+        default: 'Pending'
     }
 }, {
     timestamps: true

@@ -55,7 +55,7 @@ const CustomInput = React.forwardRef(({
             )}
             <div className="relative group">
                 {Icon && (
-                    <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors z-10 ${hasError ? 'text-rose-400' : 'text-slate-400 group-focus-within:text-[#6366F1]'}`}>
+                    <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors z-10 ${hasError ? 'text-rose-400' : 'text-slate-500 group-focus-within:text-[#6366F1]'}`}>
                         <Icon size={18} />
                     </div>
                 )}
@@ -77,7 +77,7 @@ const CustomInput = React.forwardRef(({
                     className={`
                         w-full bg-slate-50 border rounded-2xl py-4
                         ${Icon ? 'pl-11' : 'px-5'} pr-5
-                        text-slate-900 placeholder:text-slate-400 font-bold
+                        text-slate-900 placeholder:text-slate-500 font-bold
                         ${hasError
                             ? 'border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-500/50 bg-rose-50/10 shadow-[0_0_15px_rgba(244,63,94,0.05)]'
                             : 'border-slate-200 focus:border-[#6366F1]/50 focus:ring-4 focus:ring-[#6366F1]/5'}

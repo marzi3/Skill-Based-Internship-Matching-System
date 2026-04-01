@@ -98,7 +98,7 @@ export default function Login() {
                         <div className="space-y-1">
                             <label htmlFor="email" className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Email</label>
                             <div className="relative group">
-                                <Mail className="absolute left-3 top-3.5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
+                                <Mail className="absolute left-3 top-3.5 text-gray-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
                                 <input
                                     {...register('email')}
                                     id="email"
@@ -120,7 +120,7 @@ export default function Login() {
                         <div className="space-y-1">
                             <label htmlFor="password" className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Password</label>
                             <div className="relative group">
-                                <Lock className="absolute left-3 top-3.5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
+                                <Lock className="absolute left-3 top-3.5 text-gray-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
                                 <input
                                     {...register('password')}
                                     id="password"
@@ -133,7 +133,7 @@ export default function Login() {
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-3.5 text-gray-400 hover:text-indigo-600 transition-colors focus:outline-none"
+                                    className="absolute right-3 top-3.5 text-gray-500 hover:text-indigo-600 transition-colors focus:outline-none"
                                 >
                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>

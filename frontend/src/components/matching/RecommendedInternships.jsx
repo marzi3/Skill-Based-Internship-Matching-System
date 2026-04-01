@@ -9,7 +9,7 @@ export default function RecommendedInternships({ matches = [] }) {
     if (!matches || matches.length === 0) {
         return (
             <div className="col-span-full py-20 bg-white rounded-2xl border border-dashed border-gray-200 text-center">
-                <p className="text-gray-400 font-bold">No high-probability matches detected yet.</p>
+                <p className="text-gray-500 font-bold">No high-probability matches detected yet.</p>
             </div>
         );
     }
@@ -62,7 +62,7 @@ export default function RecommendedInternships({ matches = [] }) {
                         href={`/internships/${match.internship._id}?from=dashboard`}
                         className="w-full mt-6 py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-black transition-all flex items-center justify-center gap-2 group/btn text-center"
                     >
-                        Launch Protocol <ChevronRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
+                        View <ChevronRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
                     </Link>
                 </motion.div>
             ))}

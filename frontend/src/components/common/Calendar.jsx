@@ -120,7 +120,7 @@ const Calendar = ({
               ${isDateSelected(day)
                 ? 'bg-blue-600 text-white'
                 : isDateDisabled(day)
-                ? 'text-gray-300 cursor-not-allowed'
+                ? 'text-gray-500 cursor-not-allowed'
                 : 'text-gray-900 hover:bg-gray-100'
               }
             `.trim()}

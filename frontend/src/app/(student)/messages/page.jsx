@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from '@/services/apiClient';
 import Cookies from 'js-cookie';
-import { ArrowLeft, MessageSquare, Send, Loader2, Check, CheckCheck } from 'lucide-react';
+import { ArrowLeft, MessageSquare, Send, Loader2, Check, CheckCheck, ShieldAlert, Flag, Info } from 'lucide-react';
 import Avatar from '@/components/common/Avatar';
 import { useAuth } from '@/context/AuthContext';
 import { useSocket } from '@/context/SocketContext';
@@ -179,7 +179,7 @@ const StudentMessagesPage = () => {
                                 <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
                             </div>
                         ) : applications.length === 0 ? (
-                            <div className="p-6 text-center text-sm text-gray-400">
+                            <div className="p-6 text-center text-sm text-gray-500">
                                 <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-30" />
                                 No conversations yet. Apply to internships to start messaging employers.
                             </div>
@@ -204,7 +204,7 @@ const StudentMessagesPage = () => {
                                                     <div className="flex justify-between items-baseline gap-2">
                                                         <p className="font-bold text-gray-900 text-sm truncate">{employerName}</p>
                                                         {app.lastMessageAt && (
-                                                            <span className="text-[10px] text-gray-400 whitespace-nowrap">
+                                                            <span className="text-[10px] text-gray-500 whitespace-nowrap">
                                                                 {new Date(app.lastMessageAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}
                                                             </span>
                                                         )}
@@ -222,7 +222,7 @@ const StudentMessagesPage = () => {
                 {/* Chat Area */}
                 <div className="flex-1 bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col overflow-hidden">
                     {!selectedApp ? (
-                        <div className="flex-1 flex items-center justify-center text-gray-400">
+                        <div className="flex-1 flex items-center justify-center text-gray-500">
                             <div className="text-center">
                                 <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-20" />
                                 <p className="font-medium">Select a conversation to view messages</p>
@@ -231,26 +231,36 @@ const StudentMessagesPage = () => {
                     ) : (
                         <>
                             {/* Chat Header */}
-                            <div className="p-4 border-b border-gray-100 flex items-center gap-3 bg-gray-50/50">
-                                <Avatar
-                                    src={selectedApp.employer?.profilePicture}
-                                    name={getEmployerName(selectedApp)} size="md"
-                                    className="rounded-xl border border-gray-100"
-                                />
-                                <div>
-                                    <p className="font-bold text-gray-900 text-sm">{getEmployerName(selectedApp)}</p>
-                                    <p className="text-xs text-gray-400">Re: {selectedApp.internship?.positionTitle || 'Internship'}</p>
+                            <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                                <div className="flex items-center gap-3">
+                                    <Avatar
+                                        src={selectedApp.employer?.profilePicture}
+                                        name={getEmployerName(selectedApp)} size="md"
+                                        className="rounded-xl border border-gray-100"
+                                    />
+                                    <div>
+                                        <p className="font-bold text-gray-900 text-sm">{getEmployerName(selectedApp)}</p>
+                                        <p className="text-xs text-gray-500">Re: {selectedApp.internship?.positionTitle || 'Internship'}</p>
+                                    </div>
                                 </div>
+                                <button 
+                                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                    title="Report Conversation"
+                                    onClick={() => alert('Report feature coming soon: This will allow you to flag inappropriate behavior to admins.')}
+                                >
+                                    <Flag size={18} />
+                                </button>
                             </div>
 
-                            {/* Messages */}
-                            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                            {/* Messages List - Reversed for bottom-up flow */}
+                            <div className="flex-1 overflow-y-auto p-4 space-y-3 flex flex-col-reverse">
+                                <div ref={chatEndRef} />
                                 {msgLoading ? (
                                     <div className="flex items-center justify-center py-8">
                                         <Loader2 className="w-6 h-6 animate-spin text-indigo-400" />
                                     </div>
                                 ) : messages.length === 0 ? (
-                                    <div className="text-center py-8 text-gray-400 text-sm">
+                                    <div className="text-center py-8 text-gray-500 text-sm">
                                         No messages yet. Start the conversation!
                                     </div>
                                 ) : (
@@ -274,13 +284,13 @@ const StudentMessagesPage = () => {
                                                         <p>{msg.content}</p>
                                                     </div>
                                                     <div className={`flex items-center gap-1 mt-1 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
-                                                        <span className="text-[10px] text-gray-400">
+                                                        <span className="text-[10px] text-gray-500">
                                                             {(msg.timestamp || msg.createdAt) ? new Date(msg.timestamp || msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                                                         </span>
                                                         {isMe && (
                                                             msg.isRead
                                                                 ? <CheckCheck size={12} className="text-indigo-500" title="Seen" />
-                                                                : <Check size={12} className="text-gray-400" title="Sent" />
+                                                                : <Check size={12} className="text-gray-500" title="Sent" />
                                                         )}
                                                     </div>
                                                 </div>
@@ -289,25 +299,30 @@ const StudentMessagesPage = () => {
                                     })
                                 )}
                                 <div ref={chatEndRef} />
-                            </div>
-
-                            {/* Message Input */}
-                            <form onSubmit={sendMessage} className="p-4 border-t border-gray-100 flex gap-3">
-                                <input
-                                    type="text"
-                                    value={newMessage}
-                                    onChange={e => setNewMessage(e.target.value)}
-                                    placeholder="Type your message…"
-                                    className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all"
-                                />
-                                <button
-                                    type="submit"
-                                    disabled={!newMessage.trim() || sendLoading}
-                                    className="px-4 py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50"
-                                >
-                                    {sendLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                                </button>
-                            </form>
+                            </div>                             {/* Message Input */}
+                            {selectedApp.status === 'Rejected' ? (
+                                <div className="p-4 bg-red-50 border-t border-red-100 flex items-center gap-3 text-red-700 text-sm font-medium">
+                                    <ShieldAlert size={18} />
+                                    <span>Communication is restricted for rejected applications.</span>
+                                </div>
+                            ) : (
+                                <form onSubmit={sendMessage} className="p-4 border-t border-gray-100 flex gap-3">
+                                    <input
+                                        type="text"
+                                        value={newMessage}
+                                        onChange={e => setNewMessage(e.target.value)}
+                                        placeholder="Type your message…"
+                                        className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all"
+                                    />
+                                    <button
+                                        type="submit"
+                                        disabled={!newMessage.trim() || sendLoading}
+                                        className="px-4 py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                                    >
+                                        {sendLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                                    </button>
+                                </form>
+                            )}
                         </>
                     )}
                 </div>

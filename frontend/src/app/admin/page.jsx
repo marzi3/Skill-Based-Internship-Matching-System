@@ -74,7 +74,7 @@ export default function AdminDashboard() {
     ];
 
     return (
-        <div className="p-8 space-y-12 max-w-[1600px] mx-auto min-h-screen">
+        <div className="p-6 space-y-12 max-w-[1600px] mx-auto min-h-screen">
             {/* Header Section */}
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <motion.div 
@@ -110,7 +110,7 @@ export default function AdminDashboard() {
                             <div className={`p-4 rounded-2xl bg-gradient-to-br ${stat.color} ${stat.shadow} text-white`}>
                                 <stat.icon size={24} />
                             </div>
-                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{stat.label}</span>
+                            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{stat.label}</span>
                         </div>
                         
                         <div className="relative z-10">
@@ -139,7 +139,7 @@ export default function AdminDashboard() {
                             <h3 className="text-xl font-black text-gray-900 flex items-center gap-3 uppercase tracking-wide">
                                 <Activity className="text-indigo-600" size={24} /> Placement Velocity
                             </h3>
-                            <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-2">Daily Transmission Metrics</p>
+                            <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mt-2">Daily Transmission Metrics</p>
                         </div>
                     </div>
                     
@@ -197,7 +197,7 @@ export default function AdminDashboard() {
                     <h3 className="text-xl font-black text-gray-900 mb-2 flex items-center gap-3 uppercase tracking-wide">
                         <Zap className="text-amber-500" size={24} /> Engine Quality
                     </h3>
-                    <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-10">Match Tier Distribution</p>
+                    <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-10">Match Tier Distribution</p>
                     
                     <div className="relative flex-1 min-h-[250px]">
                         <ResponsiveContainer width="100%" height="100%">
@@ -223,7 +223,7 @@ export default function AdminDashboard() {
                             <span className="text-4xl font-black text-gray-900 tracking-tighter">
                                 {reports?.matchDistribution?.reduce((acc, curr) => acc + (curr.count || 0), 0) || 0}
                             </span>
-                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest mt-1">Total Pairs</span>
+                            <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest mt-1">Total Pairs</span>
                         </div>
                     </div>
 
@@ -266,12 +266,12 @@ export default function AdminDashboard() {
                                     />
                                     <div>
                                         <p className="font-black text-base text-gray-900">{i.positionTitle}</p>
-                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{i.employer?.companyName || 'Anonymous Node'}</p>
+                                        <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">{i.employer?.companyName || 'Anonymous Node'}</p>
                                     </div>
                                 </div>
                                 <div className="flex flex-col items-end gap-2">
                                     <span className="text-[9px] font-black px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-full uppercase tracking-widest group-hover:bg-indigo-600 group-hover:text-white transition-all">ESTABLISHED</span>
-                                    <span className="text-[9px] font-black text-gray-300 uppercase tracking-widest">{new Date(i.createdAt).toLocaleDateString()}</span>
+                                    <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">{new Date(i.createdAt).toLocaleDateString()}</span>
                                 </div>
                             </motion.div>
                         ))}
@@ -303,7 +303,7 @@ export default function AdminDashboard() {
                                     />
                                     <div>
                                         <p className="font-black text-base text-gray-900">{a.student?.name || 'Unknown Operator'}</p>
-                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Applying for <span className="text-indigo-600">{a.internship?.positionTitle || 'Position'}</span></p>
+                                        <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Applying for <span className="text-indigo-600">{a.internship?.positionTitle || 'Position'}</span></p>
                                     </div>
                                 </div>
                                 <div className="flex flex-col items-end gap-2">
@@ -311,7 +311,7 @@ export default function AdminDashboard() {
                                         <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse" />
                                         <span className="text-[9px] font-black uppercase tracking-widest">Awaiting Sync</span>
                                     </div>
-                                    <span className="text-[9px] font-black text-gray-300 uppercase tracking-widest">{new Date(a.createdAt).toLocaleDateString()}</span>
+                                    <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">{new Date(a.createdAt).toLocaleDateString()}</span>
                                 </div>
                             </motion.div>
                         ))}

@@ -101,9 +101,9 @@ export default function ForgotPassword() {
                             </AnimatePresence>
 
                             <div className="space-y-1">
-                                <label htmlFor="email" className="text-xs font-semibold text-gray-400 uppercase tracking-widest ml-1">Email Address</label>
+                                <label htmlFor="email" className="text-xs font-semibold text-gray-500 uppercase tracking-widest ml-1">Email Address</label>
                                 <div className="relative group">
-                                    <Mail className="absolute left-3 top-3.5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
+                                    <Mail className="absolute left-3 top-3.5 text-gray-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
                                     <input
                                         {...register('email')}
                                         id="email"

@@ -19,7 +19,10 @@ import Badge from '@/components/common/Badge';
 import Avatar from '@/components/common/Avatar';
 import { useAuth } from '@/context/AuthContext';
 import RecommendedCandidates from '@/components/matching/RecommendedCandidates';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
+  Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Legend 
+} from 'recharts';
 import OnboardingTour from '@/components/OnboardingTour';
 
 /**
@@ -269,7 +272,7 @@ const EmployerDashboard = () => {
             >
               <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-[0.04] transition-opacity duration-500`} />
               <div className="flex justify-between items-start mb-4 relative z-10">
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{stat.label}</span>
+                <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">{stat.label}</span>
                 <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center shadow-lg`}>
                   <Icon className="w-5 h-5 text-white" />
                 </div>
@@ -280,44 +283,73 @@ const EmployerDashboard = () => {
         })}
       </div>
 
-      {/* Skill Demand vs Supply */}
+      {/* Skill Demand vs Supply - Radar Analytics */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6"
       >
-        <div className="mb-6">
-          <h2 className="text-lg font-bold text-gray-900">Skill Demand vs Supply</h2>
-          <p className="text-sm text-gray-500 mt-1">Comparison of required skills in your postings vs available candidates</p>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-lg font-bold text-gray-900">Market Alignment Intelligence</h2>
+            <p className="text-sm text-gray-500 mt-1">Multi-dimensional view of your skill requirements vs available talent pool</p>
+          </div>
+          <div className="flex gap-4">
+             <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-indigo-600" />
+                <span className="text-xs font-medium text-gray-600">Your Demand</span>
+             </div>
+             <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                <span className="text-xs font-medium text-gray-600">Market Supply</span>
+             </div>
+          </div>
         </div>
-        <div className="space-y-5">
+
+        <div className="h-[400px] w-full">
           {displaySkillAnalytics.length === 0 ? (
-            <div className="text-center py-8 text-gray-400 text-sm">Post an internship to see skill analytics.</div>
-          ) : displaySkillAnalytics.map((skill, idx) => {
-            const maxVal = Math.max(...displaySkillAnalytics.map(s => Math.max(s.requested || 0, s.available || 0)), 1);
-            const reqPct = ((skill.requested || 0) / maxVal) * 100;
-            const avlPct = ((skill.available || 0) / maxVal) * 100;
-            return (
-              <div key={idx} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-gray-900">{skill.skill}</h3>
-                  <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${getScoreColor(skill.matchPercent || 0)}`}>
-                    {skill.matchPercent || 0}% Match
-                  </span>
-                </div>
-                <div className="flex gap-3">
-                  <div className="flex-1">
-                    <div className="flex justify-between mb-1"><span className="text-xs text-gray-500">Required</span><span className="text-xs font-bold">{skill.requested}</span></div>
-                    <div className="w-full bg-gray-100 rounded-full h-2"><div className="bg-indigo-600 h-2 rounded-full transition-all" style={{ width: `${reqPct}%` }} /></div>
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex justify-between mb-1"><span className="text-xs text-gray-500">Available</span><span className="text-xs font-bold">{skill.available}</span></div>
-                    <div className="w-full bg-gray-100 rounded-full h-2"><div className="bg-emerald-500 h-2 rounded-full transition-all" style={{ width: `${avlPct}%` }} /></div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+            <div className="flex items-center justify-center h-full text-gray-500 text-sm border-2 border-dashed border-gray-100 rounded-2xl">
+                Post an internship to generate skill alignment analytics.
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart cx="50%" cy="50%" outerRadius="80%" data={displaySkillAnalytics.map(s => ({
+                subject: s.skill,
+                A: s.requested || 0,
+                B: s.available || 0,
+                fullMark: Math.max(s.requested || 0, s.available || 0) + 5
+              }))}>
+                <PolarGrid stroke="#f3f4f6" />
+                <PolarAngleAxis 
+                    dataKey="subject" 
+                    tick={{ fill: '#4b5563', fontSize: 12, fontWeight: 600 }}
+                />
+                <PolarRadiusAxis 
+                    angle={30} 
+                    domain={[0, 'auto']} 
+                    tick={{ fill: '#9ca3af', fontSize: 10 }}
+                    axisLine={false}
+                />
+                <Radar
+                   name="Your Demand"
+                   dataKey="A"
+                   stroke="#4f46e5"
+                   fill="#4f46e5"
+                   fillOpacity={0.6}
+                />
+                <Radar
+                   name="Market Supply"
+                   dataKey="B"
+                   stroke="#10b981"
+                   fill="#10b981"
+                   fillOpacity={0.3}
+                />
+                <Tooltip 
+                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                />
+              </RadarChart>
+            </ResponsiveContainer>
+          )}
         </div>
       </motion.div>
 
@@ -396,7 +428,7 @@ const EmployerDashboard = () => {
           </div>
           <div className="space-y-4">
             {recentActivity.length === 0 ? (
-              <div className="text-center py-8 text-gray-400 text-sm">No recent activity to show.</div>
+              <div className="text-center py-8 text-gray-500 text-sm">No recent activity to show.</div>
             ) : recentActivity.map((item, idx) => (
               <div key={item._id || idx} className="flex gap-3">
                 <div className="flex flex-col items-center">
@@ -408,7 +440,7 @@ const EmployerDashboard = () => {
                 <div className="flex-1 pt-0.5">
                   <h4 className="text-sm font-bold text-gray-900">{item.type?.replace(/_/g, ' ') || 'Activity'}</h4>
                   <p className="text-xs text-gray-500 mt-0.5">{item.message || 'System event'}</p>
-                  <p className="text-xs text-gray-400 mt-1">{item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ''}</p>
+                  <p className="text-xs text-gray-500 mt-1">{item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ''}</p>
                 </div>
               </div>
             ))}
@@ -432,7 +464,7 @@ const EmployerDashboard = () => {
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
               <input
                 type="text" placeholder="Search positions…" value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
@@ -440,12 +472,12 @@ const EmployerDashboard = () => {
               />
             </div>
             <div className="relative">
-              <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
               <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
                 className="appearance-none pl-10 pr-8 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-white cursor-pointer">
                 <option>All</option><option>Hiring</option><option>Reviewing</option><option>Closed</option>
               </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
             </div>
           </div>
         </div>
@@ -476,8 +508,8 @@ const EmployerDashboard = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="py-3 px-6"><div className="flex items-center gap-2"><Users className="w-4 h-4 text-gray-400" /><span className="font-bold">{p.candidates}</span></div></td>
-                    <td className="py-3 px-6"><div className="flex items-center gap-2"><Eye className="w-4 h-4 text-gray-400" /><span className="text-gray-600">{p.views}</span></div></td>
+                    <td className="py-3 px-6"><div className="flex items-center gap-2"><Users className="w-4 h-4 text-gray-500" /><span className="font-bold">{p.candidates}</span></div></td>
+                    <td className="py-3 px-6"><div className="flex items-center gap-2"><Eye className="w-4 h-4 text-gray-500" /><span className="text-gray-600">{p.views}</span></div></td>
                     <td className="py-3 px-6">
                       <span className={`px-2.5 py-1 text-xs font-bold rounded-full ${p.status === 'Hiring' ? 'bg-emerald-100 text-emerald-700' : p.status === 'Closed' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'}`}>
                         {p.status}
@@ -497,7 +529,7 @@ const EmployerDashboard = () => {
           </div>
         ) : (
           <div className="text-center py-12">
-            <Search className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+            <Search className="w-12 h-12 text-gray-500 mx-auto mb-3" />
             <p className="text-gray-600 font-medium">No positions found</p>
           </div>
         )}

@@ -16,7 +16,7 @@ const EmptyState = ({
       ${className}
     `.trim()}>
       {icon && (
-        <div className="mb-4 text-gray-300">
+        <div className="mb-4 text-gray-500">
           {typeof icon === 'string' ? (
             <svg className="w-24 h-24" fill="currentColor" viewBox="0 0 20 20">
               {/* Generic empty icon */}

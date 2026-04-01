@@ -176,14 +176,14 @@ const CandidateSearchPage = () => {
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
                 <div className="flex flex-col md:flex-row gap-4">
                     <div className="flex-1 relative group">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-indigo-600 transition-colors" />
                         <input
                             type="text"
                             placeholder="Find talent by name or skills (e.g. React, UX Design)..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleSearchExecution()}
-                            className="w-full pl-12 pr-32 py-5 bg-white border border-gray-100 rounded-3xl text-sm font-bold text-gray-800 placeholder:text-gray-300 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all shadow-sm"
+                            className="w-full pl-12 pr-32 py-5 bg-white border border-gray-100 rounded-3xl text-sm font-bold text-gray-800 placeholder:text-gray-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all shadow-sm"
                         />
                         <button
                             onClick={handleSearchExecution}
@@ -282,7 +282,7 @@ const CandidateSearchPage = () => {
                                                         e.stopPropagation();
                                                         setReportTarget({ id, name });
                                                     }}
-                                                    className="p-1.5 text-gray-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all mb-2"
+                                                    className="p-1.5 text-gray-500 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all mb-2"
                                                     title="Report Candidate"
                                                 >
                                                     <Flag size={14} />
@@ -293,7 +293,7 @@ const CandidateSearchPage = () => {
                                                     </span>
                                                 )}
                                                 {isMatchResult && candidate.tier && (
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase">{candidate.tier}</span>
+                                                    <span className="text-[10px] font-bold text-gray-500 uppercase">{candidate.tier}</span>
                                                 )}
                                             </div>
                                         </div>
@@ -302,10 +302,10 @@ const CandidateSearchPage = () => {
                                             <h3 className="text-xl font-black text-gray-900">{name}</h3>
                                             <div className="flex items-center gap-3 mt-1">
                                                 {location && (
-                                                    <span className="flex items-center gap-1 text-xs text-gray-400 font-medium"><MapPin size={12} /> {location}</span>
+                                                    <span className="flex items-center gap-1 text-xs text-gray-500 font-medium"><MapPin size={12} /> {location}</span>
                                                 )}
                                                 {field && (
-                                                    <span className="flex items-center gap-1 text-xs text-gray-400 font-medium"><GraduationCap size={12} /> {field}</span>
+                                                    <span className="flex items-center gap-1 text-xs text-gray-500 font-medium"><GraduationCap size={12} /> {field}</span>
                                                 )}
                                             </div>
                                         </div>
@@ -314,7 +314,7 @@ const CandidateSearchPage = () => {
                                             {skills.slice(0, 5).map(skill => (
                                                 <span key={skill} className="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-md border border-indigo-100">{skill}</span>
                                             ))}
-                                            {skills.length > 5 && <span className="px-2 py-0.5 text-xs text-gray-400 font-bold">+{skills.length - 5}</span>}
+                                            {skills.length > 5 && <span className="px-2 py-0.5 text-xs text-gray-500 font-bold">+{skills.length - 5}</span>}
                                         </div>
 
                                         <div className="pt-4 border-t border-gray-100">

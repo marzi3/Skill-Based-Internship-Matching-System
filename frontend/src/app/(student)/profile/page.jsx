@@ -11,7 +11,7 @@ export default function StudentProfile() {
     const { user } = useAuth();
 
     return (
-        <div className="p-8 max-w-5xl mx-auto space-y-8">
+        <div className="p-6 max-w-5xl mx-auto space-y-8">
             <div className="flex flex-col md:flex-row items-center gap-8 bg-white p-10 rounded-[2.5rem] shadow-xl border border-gray-100 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full -mr-32 -mt-32 opacity-50 blur-3xl"></div>
 
@@ -31,7 +31,7 @@ export default function StudentProfile() {
                             <ShieldCheck size={16} /> Verified Student Protocol
                         </p>
                     </div>
-                    <div className="flex flex-wrap justify-center md:justify-start gap-4 text-gray-400 font-bold text-sm">
+                    <div className="flex flex-wrap justify-center md:justify-start gap-4 text-gray-500 font-bold text-sm">
                         <div className="flex items-center gap-1"><MapPin size={16} /> Mumbai, MH</div>
                         <div className="flex items-center gap-1"><GraduationCap size={16} /> VJTI Mumbai</div>
                         <div className="flex items-center gap-1"><Mail size={16} /> {user?.email}</div>
@@ -81,7 +81,7 @@ export default function StudentProfile() {
                     </Card>
 
                     <Card padding="lg" className="space-y-6">
-                        <h3 className="font-black uppercase text-xs tracking-widest text-gray-400 border-b pb-4">Social Protocols</h3>
+                        <h3 className="font-black uppercase text-xs tracking-widest text-gray-500 border-b pb-4">Social Protocols</h3>
                         <div className="space-y-4">
                             <div className="flex items-center gap-3 text-gray-600 hover:text-indigo-600 cursor-pointer transition-colors font-bold">
                                 <Github size={20} /> <span>GitHub / alex-chen</span>

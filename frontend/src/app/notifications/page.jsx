@@ -59,6 +59,31 @@ export default function NotificationsPage() {
         }
     };
 
+    const markAllAsRead = async () => {
+        try {
+            const token = Cookies.get('token') || localStorage.getItem('token');
+            await axios.patch('/notifications/mark-all-read', {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+        } catch (err) {
+            console.error('Failed to mark all as read', err);
+        }
+    };
+
+    const deleteAllNotifications = async () => {
+        if (!window.confirm('Are you sure you want to delete all notifications?')) return;
+        try {
+            const token = Cookies.get('token') || localStorage.getItem('token');
+            await axios.delete('/notifications/delete-all', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setNotifications([]);
+        } catch (err) {
+            console.error('Failed to delete all', err);
+        }
+    };
+
     const filteredNotifications = filter === 'unread'
         ? notifications.filter(n => !n.isRead)
         : notifications;
@@ -78,23 +103,36 @@ export default function NotificationsPage() {
                     </div>
 
                     <div className="flex items-center gap-3 w-full md:w-auto">
-                        <div className="bg-white rounded-lg p-1 shadow-sm border border-gray-200 flex flex-1">
+                        <button
+                            onClick={markAllAsRead}
+                            className="px-4 py-2 bg-white border border-gray-200 text-gray-700 hover:text-indigo-600 hover:border-indigo-200 rounded-lg shadow-sm transition-colors text-sm font-bold flex items-center gap-2"
+                            disabled={!notifications.some(n => !n.isRead)}
+                        >
+                            <Check size={16} />
+                            Mark All Read
+                        </button>
+                        <button
+                            onClick={deleteAllNotifications}
+                            className="px-4 py-2 bg-white border border-gray-200 text-gray-700 hover:text-rose-600 hover:border-rose-200 rounded-lg shadow-sm transition-colors text-sm font-bold flex items-center gap-2"
+                            disabled={notifications.length === 0}
+                        >
+                            <Trash2 size={16} />
+                            Clear All
+                        </button>
+                        <div className="bg-white rounded-lg p-1 shadow-sm border border-gray-200 flex ml-2">
                             <button
                                 onClick={() => setFilter('all')}
-                                className={`flex-1 px-4 py-2 rounded-md text-sm font-bold transition-colors ${filter === 'all' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-500 hover:text-gray-900'}`}
+                                className={`px-4 py-2 rounded-md text-sm font-bold transition-colors ${filter === 'all' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-500 hover:text-gray-900'}`}
                             >
                                 All
                             </button>
                             <button
                                 onClick={() => setFilter('unread')}
-                                className={`flex-1 px-4 py-2 rounded-md text-sm font-bold transition-colors ${filter === 'unread' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-500 hover:text-gray-900'}`}
+                                className={`px-4 py-2 rounded-md text-sm font-bold transition-colors ${filter === 'unread' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-500 hover:text-gray-900'}`}
                             >
                                 Unread
                             </button>
                         </div>
-                        <Link href="/settings" className="p-2.5 bg-white border border-gray-200 text-gray-500 hover:text-indigo-600 hover:border-indigo-200 rounded-lg shadow-sm transition-colors" title="Notification Settings">
-                            <Settings size={20} />
-                        </Link>
                     </div>
                 </div>
 
@@ -104,7 +142,7 @@ export default function NotificationsPage() {
                             <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
                         </div>
                     ) : filteredNotifications.length === 0 ? (
-                        <div className="p-16 text-center text-gray-400 flex flex-col items-center">
+                        <div className="p-16 text-center text-gray-500 flex flex-col items-center">
                             <Bell size={48} className="mb-4 opacity-20" />
                             <h3 className="text-lg font-bold text-gray-900 mb-1">You're all caught up!</h3>
                             <p>No {filter === 'unread' ? 'unread' : ''} notifications to display.</p>
@@ -124,17 +162,25 @@ export default function NotificationsPage() {
                                         <p className={`text-base ${notif.isRead ? 'text-gray-700' : 'text-gray-900 font-bold'}`}>
                                             {notif.message}
                                         </p>
-                                        <p className="text-sm text-gray-400 mt-2 font-medium">
+                                        <p className="text-sm text-gray-500 mt-2 font-medium">
                                             {new Date(notif.createdAt).toLocaleDateString()} at {new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                         </p>
 
+                                        {notif.link && (
+                                            <Link 
+                                                href={notif.link}
+                                                className="inline-flex items-center gap-2 mt-4 text-xs font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-800 transition-colors"
+                                            >
+                                                Check Details <ExternalLink size={12} />
+                                            </Link>
+                                        )}
                                     </div>
 
                                     <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                         {!notif.isRead && (
                                             <button
                                                 onClick={() => markAsRead(notif._id)}
-                                                className="p-2 text-gray-400 bg-white shadow-sm rounded-lg border border-gray-200 hover:text-green-600 hover:border-green-200 transition-colors"
+                                                className="p-2 text-gray-500 bg-white shadow-sm rounded-lg border border-gray-200 hover:text-green-600 hover:border-green-200 transition-colors"
                                                 title="Mark as read"
                                             >
                                                 <Check size={16} strokeWidth={3} />
@@ -142,7 +188,7 @@ export default function NotificationsPage() {
                                         )}
                                         <button
                                             onClick={(e) => deleteNotification(notif._id, e)}
-                                            className="p-2 text-gray-400 bg-white shadow-sm rounded-lg border border-gray-200 hover:text-red-600 hover:border-red-200 transition-colors"
+                                            className="p-2 text-gray-500 bg-white shadow-sm rounded-lg border border-gray-200 hover:text-red-600 hover:border-red-200 transition-colors"
                                             title="Delete"
                                         >
                                             <Trash2 size={16} />

@@ -72,6 +72,21 @@ exports.applyToInternship = async (req, res) => {
             });
         }
 
+        // 4. Degree Matching Validation
+        const studentDegreeFields = student.education.map(edu => (edu.field || '').toLowerCase().trim());
+        const requiredFields = (internship.requiredDegreeField || []).map(f => f.toLowerCase().trim());
+        
+        const hasMatchingDegree = requiredFields.length === 0 || requiredFields.some(reqField => 
+            reqField === 'any' || reqField === '*' || studentDegreeFields.includes(reqField)
+        );
+
+        if (!hasMatchingDegree) {
+            return res.status(403).json({
+                success: false,
+                message: `Application blocked: Your degree field does not match the requirements for this internship (${internship.requiredDegreeField.join(', ')}).`
+            });
+        }
+
         // Perform final match calculation for snapshot
         const analysis = matchingEngine.explainMatch(student, internship);
 
@@ -400,7 +415,10 @@ exports.getStudentStats = async (req, res) => {
 // @access  Private (Student)
 exports.getStudentApplications = async (req, res) => {
     try {
-        let applications = await Application.find({ student: req.user.id })
+        let applications = await Application.find({ 
+            student: req.user.id,
+            status: { $ne: 'Rejected' } 
+        })
             .populate('employer', 'companyName profilePicture')
             .populate('internship', 'positionTitle company location')
             .sort({ lastMessageAt: -1 });

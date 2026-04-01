@@ -124,7 +124,7 @@ const SettingsPage = () => {
     ];
 
     return (
-        <div className="p-8 max-w-5xl mx-auto space-y-8">
+        <div className="p-6 max-w-5xl mx-auto space-y-8">
             <div className="flex items-center gap-4">
                 <button onClick={() => router.push('/employer/dashboard')} className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600 transition-all">
                     <ArrowLeft className="w-4 h-4" />
@@ -153,7 +153,7 @@ const SettingsPage = () => {
                                 onClick={() => setActiveTab(section.id)}
                                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left ${isActive ? 'bg-primary-50 text-primary-700 font-bold shadow-sm ring-1 ring-primary-100' : 'text-gray-600 hover:bg-gray-50 font-medium'}`}
                             >
-                                <Icon className={`w-5 h-5 ${isActive ? 'text-primary-600' : 'text-gray-400'}`} />
+                                <Icon className={`w-5 h-5 ${isActive ? 'text-primary-600' : 'text-gray-500'}`} />
                                 {section.title}
                             </button>
                         );
@@ -206,7 +206,7 @@ const SettingsPage = () => {
                                         className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary-100 focus:border-primary-500 outline-none transition-all"
                                     />
                                     {typeof currentProfilePicture === 'string' && currentProfilePicture && (
-                                        <p className="text-xs text-gray-400 truncate">Current: {currentProfilePicture}</p>
+                                        <p className="text-xs text-gray-500 truncate">Current: {currentProfilePicture}</p>
                                     )}
                                 </div>
                                 <div className="space-y-2">
@@ -226,7 +226,7 @@ const SettingsPage = () => {
                                         disabled
                                         className="w-full bg-gray-100 border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-500 cursor-not-allowed"
                                     />
-                                    <p className="text-xs text-gray-400">Your email address cannot be changed.</p>
+                                    <p className="text-xs text-gray-500">Your email address cannot be changed.</p>
                                 </div>
 
                                 {mounted && (
@@ -330,7 +330,7 @@ const SettingsPage = () => {
 
                     {(activeTab === 'notifications' || activeTab === 'billing') && (
                         <Card shadow="sm" rounded="lg" padding="xl" className="border border-gray-100 bg-gray-50 flex flex-col items-center justify-center text-center min-h-[300px]">
-                            <SettingsIcon className="w-16 h-16 text-gray-300 mb-4" />
+                            <SettingsIcon className="w-16 h-16 text-gray-500 mb-4" />
                             <h3 className="text-xl font-bold text-gray-900">Coming Soon</h3>
                             <p className="text-gray-500 max-w-sm mt-2">
                                 We are working hard to bring you advanced {activeTab} configurations. Stay tuned for the next update!

@@ -261,7 +261,7 @@ const ProfilePage = () => {
                     {isEditing && (
                         <div className="w-full pt-8 border-t border-gray-100 space-y-6">
                             <div className="text-left space-y-2">
-                                <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500">
                                     <Info size={12} className="text-primary-500" /> Business Registration Number
                                 </label>
                                 <input
@@ -311,7 +311,7 @@ const ProfilePage = () => {
                                             </div>
                                             <div>
                                                 <p className="text-xl font-black text-gray-900 leading-none">{user?.name || 'Authorized Contact'}</p>
-                                                <p className="text-xs text-gray-400 font-bold mt-2 uppercase tracking-widest">{user?.positionInCompany || 'Company Executive'}</p>
+                                                <p className="text-xs text-gray-500 font-bold mt-2 uppercase tracking-widest">{user?.positionInCompany || 'Company Executive'}</p>
                                             </div>
                                         </div>
                                     )}
@@ -338,7 +338,7 @@ const ProfilePage = () => {
                                                 <Globe size={24} />
                                             </div>
                                             <div>
-                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Official Website</p>
+                                                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none">Official Website</p>
                                                 <a href={user?.website} target="_blank" rel="noreferrer" className="text-lg font-black text-primary-600 hover:text-primary-700 underline underline-offset-8 mt-2 inline-block">
                                                     {user?.website ? user.website.replace(/^https?:\/\//, '') : 'No website linked'}
                                                 </a>
@@ -369,7 +369,7 @@ const ProfilePage = () => {
                                             </div>
                                             <div>
                                                 <p className="text-lg font-black text-gray-900 leading-none">{user?.location || 'Location not specified'}</p>
-                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-2">{user?.location ? 'Operational HQ' : 'Update headquarters'}</p>
+                                                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mt-2">{user?.location ? 'Operational HQ' : 'Update headquarters'}</p>
                                             </div>
                                         </div>
                                     )}
@@ -397,7 +397,7 @@ const ProfilePage = () => {
                                             </div>
                                             <div>
                                                 <p className="text-lg font-black text-gray-900 leading-none">{user?.industry || 'Select Industry'}</p>
-                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-2">Core Specialization</p>
+                                                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mt-2">Core Specialization</p>
                                             </div>
                                         </div>
                                     )}
@@ -407,12 +407,12 @@ const ProfilePage = () => {
 
                         {/* Extended Metadata */}
                         <div className="pt-12 border-t border-gray-100">
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-8 flex items-center gap-3">
+                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-8 flex items-center gap-3">
                                 <div className="w-10 h-0.5 bg-gray-100" /> Company Details
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Company Size</label>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Company Size</label>
                                     {isEditing ? (
                                         <select
                                             name="companySize"
@@ -429,13 +429,13 @@ const ProfilePage = () => {
                                         </select>
                                     ) : (
                                         <div className="flex items-center gap-3 font-black text-gray-900">
-                                            <Users size={16} className="text-gray-400" />
+                                            <Users size={16} className="text-gray-500" />
                                             {user?.companySize ? `${user.companySize} Employees` : 'Undisclosed'}
                                         </div>
                                     )}
                                 </div>
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Founding Year</label>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Founding Year</label>
                                     {isEditing ? (
                                         <input
                                             type="number"
@@ -447,7 +447,7 @@ const ProfilePage = () => {
                                         />
                                     ) : (
                                         <div className="flex items-center gap-3 font-black text-gray-900">
-                                            <Calendar size={16} className="text-gray-400" />
+                                            <Calendar size={16} className="text-gray-500" />
                                             {user?.foundedYear || 'Not provided'}
                                         </div>
                                     )}
@@ -460,10 +460,10 @@ const ProfilePage = () => {
                     <div className="bg-gray-50/50 p-8 border-t border-gray-100 flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse" />
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Profile Integrity Verified</p>
+                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Profile Integrity Verified</p>
                         </div>
                         <div className="flex items-center gap-2">
-                            <Mail size={14} className="text-gray-400" />
+                            <Mail size={14} className="text-gray-500" />
                             <span className="text-xs font-bold text-gray-500">{user?.email}</span>
                         </div>
                     </div>

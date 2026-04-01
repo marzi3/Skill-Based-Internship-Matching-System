@@ -31,11 +31,28 @@ const SearchBar = ({
     setValue(initialValue);
   }, [initialValue]);
 
+  const timeoutRef = useRef(null);
+
+  // Debouncing logic
+  useEffect(() => {
+    if (value === initialValue) return; // Skip initial sync
+
+    // If we want real-time search (no submit button or explicitly enabled)
+    if (!showSubmitButton) {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      
+      timeoutRef.current = setTimeout(() => {
+        if (onSearch) onSearch(value);
+      }, 500); // 500ms debounce
+    }
+
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, [value, showSubmitButton, onSearch, initialValue]);
+
   const handleChange = (e) => {
-    const newVal = e.target.value;
-    setValue(newVal);
-    // If button is hidden, we sync with parent immediately so the parent button has the right query
-    if (!showSubmitButton && onSearch) onSearch(newVal);
+    setValue(e.target.value);
   };
 
   const handleClear = () => {
@@ -73,7 +90,7 @@ const SearchBar = ({
         {/* Search Icon */}
         <div className={`
           pl-4 pr-2 transition-colors duration-300
-          ${isFocused ? 'text-indigo-500' : 'text-slate-400'}
+          ${isFocused ? 'text-indigo-500' : 'text-slate-500'}
         `}>
           {isLoading ? (
             <Loader2 className="w-5 h-5 animate-spin" />
@@ -90,7 +107,7 @@ const SearchBar = ({
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           placeholder={placeholder}
-          className="w-full py-4 pr-32 text-slate-800 placeholder:text-slate-400 font-bold bg-transparent outline-none text-sm lg:text-base"
+          className="w-full py-4 pr-32 text-slate-800 placeholder:text-slate-500 font-bold bg-transparent outline-none text-sm lg:text-base"
         />
 
         {/* Action Buttons */}
@@ -99,7 +116,7 @@ const SearchBar = ({
             <button
               type="button"
               onClick={handleClear}
-              className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-rose-500 transition-all"
+              className="p-2 hover:bg-slate-100 rounded-xl text-slate-500 hover:text-rose-500 transition-all"
               title="Clear search"
             >
               <X size={18} />

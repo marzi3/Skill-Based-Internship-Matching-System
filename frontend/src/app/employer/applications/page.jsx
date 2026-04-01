@@ -38,7 +38,7 @@ const ApplicationsPage = () => {
             case 'Interviewing': return <Calendar size={16} className="text-primary-500" />;
             case 'Selected': return <CheckCircle2 size={16} className="text-success-500" />;
             case 'Rejected': return <XCircle size={16} className="text-danger-500" />;
-            default: return <Clock size={16} className="text-gray-400" />;
+            default: return <Clock size={16} className="text-gray-500" />;
         }
     };
 
@@ -61,20 +61,20 @@ const ApplicationsPage = () => {
     };
 
     return (
-        <div className="p-8 space-y-8">
+        <div className="p-6 space-y-8">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     <button onClick={() => router.push('/employer/dashboard')} className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600 transition-all">
                         <ArrowLeft className="w-4 h-4" />
                     </button>
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Applications Pipeline</h1>
+                        <h1 className="text-3xl font-bold text-gray-900">Applications</h1>
                         <p className="text-gray-600">Track and manage candidate submissions through the matching funnel</p>
                     </div>
                 </div>
                 <div className="flex gap-4">
                     <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4" />
                         <input
                             type="text"
                             placeholder="Search applicants..."
@@ -144,7 +144,7 @@ const ApplicationsPage = () => {
                                             <span className="text-xs font-black text-primary-600">{app.matchScore || 0}%</span>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-5 text-sm text-gray-400 font-medium">
+                                    <td className="px-6 py-5 text-sm text-gray-500 font-medium">
                                         {new Date(app.appliedDate).toLocaleDateString()}
                                     </td>
                                     <td className="px-6 py-5">

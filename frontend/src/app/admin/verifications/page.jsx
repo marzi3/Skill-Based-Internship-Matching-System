@@ -107,7 +107,7 @@ export default function AdminVerifications() {
                     </h1>
                     
                     <div className="relative mb-4">
-                        <Search className="absolute left-3 top-2.5 text-slate-400" size={16} />
+                        <Search className="absolute left-3 top-2.5 text-slate-500" size={16} />
                         <input 
                             placeholder="Find application..." 
                             className="w-full pl-10 pr-4 py-2 bg-slate-100 border-none rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500/10 outline-none"
@@ -121,7 +121,7 @@ export default function AdminVerifications() {
                             <button 
                                 key={t}
                                 onClick={() => setFilter(t)}
-                                className={`flex-1 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${filter === t ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                className={`flex-1 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${filter === t ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-600'}`}
                             >
                                 {t} ({t === 'all' ? verifications.length : stats[t]})
                             </button>
@@ -146,9 +146,9 @@ export default function AdminVerifications() {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <h4 className="font-bold text-slate-900 text-sm truncate">{v.name}</h4>
-                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{v.role}</p>
+                                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{v.role}</p>
                                     </div>
-                                    <ChevronRight size={14} className={selectedUser?._id === v._id ? 'text-indigo-600' : 'text-slate-300'} />
+                                    <ChevronRight size={14} className={selectedUser?._id === v._id ? 'text-indigo-600' : 'text-slate-500'} />
                                 </div>
                             </motion.button>
                         ))}
@@ -160,7 +160,7 @@ export default function AdminVerifications() {
                                 <Check />
                             </div>
                             <h3 className="font-bold text-slate-900">Queue Empty</h3>
-                            <p className="text-xs text-slate-400 mt-1">Excellent job! There are no pending requests matching your filters.</p>
+                            <p className="text-xs text-slate-500 mt-1">Excellent job! There are no pending requests matching your filters.</p>
                         </div>
                     )}
                 </div>
@@ -207,23 +207,23 @@ export default function AdminVerifications() {
                             <div className="w-[350px] bg-white border-l border-slate-200 p-8 overflow-y-auto space-y-8">
                                 <header>
                                     <h2 className="text-2xl font-black text-slate-900 tracking-tight">Review Record</h2>
-                                    <p className="text-slate-400 text-sm font-medium">Application ID: {selectedUser._id.slice(-8).toUpperCase()}</p>
+                                    <p className="text-slate-500 text-sm font-medium">Application ID: {selectedUser._id.slice(-8).toUpperCase()}</p>
                                 </header>
 
                                 <div className="space-y-6">
                                     <section className="space-y-3">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Subject Information</label>
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Subject Information</label>
                                         <div className="bg-slate-50 p-4 rounded-2xl space-y-3">
                                             <div>
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Legal Name</p>
+                                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Legal Name</p>
                                                 <p className="text-sm font-black text-slate-700">{selectedUser.name}</p>
                                             </div>
                                             <div>
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Account Email</p>
+                                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Account Email</p>
                                                 <p className="text-sm font-black text-slate-700">{selectedUser.email}</p>
                                             </div>
                                             <div>
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Target ID/BRN</p>
+                                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Target ID/BRN</p>
                                                 <p className="text-sm font-black text-indigo-600">
                                                     {selectedUser.role === 'student' ? selectedUser.studentId : selectedUser.businessRegistrationNumber}
                                                 </p>
@@ -232,7 +232,7 @@ export default function AdminVerifications() {
                                     </section>
 
                                     <section className="space-y-3 pt-4 border-t border-slate-100">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Decision Matrix</label>
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Decision Matrix</label>
                                         
                                         <div className="space-y-2">
                                             <button 

@@ -52,7 +52,7 @@ const SkillManager = ({ skills = [], onAdd, onRemove, isLoading }) => {
           <h3 className="text-2xl font-black text-gray-900 tracking-tighter flex items-center gap-3">
             <Sparkles className="text-indigo-500" size={24} /> Skill DNA Sequence
           </h3>
-          <p className="text-sm font-bold text-gray-400 mt-1 uppercase tracking-widest">Map your technical architecture for the matching engine.</p>
+          <p className="text-sm font-bold text-gray-500 mt-1 uppercase tracking-widest">Map your technical architecture for the matching engine.</p>
         </div>
         {!isAdding && (
           <button
@@ -81,7 +81,7 @@ const SkillManager = ({ skills = [], onAdd, onRemove, isLoading }) => {
                     <input
                       {...register('name')}
                       placeholder="e.g. Next.js Architecture"
-                      className={`w-full bg-white border rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-900 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 placeholder:text-gray-300 transition-all ${errors.name ? 'border-rose-500 focus:border-rose-500' : 'border-indigo-100 focus:border-indigo-500'}`}
+                      className={`w-full bg-white border rounded-2xl py-4 pl-12 pr-6 text-sm font-bold text-gray-900 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 placeholder:text-gray-500 transition-all ${errors.name ? 'border-rose-500 focus:border-rose-500' : 'border-indigo-100 focus:border-indigo-500'}`}
                     />
                   </div>
                   {errors.name && <p className="text-[10px] font-black uppercase tracking-widest text-rose-500 ml-1 mt-1">{errors.name.message}</p>}
@@ -114,7 +114,7 @@ const SkillManager = ({ skills = [], onAdd, onRemove, isLoading }) => {
                 <button
                   type="button"
                   onClick={() => setIsAdding(false)}
-                  className="text-gray-400 font-black uppercase text-[10px] tracking-widest hover:text-gray-900 transition-colors"
+                  className="text-gray-500 font-black uppercase text-[10px] tracking-widest hover:text-gray-900 transition-colors"
                 >
                   Discard
                 </button>
@@ -148,12 +148,12 @@ const SkillManager = ({ skills = [], onAdd, onRemove, isLoading }) => {
               className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm group hover:border-indigo-100 hover:shadow-xl hover:shadow-indigo-600/5 transition-all relative overflow-hidden"
             >
               <div className="flex items-center justify-between mb-4">
-                <div className="w-10 h-10 bg-gray-50 text-gray-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 rounded-xl flex items-center justify-center transition-colors">
+                <div className="w-10 h-10 bg-gray-50 text-gray-500 group-hover:bg-indigo-50 group-hover:text-indigo-600 rounded-xl flex items-center justify-center transition-colors">
                   <Star size={18} fill="currentColor" />
                 </div>
                 <button
                   onClick={() => onRemove(name)}
-                  className="text-gray-300 hover:text-rose-500 transition-colors"
+                  className="text-gray-500 hover:text-rose-500 transition-colors"
                 >
                   <Trash2 size={18} />
                 </button>
@@ -172,8 +172,8 @@ const SkillManager = ({ skills = [], onAdd, onRemove, isLoading }) => {
             <div className="w-16 h-16 bg-white rounded-[1.5rem] flex items-center justify-center mx-auto text-gray-200 mb-4 shadow-sm">
               <UserCheck size={32} />
             </div>
-            <p className="text-gray-400 font-bold uppercase text-[10px] tracking-widest">No skill sequence detected.</p>
-            <p className="text-gray-300 text-[10px] font-bold mt-2">Initialize your profile by adding technical skills above.</p>
+            <p className="text-gray-500 font-bold uppercase text-[10px] tracking-widest">No skill sequence detected.</p>
+            <p className="text-gray-500 text-[10px] font-bold mt-2">Initialize your profile by adding technical skills above.</p>
           </div>
         )}
       </div>

@@ -366,7 +366,7 @@ const CreateInternshipPage = () => {
                     <h2 className="text-5xl font-black text-slate-900 tracking-tighter leading-none">
                       {steps[currentStep - 1].title} <span className="text-[#6366F1] font-medium tracking-normal italic">Protocol</span>
                     </h2>
-                    <p className="text-slate-400 mt-5 text-[10px] font-black uppercase tracking-[0.4em]">Step 0{currentStep} / Configuration Active</p>
+                    <p className="text-slate-500 mt-5 text-[10px] font-black uppercase tracking-[0.4em]">Step 0{currentStep} / Configuration Active</p>
                   </header>
 
                   <div className="grid grid-cols-1 gap-12">
@@ -462,7 +462,7 @@ const CreateInternshipPage = () => {
                               onKeyDown={(e) => e.key === 'Enter' && handleAddSkill(e)}
                               placeholder="Type a skill..."
                               aria-invalid={errors.requiredSkills ? 'true' : undefined}
-                              className={`flex-1 bg-slate-50 border rounded-2xl py-4 px-6 text-slate-900 font-bold focus:outline-none transition-all placeholder:text-slate-300 shadow-sm ${errors.requiredSkills ? 'border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-500/50' : 'border-slate-200 focus:border-[#6366F1]/50'}`}
+                              className={`flex-1 bg-slate-50 border rounded-2xl py-4 px-6 text-slate-900 font-bold focus:outline-none transition-all placeholder:text-slate-500 shadow-sm ${errors.requiredSkills ? 'border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-500/50' : 'border-slate-200 focus:border-[#6366F1]/50'}`}
                             />
                             <button
                               onClick={handleAddSkill}
@@ -483,7 +483,7 @@ const CreateInternshipPage = () => {
                                 <div key={skillName} className="bg-white border border-slate-200 text-slate-700 p-4 rounded-2xl flex flex-col gap-3 shadow-sm min-w-[200px] animate-in fade-in zoom-in duration-300">
                                   <div className="flex items-center justify-between gap-4">
                                     <span className="text-xs font-black uppercase tracking-widest text-[#6366F1]">{skillName}</span>
-                                    <button onClick={() => handleRemoveSkill(skillName)} className="text-slate-400 hover:text-rose-500 transition-colors">
+                                    <button onClick={() => handleRemoveSkill(skillName)} className="text-slate-500 hover:text-rose-500 transition-colors">
                                       <X size={16} strokeWidth={3} />
                                     </button>
                                   </div>
@@ -523,7 +523,7 @@ const CreateInternshipPage = () => {
                               onChange={(e) => setPrefSkillInput(e.target.value)}
                               onKeyDown={(e) => e.key === 'Enter' && handleAddPrefSkill(e)}
                               placeholder="Type a bonus skill..."
-                              className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl py-4 px-6 text-slate-900 font-bold focus:outline-none focus:border-[#6366F1]/50 transition-all placeholder:text-slate-300 shadow-sm"
+                              className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl py-4 px-6 text-slate-900 font-bold focus:outline-none focus:border-[#6366F1]/50 transition-all placeholder:text-slate-500 shadow-sm"
                             />
                             <button
                               onClick={handleAddPrefSkill}
@@ -557,7 +557,7 @@ const CreateInternshipPage = () => {
                               onKeyDown={(e) => e.key === 'Enter' && handleAddDegree(e)}
                               placeholder="e.g. Computer Science, IT, Software Engineering..."
                               aria-invalid={errors.requiredDegreeField ? 'true' : undefined}
-                              className={`flex-1 bg-slate-50 border rounded-2xl py-4 px-6 text-slate-900 font-bold focus:outline-none transition-all placeholder:text-slate-300 shadow-sm ${errors.requiredDegreeField ? 'border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-500/50' : 'border-slate-200 focus:border-[#6366F1]/50'}`}
+                              className={`flex-1 bg-slate-50 border rounded-2xl py-4 px-6 text-slate-900 font-bold focus:outline-none transition-all placeholder:text-slate-500 shadow-sm ${errors.requiredDegreeField ? 'border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-500/50' : 'border-slate-200 focus:border-[#6366F1]/50'}`}
                             />
                             <button
                               onClick={handleAddDegree}
@@ -603,7 +603,7 @@ const CreateInternshipPage = () => {
                               </div>
                               <div>
                                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-900 block">Prefers Experienced Candidates</span>
-                                <span className="text-[9px] font-semibold text-slate-400 uppercase">Prioritize students with past internships</span>
+                                <span className="text-[9px] font-semibold text-slate-500 uppercase">Prioritize students with past internships</span>
                               </div>
                             </label>
                           </div>
@@ -623,7 +623,7 @@ const CreateInternshipPage = () => {
                               </div>
                               <div>
                                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-900 block">Require Minimum GPA</span>
-                                <span className="text-[9px] font-semibold text-slate-400 uppercase">Enforce a grade threshold for applicants</span>
+                                <span className="text-[9px] font-semibold text-slate-500 uppercase">Enforce a grade threshold for applicants</span>
                               </div>
                             </label>
 
@@ -695,14 +695,14 @@ const CreateInternshipPage = () => {
                           <label className="block text-xs font-black text-slate-900 uppercase tracking-widest ml-1 mb-2.5">PERKS & BENEFITS</label>
                           <div className="flex gap-4">
                             <div className="relative flex-1 group">
-                              <Award className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#6366F1] transition-colors" size={18} />
+                              <Award className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-[#6366F1] transition-colors" size={18} />
                               <input
                                 type="text"
                                 value={perkInput}
                                 onChange={(e) => setPerkInput(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleAddPerk(e)}
                                 placeholder="e.g. Mentorship access..."
-                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 px-6 text-slate-900 font-bold focus:outline-none focus:border-[#6366F1]/50 transition-all placeholder:text-slate-300"
+                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 px-6 text-slate-900 font-bold focus:outline-none focus:border-[#6366F1]/50 transition-all placeholder:text-slate-500"
                               />
                             </div>
                             <button
@@ -744,7 +744,7 @@ const CreateInternshipPage = () => {
             <div className="p-10 border-t border-slate-100 bg-white flex items-center justify-between shrink-0 relative z-20">
               <button
                 onClick={prevStep}
-                className={`flex items-center gap-3 font-black uppercase text-[10px] tracking-[0.3em] px-8 py-5 rounded-2xl transition-all ${currentStep === 1 ? 'opacity-0 pointer-events-none' : 'text-slate-400 hover:text-slate-900 hover:bg-slate-50'
+                className={`flex items-center gap-3 font-black uppercase text-[10px] tracking-[0.3em] px-8 py-5 rounded-2xl transition-all ${currentStep === 1 ? 'opacity-0 pointer-events-none' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
                   }`}
               >
                 <ChevronLeft size={16} strokeWidth={3} /> Rewind Step

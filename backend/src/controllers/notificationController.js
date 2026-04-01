@@ -54,8 +54,37 @@ const deleteNotification = asyncHandler(async (req, res) => {
     });
 });
 
+// @desc    Mark all notifications as read for logged-in user
+// @route   PATCH /api/notifications/mark-all-read
+// @access  Private
+const markAllRead = asyncHandler(async (req, res) => {
+    await Notification.updateMany(
+        { userId: req.user._id, isRead: false },
+        { isRead: true }
+    );
+
+    res.status(200).json({
+        success: true,
+        data: {}
+    });
+});
+
+// @desc    Delete all notifications for logged-in user
+// @route   DELETE /api/notifications/delete-all
+// @access  Private
+const deleteAllNotifications = asyncHandler(async (req, res) => {
+    await Notification.deleteMany({ userId: req.user._id });
+
+    res.status(200).json({
+        success: true,
+        data: {}
+    });
+});
+
 module.exports = {
     getNotifications,
     markAsRead,
-    deleteNotification
+    deleteNotification,
+    markAllRead,
+    deleteAllNotifications
 };

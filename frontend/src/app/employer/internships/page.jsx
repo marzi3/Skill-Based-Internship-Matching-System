@@ -153,7 +153,7 @@ export default function MyPostingsPage() {
                                     <span className="text-[10px] font-black text-primary-600 uppercase tracking-[0.2em]">Operational Management</span>
                                 </div>
                                 <h1 className="text-4xl font-black text-gray-900 tracking-tight">Postings Management</h1>
-                                <p className="text-sm text-gray-400 font-bold mt-1 uppercase tracking-widest leading-none">Track and coordinate your active internship roles</p>
+                                <p className="text-sm text-gray-500 font-bold mt-1 uppercase tracking-widest leading-none">Track and coordinate your active internship roles</p>
                             </div>
                         </div>
                         
@@ -177,7 +177,7 @@ export default function MyPostingsPage() {
                             className="bg-white/80 backdrop-blur-xl rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500 p-8 flex items-center justify-between group relative overflow-hidden">
                             <div className={`absolute inset-0 bg-gradient-to-br ${s.gradient} opacity-0 group-hover:opacity-[0.03] transition-opacity duration-700`} />
                             <div>
-                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">{s.label}</p>
+                                <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">{s.label}</p>
                                 <p className="text-5xl font-black text-gray-900 mt-2 tracking-tighter">{s.value}</p>
                             </div>
                             <div className={`w-16 h-16 rounded-3xl bg-gradient-to-br ${s.gradient} flex items-center justify-center shadow-2xl transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500`}>
@@ -193,13 +193,13 @@ export default function MyPostingsPage() {
                     {/* Toolbar */}
                     <div className="px-8 py-8 border-b border-gray-50 flex flex-col sm:flex-row items-center justify-between gap-6 bg-gray-50/30">
                         <div className="relative w-full max-w-md group">
-                            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
+                            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-primary-500 transition-colors" />
                             <input
                                 type="text"
                                 placeholder="Search roles, domains, or tags…"
                                 value={searchQuery}
                                 onChange={e => setSearchQuery(e.target.value)}
-                                className="w-full pl-12 pr-6 py-4 bg-white border border-gray-200 rounded-2xl text-sm font-bold text-gray-800 placeholder:text-gray-300 focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all shadow-sm group-hover:bg-gray-50/50"
+                                className="w-full pl-12 pr-6 py-4 bg-white border border-gray-200 rounded-2xl text-sm font-bold text-gray-800 placeholder:text-gray-500 focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all shadow-sm group-hover:bg-gray-50/50"
                             />
                         </div>
                         <div className="flex items-center gap-3">
@@ -211,7 +211,7 @@ export default function MyPostingsPage() {
 
                     {/* Loading */}
                     {loading && (
-                        <div className="py-20 flex flex-col items-center gap-3 text-gray-400">
+                        <div className="py-20 flex flex-col items-center gap-3 text-gray-500">
                             <Loader2 className="w-9 h-9 animate-spin text-indigo-500" />
                             <p className="text-sm font-semibold">Loading postings…</p>
                         </div>
@@ -224,7 +224,7 @@ export default function MyPostingsPage() {
                                 <AlertCircle className="w-7 h-7 text-red-400" />
                             </div>
                             <p className="font-bold text-gray-800 mb-1">Couldn't load postings</p>
-                            <p className="text-sm text-gray-400 mb-5">{error}</p>
+                            <p className="text-sm text-gray-500 mb-5">{error}</p>
                             <button onClick={fetchMyInternships}
                                 className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors shadow-md shadow-indigo-200">
                                 Retry
@@ -239,7 +239,7 @@ export default function MyPostingsPage() {
                                 <Briefcase className="w-8 h-8 text-indigo-300" />
                             </div>
                             <p className="font-extrabold text-gray-800 text-lg mb-1">No postings found</p>
-                            <p className="text-sm text-gray-400 max-w-xs mx-auto">
+                            <p className="text-sm text-gray-500 max-w-xs mx-auto">
                                 {searchQuery ? `No results for "${searchQuery}".` : 'Use the sidebar to create your first internship.'}
                             </p>
                         </div>
@@ -252,7 +252,7 @@ export default function MyPostingsPage() {
                                 <thead>
                                     <tr className="bg-gray-50/50">
                                         {['Position Identity', 'Inception Date', 'Status', 'Actions'].map((h, i) => (
-                                            <th key={h} className={`px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] border-b border-gray-100 ${i === 3 ? 'text-right' : ''}`}>
+                                            <th key={h} className={`px-8 py-5 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] border-b border-gray-100 ${i === 3 ? 'text-right' : ''}`}>
                                                 {h}
                                             </th>
                                         ))}
@@ -277,7 +277,7 @@ export default function MyPostingsPage() {
                                                         <span className="text-[10px] font-black text-primary-500 uppercase tracking-widest py-0.5 px-2 bg-primary-50 rounded-md">
                                                             {internship.domain || 'General'}
                                                         </span>
-                                                        <span className="text-[10px] font-bold text-gray-400 uppercase">Sector</span>
+                                                        <span className="text-[10px] font-bold text-gray-500 uppercase">Sector</span>
                                                     </div>
                                                 </div>
                                             </div>

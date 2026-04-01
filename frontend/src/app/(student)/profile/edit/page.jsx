@@ -158,7 +158,7 @@ const StudentProfileEditPage = () => {
       <div className="h-screen flex items-center justify-center bg-slate-50">
         <div className="flex flex-col items-center gap-6">
           <div className="w-16 h-16 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin" />
-          <p className="text-sm font-black text-gray-400 uppercase tracking-widest animate-pulse">Synchronizing Student Data Sequence...</p>
+          <p className="text-sm font-black text-gray-500 uppercase tracking-widest animate-pulse">Synchronizing Student Data Sequence...</p>
         </div>
       </div>
     );
@@ -171,14 +171,14 @@ const StudentProfileEditPage = () => {
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-gray-200">
           <div className="space-y-4">
-            <Link href="/student-dashboard" className="flex items-center gap-2 text-slate-400 hover:text-slate-900 transition-all font-black text-[10px] uppercase tracking-widest group">
+            <Link href="/student-dashboard" className="flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-all font-black text-[10px] uppercase tracking-widest group">
               <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back to Intelligence Core
             </Link>
             <div>
               <h1 className="text-4xl font-black text-gray-900 tracking-tighter flex items-center gap-4">
                 Profile Configuration <ShieldCheck className="text-indigo-600" size={32} />
               </h1>
-              <p className="text-sm font-bold text-gray-400 mt-1 uppercase tracking-widest italic opacity-70">Updating protocol: {user?.name || 'Authorized User'}</p>
+              <p className="text-sm font-bold text-gray-500 mt-1 uppercase tracking-widest italic opacity-70">Updating protocol: {user?.name || 'Authorized User'}</p>
             </div>
           </div>
           
@@ -223,7 +223,7 @@ const StudentProfileEditPage = () => {
                 className={`flex items-center gap-3 px-8 py-4 rounded-3xl transition-all font-black uppercase text-[10px] tracking-widest ${
                   active 
                     ? 'bg-gray-900 text-white shadow-xl shadow-gray-300' 
-                    : 'bg-transparent text-gray-400 hover:text-gray-900'
+                    : 'bg-transparent text-gray-500 hover:text-gray-900'
                 }`}
               >
                 <Icon size={16} className={active ? 'text-white' : tab.color} />
@@ -246,7 +246,7 @@ const StudentProfileEditPage = () => {
               >
                 <header className="mb-10">
                   <h2 className="text-3xl font-black text-gray-900 tracking-tighter">Identity Configuration</h2>
-                  <p className="text-sm font-bold text-gray-400 mt-1 uppercase tracking-widest">Global student parameters for the matching engine.</p>
+                  <p className="text-sm font-bold text-gray-500 mt-1 uppercase tracking-widest">Global student parameters for the matching engine.</p>
                 </header>
                 <ProfileEditForm 
                   initialData={studentData} 
@@ -268,7 +268,7 @@ const StudentProfileEditPage = () => {
                 <header className="flex items-center justify-between">
                   <div>
                     <h2 className="text-3xl font-black text-gray-900 tracking-tighter">Academic Records</h2>
-                    <p className="text-sm font-bold text-gray-400 mt-1 uppercase tracking-widest">Verification data from educational institutions.</p>
+                    <p className="text-sm font-bold text-gray-500 mt-1 uppercase tracking-widest">Verification data from educational institutions.</p>
                   </div>
                   {!isEditingEducation && (
                     <button
@@ -311,13 +311,13 @@ const StudentProfileEditPage = () => {
                         <div className="flex items-center gap-2">
                           <button 
                             onClick={() => { setEducationToEdit(edu); setIsEditingEducation(true); }}
-                            className="p-2 text-slate-300 hover:text-sky-500 transition-colors"
+                            className="p-2 text-slate-500 hover:text-sky-500 transition-colors"
                           >
                             <Pencil size={18} />
                           </button>
                           <button 
                             onClick={() => handleRemoveEducation(edu._id)}
-                            className="p-2 text-slate-300 hover:text-rose-500 transition-colors"
+                            className="p-2 text-slate-500 hover:text-rose-500 transition-colors"
                           >
                             <Trash2 size={18} />
                           </button>
@@ -329,13 +329,13 @@ const StudentProfileEditPage = () => {
                       </p>
                       <div className="flex flex-wrap gap-4 pt-4 border-t border-gray-100">
                         <div className="flex items-center gap-2 opacity-50">
-                          <Calendar size={14} className="text-gray-400" />
+                          <Calendar size={14} className="text-gray-500" />
                           <span className="text-[9px] font-black uppercase tracking-widest text-gray-600">
                             {new Date(edu.startDate).getFullYear()} — {edu.isCurrentlyStudying ? 'Active' : (edu.endDate ? new Date(edu.endDate).getFullYear() : 'N/A')}
                           </span>
                         </div>
                         <div className="flex items-center gap-2 opacity-50">
-                          <Target size={14} className="text-gray-400" />
+                          <Target size={14} className="text-gray-500" />
                           <span className="text-[9px] font-black uppercase tracking-widest text-gray-600">{edu.degreeLevel?.replace('_', ' ')}</span>
                         </div>
                       </div>
@@ -345,8 +345,8 @@ const StudentProfileEditPage = () => {
                   {(!studentData?.education || studentData.education.length === 0) && !isEditingEducation && (
                     <div className="col-span-full py-20 text-center border-2 border-dashed border-gray-100 rounded-[3rem] bg-gray-50/30">
                       <GraduationCap size={48} className="text-gray-200 mx-auto mb-4" />
-                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Academic Database empty.</p>
-                      <p className="text-gray-300 text-[10px] font-bold mt-2">Initialize your credentials to unlock higher match scores.</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-500">Academic Database empty.</p>
+                      <p className="text-gray-500 text-[10px] font-bold mt-2">Initialize your credentials to unlock higher match scores.</p>
                     </div>
                   )}
                 </div>

@@ -1,7 +1,9 @@
 const fs = require('fs');
+const axios = require('axios');
+const FormData = require('form-data');
 const mongoose = require('mongoose');
-const User = require('./src/models/User');
-require('dotenv').config({path: './.env'});
+const User = require('./backend/src/models/User');
+require('dotenv').config({path: './backend/.env'});
 
 async function test() {
   await mongoose.connect(process.env.MONGODB_URI);
@@ -12,23 +14,19 @@ async function test() {
   const pdfString = '%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n';
   fs.writeFileSync('/tmp/test.pdf', pdfString);
 
-  const FormData = require('form-data');
   const form = new FormData();
   form.append('resume', fs.createReadStream('/tmp/test.pdf'));
   
   try {
-    const fetch = (await import('node-fetch')).default || globalThis.fetch;
-    const res = await fetch('http://localhost:5005/api/v1/students/profile/resume', {
-      method: 'POST',
-      body: form,
+    const res = await axios.post('http://localhost:5005/api/v1/students/profile/resume', form, {
       headers: {
+        ...form.getHeaders(),
         'Authorization': `Bearer ${token}`
       }
     });
-    const data = await res.text();
-    console.log('STATUS:', res.status, 'RESPONSE:', data);
+    console.log('SUCCESS:', res.data);
   } catch (err) {
-    console.log('ERROR:', err);
+    console.log('ERROR:', err.response?.data || err.message);
   }
   process.exit();
 }

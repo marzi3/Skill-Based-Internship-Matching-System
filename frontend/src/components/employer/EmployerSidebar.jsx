@@ -39,7 +39,7 @@ export default function EmployerSidebar() {
             {/* Collapse Toggle */}
             <button
                 onClick={() => setIsCollapsed(!isCollapsed)}
-                className="absolute -right-3 top-8 bg-white border border-gray-200 rounded-full p-1 text-gray-400 hover:text-indigo-600 hover:shadow-md transition-all z-30"
+                className="absolute -right-3 top-8 bg-white border border-gray-200 rounded-full p-1 text-gray-500 hover:text-indigo-600 hover:shadow-md transition-all z-30"
             >
                 {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
             </button>
@@ -53,7 +53,7 @@ export default function EmployerSidebar() {
                         ) : (
                             <>
                                 <h1 className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 tracking-tight whitespace-nowrap">InternMatch</h1>
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Employer Portal</span>
+                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">Employer Portal</span>
                             </>
                         )}
                     </div>

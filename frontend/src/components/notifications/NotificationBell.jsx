@@ -92,6 +92,33 @@ export default function NotificationBell() {
         }
     };
 
+    const markAllAsRead = async () => {
+        try {
+            const token = Cookies.get('token') || localStorage.getItem('token');
+            await axios.patch('/notifications/mark-all-read', {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+            setUnreadCount(0);
+        } catch (err) {
+            console.error('Failed to mark all as read', err);
+        }
+    };
+
+    const deleteAllNotifications = async () => {
+        if (!window.confirm('Are you sure you want to delete all notifications?')) return;
+        try {
+            const token = Cookies.get('token') || localStorage.getItem('token');
+            await axios.delete('/notifications/delete-all', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setNotifications([]);
+            setUnreadCount(0);
+        } catch (err) {
+            console.error('Failed to delete all', err);
+        }
+    };
+
     return (
         <div className="relative" ref={dropdownRef}>
             <button
@@ -119,17 +146,37 @@ export default function NotificationBell() {
                         className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] z-[100] border border-gray-100 overflow-hidden flex flex-col max-h-[85vh]"
                     >
                         <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                            <h3 className="font-bold text-gray-900 text-lg">Notifications</h3>
-                            {unreadCount > 0 && (
-                                <span className="text-xs bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-bold shadow-sm">
-                                    {unreadCount} New
-                                </span>
-                            )}
+                            <div className="flex flex-col">
+                                <h3 className="font-bold text-gray-900 text-lg">Notifications</h3>
+                                {unreadCount > 0 && (
+                                    <span className="text-[10px] text-indigo-600 font-bold uppercase tracking-wider">
+                                        {unreadCount} Unread Messages
+                                    </span>
+                                )}
+                            </div>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={markAllAsRead}
+                                    className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-white rounded-lg transition-colors border border-transparent hover:border-gray-100"
+                                    title="Mark all as read"
+                                    disabled={unreadCount === 0}
+                                >
+                                    <Check size={16} />
+                                </button>
+                                <button
+                                    onClick={deleteAllNotifications}
+                                    className="p-2 text-gray-500 hover:text-rose-600 hover:bg-white rounded-lg transition-colors border border-transparent hover:border-gray-100"
+                                    title="Clear all"
+                                    disabled={notifications.length === 0}
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            </div>
                         </div>
 
                         <div className="overflow-y-auto flex-1 p-2 space-y-1 scrollbar-hide">
                             {notifications.length === 0 ? (
-                                <div className="p-8 text-center text-gray-400 flex flex-col items-center">
+                                <div className="p-6 text-center text-gray-500 flex flex-col items-center">
                                     <Bell size={32} className="mb-3 opacity-20" />
                                     <p className="font-medium">You're all caught up!</p>
                                     <p className="text-xs mt-1">No new notifications</p>
@@ -146,26 +193,26 @@ export default function NotificationBell() {
                                                 <p className={`text-sm ${notif.isRead ? 'text-gray-600' : 'text-gray-900 font-bold'}`}>
                                                     {notif.message}
                                                 </p>
-                                                <p className="text-xs text-gray-400 mt-2 font-medium">
+                                                <p className="text-xs text-gray-500 mt-2 font-medium">
                                                     {new Date(notif.createdAt).toLocaleDateString()} • {new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                 </p>
                                                 {notif.metadata && (
                                                     <div className="mt-4 space-y-2.5 p-4 bg-white rounded-2xl border border-indigo-100/60 shadow-sm relative overflow-hidden group/meta">
                                                         <div className="absolute top-0 left-0 w-1 h-full bg-indigo-600/20" />
                                                         <div className="flex items-center justify-between gap-4">
-                                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 whitespace-nowrap">
+                                                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5 whitespace-nowrap">
                                                                 <div className="w-1 h-1 rounded-full bg-indigo-400" /> Date
                                                             </span>
                                                             <span className="text-xs font-black text-slate-900 truncate">{notif.metadata.date}</span>
                                                         </div>
                                                         <div className="flex items-center justify-between gap-4 py-2 border-y border-indigo-50/50">
-                                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 whitespace-nowrap">
+                                                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5 whitespace-nowrap">
                                                                 <div className="w-1 h-1 rounded-full bg-indigo-400" /> Time
                                                             </span>
                                                             <span className="text-xs font-black text-slate-900 truncate">{notif.metadata.time}</span>
                                                         </div>
                                                         <div className="flex items-center justify-between gap-4">
-                                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 whitespace-nowrap">
+                                                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5 whitespace-nowrap">
                                                                 <div className="w-1 h-1 rounded-full bg-indigo-400" /> Location
                                                             </span>
                                                             <span className="text-[10px] font-black text-indigo-600 truncate max-w-[150px]">{notif.metadata.location}</span>
@@ -173,6 +220,18 @@ export default function NotificationBell() {
                                                     </div>
                                                 )}
 
+                                                {notif.link && (
+                                                    <Link 
+                                                        href={notif.link}
+                                                        onClick={() => {
+                                                            setIsOpen(false);
+                                                            if (!notif.isRead) markAsRead(notif._id);
+                                                        }}
+                                                        className="inline-flex items-center gap-2 mt-3 text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-800 transition-colors"
+                                                    >
+                                                        Check Details <ExternalLink size={10} />
+                                                    </Link>
+                                                )}
                                             </div>
                                         </div>
 
@@ -181,7 +240,7 @@ export default function NotificationBell() {
                                             {!notif.isRead && (
                                                 <button
                                                     onClick={() => markAsRead(notif._id)}
-                                                    className="p-1.5 text-gray-400 bg-white shadow-sm rounded-lg border border-gray-100 hover:text-green-600 hover:border-green-200 transition-colors"
+                                                    className="p-1.5 text-gray-500 bg-white shadow-sm rounded-lg border border-gray-100 hover:text-green-600 hover:border-green-200 transition-colors"
                                                     title="Mark as read"
                                                 >
                                                     <Check size={14} strokeWidth={3} />
@@ -189,7 +248,7 @@ export default function NotificationBell() {
                                             )}
                                             <button
                                                 onClick={(e) => deleteNotification(notif._id, e)}
-                                                className="p-1.5 text-gray-400 bg-white shadow-sm rounded-lg border border-gray-100 hover:text-red-600 hover:border-red-200 transition-colors"
+                                                className="p-1.5 text-gray-500 bg-white shadow-sm rounded-lg border border-gray-100 hover:text-red-600 hover:border-red-200 transition-colors"
                                                 title="Delete"
                                             >
                                                 <Trash2 size={14} />

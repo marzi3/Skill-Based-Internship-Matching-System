@@ -49,14 +49,14 @@ export default function InternshipSearch() {
     // Remove automatic reactive search on searchQuery change
     useEffect(() => {
         fetchInternships();
-    }, [filters, fetchInternships]); // Only fetch on filters change, or manual trigger
+    }, [filters, searchQuery, fetchInternships]); // Now fetches on query or filters change
 
     const handleSearchChange = (query) => {
         setSearchQuery(query);
     };
 
     return (
-        <div className="p-8 max-w-7xl mx-auto space-y-8">
+        <div className="p-6 max-w-7xl mx-auto space-y-8">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div className="space-y-1">
                     <h1 className="text-4xl font-black text-gray-900 tracking-tight">Active Opportunities</h1>
@@ -69,6 +69,7 @@ export default function InternshipSearch() {
                             initialValue={searchQuery}
                             onSearch={handleSearchChange}
                             isLoading={loading}
+                            showSubmitButton={false}
                         />
                     </div>
                     <button className="p-4 bg-gray-900 text-white rounded-2xl hover:bg-black transition-all shadow-lg flex items-center justify-center">
@@ -84,7 +85,7 @@ export default function InternshipSearch() {
                         <h3 className="font-black text-gray-900 uppercase text-xs tracking-widest border-b pb-4">Filter Interface</h3>
 
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-gray-400 uppercase tracking-tighter">Domain</label>
+                            <label className="text-xs font-bold text-gray-500 uppercase tracking-tighter">Domain</label>
                             <select
                                 className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:outline-none"
                                 value={filters.domain}
@@ -99,7 +100,7 @@ export default function InternshipSearch() {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-gray-400 uppercase tracking-tighter">Environment</label>
+                            <label className="text-xs font-bold text-gray-500 uppercase tracking-tighter">Environment</label>
                             <div className="space-y-2">
                                 {['Remote', 'On-site', 'Hybrid'].map(env => (
                                     <button
@@ -120,7 +121,7 @@ export default function InternshipSearch() {
                     {loading ? (
                         <div className="py-20 text-center flex flex-col items-center gap-4">
                             <Loader className="animate-spin text-primary-600" size={48} />
-                            <p className="text-gray-400 font-bold uppercase tracking-widest animate-pulse">Syncing Opportunities...</p>
+                            <p className="text-gray-500 font-bold uppercase tracking-widest animate-pulse">Syncing Opportunities...</p>
                         </div>
                     ) : internships.length > 0 ? (
                         internships.map((job) => (
@@ -129,9 +130,9 @@ export default function InternshipSearch() {
                                 className="hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 border border-gray-50 group cursor-pointer"
                                 onClick={() => router.push(`/internships/${job._id}`)}
                             >
-                                <div className="p-8 flex flex-col md:flex-row gap-6">
+                                <div className="p-6 flex flex-col md:flex-row gap-6">
                                     <div className="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-50 rounded-2xl flex items-center justify-center border border-gray-100 shrink-0 group-hover:scale-110 transition-transform">
-                                        <Briefcase size={32} className="text-gray-400" />
+                                        <Briefcase size={32} className="text-gray-500" />
                                     </div>
 
                                     <div className="flex-1 space-y-4">
@@ -143,7 +144,7 @@ export default function InternshipSearch() {
                                             <Badge variant="success">{job.workEnvironment}</Badge>
                                         </div>
 
-                                        <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-400 font-bold">
+                                        <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-500 font-bold">
                                             <div className="flex items-center gap-1"><MapPin size={16} /> {job.location || job.workEnvironment || 'Remote'}</div>
                                             <div className="flex items-center gap-1"><Clock size={16} /> {job.duration}</div>
                                             <div className="flex items-center gap-1 text-emerald-500"><Zap size={16} fill="currentColor" /> FAST RESPONSE</div>
@@ -153,12 +154,12 @@ export default function InternshipSearch() {
                                             {job.requiredSkills?.slice(0, 4).map(skill => (
                                                 <Badge key={skill.name} variant="secondary" size="sm" className="bg-indigo-50 text-indigo-600 border-indigo-100">{skill.name}</Badge>
                                             ))}
-                                            {job.requiredSkills?.length > 4 && <span className="text-xs text-gray-400 font-bold pt-1">+{job.requiredSkills.length - 4} more</span>}
+                                            {job.requiredSkills?.length > 4 && <span className="text-xs text-gray-500 font-bold pt-1">+{job.requiredSkills.length - 4} more</span>}
                                         </div>
                                     </div>
 
                                     <div className="flex flex-col justify-center items-end border-t md:border-t-0 md:border-l border-gray-100 pt-6 md:pt-0 md:pl-8 gap-2">
-                                        <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest">A.I. Compatibility</span>
+                                        <span className="text-[10px] font-black uppercase text-gray-500 tracking-widest">A.I. Compatibility</span>
                                         <div className="flex items-center gap-2">
                                             <Star className="text-amber-400" size={18} fill="currentColor" />
                                             <span className="text-2xl font-black text-gray-900">88%</span>
@@ -173,9 +174,9 @@ export default function InternshipSearch() {
                     ) : (
                         <Card className="py-20 text-center space-y-4 border-dashed border-2">
                             <div className="bg-gray-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto">
-                                <Search size={32} className="text-gray-300" />
+                                <Search size={32} className="text-gray-500" />
                             </div>
-                            <p className="text-gray-400 font-bold text-xl uppercase tracking-widest">No matching protocols identified.</p>
+                            <p className="text-gray-500 font-bold text-xl uppercase tracking-widest">No matching protocols identified.</p>
                             <button
                                 onClick={() => { setSearchQuery(''); setFilters({ domain: '', workEnvironment: '', duration: '' }) }}
                                 className="text-primary-600 font-black underline uppercase text-xs"

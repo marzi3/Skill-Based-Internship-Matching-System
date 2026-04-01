@@ -57,7 +57,7 @@ export default function ApplicationDetailView({ application, role, onStatusUpdat
                                     {internship?.company || 'Industrial Partner'}
                                 </p>
                                 <div className="flex items-center gap-2">
-                                    <MapPin size={12} className="text-slate-400" />
+                                    <MapPin size={12} className="text-slate-500" />
                                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{internship?.location || 'Remote'}</span>
                                 </div>
                             </div>
@@ -122,7 +122,7 @@ export default function ApplicationDetailView({ application, role, onStatusUpdat
                             <FileText size={120} />
                          </div>
                          <div className="relative z-10">
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-6">Cover Letter Snapshot</h3>
+                            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-6">Cover Letter Snapshot</h3>
                             <div className="bg-slate-50 rounded-2xl p-8 border border-slate-100 italic font-medium text-slate-600 leading-relaxed text-sm">
                                 {coverLetter || "No cover letter was provided with this submission."}
                             </div>
@@ -144,15 +144,15 @@ export default function ApplicationDetailView({ application, role, onStatusUpdat
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                     <div className="space-y-1">
-                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Date</p>
+                                        <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Date</p>
                                         <p className="text-sm font-black text-slate-900">{new Date(interviewDetails.date).toLocaleDateString()}</p>
                                     </div>
                                     <div className="space-y-1">
-                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Time</p>
+                                        <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Time</p>
                                         <p className="text-sm font-black text-slate-900">{interviewDetails.time}</p>
                                     </div>
                                     <div className="space-y-1">
-                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Location</p>
+                                        <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Location</p>
                                         <p className="text-sm font-black text-indigo-600 underline font-bold truncate">
                                             {interviewDetails.location.includes('http') ? (
                                                 <a href={interviewDetails.location} target="_blank" rel="noopener noreferrer">{interviewDetails.location}</a>
@@ -164,7 +164,7 @@ export default function ApplicationDetailView({ application, role, onStatusUpdat
                                 </div>
                                 {interviewDetails.notes && (
                                     <div className="mt-8 pt-6 border-t border-indigo-100/50">
-                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-2">Protocol Notes</p>
+                                        <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-2">Protocol Notes</p>
                                         <p className="text-[11px] font-medium text-slate-600 italic">"{interviewDetails.notes}"</p>
                                     </div>
                                 )}
@@ -180,7 +180,7 @@ export default function ApplicationDetailView({ application, role, onStatusUpdat
                                 <h4 className="text-[9px] font-black uppercase tracking-widest text-emerald-500">Verified Strengths</h4>
                                 <div className="space-y-3">
                                     {(matchAnalysis?.explanation || []).filter(e => e.score > 0).map((e, i) => (
-                                        <div key={i} className="flex gap-3 text-xs font-bold text-slate-300">
+                                        <div key={i} className="flex gap-3 text-xs font-bold text-slate-500">
                                             <CheckCircle2 size={14} className="text-emerald-500 shrink-0 mt-0.5" />
                                             <span>{e.detail}</span>
                                         </div>
@@ -191,7 +191,7 @@ export default function ApplicationDetailView({ application, role, onStatusUpdat
                                 <h4 className="text-[9px] font-black uppercase tracking-widest text-rose-500">Synchronization Gaps</h4>
                                 <div className="space-y-3">
                                     {(matchAnalysis?.explanation || []).filter(e => e.score <= 0).map((e, i) => (
-                                        <div key={i} className="flex gap-3 text-xs font-bold text-slate-400">
+                                        <div key={i} className="flex gap-3 text-xs font-bold text-slate-500">
                                             <AlertTriangle size={14} className="text-rose-500 shrink-0 mt-0.5" />
                                             <span>{e.detail}</span>
                                         </div>
@@ -203,11 +203,11 @@ export default function ApplicationDetailView({ application, role, onStatusUpdat
 
                     {/* Status History */}
                     <Card rounded="3xl" padding="8" shadow="sm" className="border-slate-100">
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-6">Status History (Immutable Log)</h3>
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-6">Status History (Immutable Log)</h3>
                         <div className="overflow-hidden rounded-2xl border border-slate-50">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="bg-slate-50 text-[9px] font-black uppercase tracking-widest text-slate-400">
+                                    <tr className="bg-slate-50 text-[9px] font-black uppercase tracking-widest text-slate-500">
                                         <th className="px-6 py-4">Status Node</th>
                                         <th className="px-6 py-4">Verification Comment</th>
                                         <th className="px-6 py-4">Timestamp</th>
@@ -226,7 +226,7 @@ export default function ApplicationDetailView({ application, role, onStatusUpdat
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4">{log.comment}</td>
-                                            <td className="px-6 py-4 text-slate-400">{new Date(log.updatedAt).toLocaleString()}</td>
+                                            <td className="px-6 py-4 text-slate-500">{new Date(log.updatedAt).toLocaleString()}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -239,7 +239,7 @@ export default function ApplicationDetailView({ application, role, onStatusUpdat
                 <div className="lg:col-span-4 space-y-8">
                     {/* Visual Timeline */}
                     <Card rounded="3xl" padding="8" shadow="sm" className="border-slate-100 bg-[#FBFDFF]">
-                         <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-8">Protocol Pipeline Progress</h3>
+                         <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-8">Application Progress</h3>
                          <div className="relative pl-8 space-y-10">
                             {/* Vertical Line */}
                             <div className="absolute left-[3.5px] top-1 bottom-1 w-[1px] bg-slate-100" />
@@ -256,12 +256,12 @@ export default function ApplicationDetailView({ application, role, onStatusUpdat
                                         
                                         <div>
                                             <h4 className={`text-[10px] font-black uppercase tracking-widest mb-1 ${
-                                                isCompleted ? 'text-slate-900' : 'text-slate-400'
+                                                isCompleted ? 'text-slate-900' : 'text-slate-500'
                                             }`}>
                                                 {step.label}
                                                 {isCurrent && <span className="ml-2 text-[8px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-md italic">Current Node</span>}
                                             </h4>
-                                            <p className="text-[10px] font-bold text-slate-400 italic leading-relaxed">{step.description}</p>
+                                            <p className="text-[10px] font-bold text-slate-500 italic leading-relaxed">{step.description}</p>
                                         </div>
                                     </div>
                                 );
@@ -274,7 +274,7 @@ export default function ApplicationDetailView({ application, role, onStatusUpdat
                         <Card rounded="3xl" padding="8" shadow="sm" className="bg-white border-slate-100 group">
                             <div className="flex flex-col items-center text-center space-y-4">
                                 <div className="w-24 h-24 rounded-[2rem] bg-slate-50 flex items-center justify-center border border-slate-100 shadow-inner group-hover:scale-105 transition-transform duration-500">
-                                    <User size={40} className="text-slate-300" />
+                                    <User size={40} className="text-slate-500" />
                                 </div>
                                 <div>
                                     <h3 className="text-xl font-black text-slate-900">{student?.name}</h3>
@@ -302,12 +302,12 @@ export default function ApplicationDetailView({ application, role, onStatusUpdat
                                     </div>
                                     <div>
                                         <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">{employer?.companyName}</h3>
-                                        <p className="text-[10px] font-bold text-slate-400 italic">Hosting Partner</p>
+                                        <p className="text-[10px] font-bold text-slate-500 italic">Hosting Partner</p>
                                     </div>
                                 </div>
                                 <div className="space-y-4 pt-4 border-t border-slate-50">
                                     <div className="flex items-center gap-3 text-[10px] font-bold text-slate-500">
-                                        <Mail size={14} className="text-slate-400" />
+                                        <Mail size={14} className="text-slate-500" />
                                         <span>Official protocol communication channeled through dashboard</span>
                                     </div>
                                     <div className="flex items-center gap-3 text-[10px] font-bold text-slate-500">

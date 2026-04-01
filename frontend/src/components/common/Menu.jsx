@@ -96,7 +96,7 @@ const Menu = ({
                   flex items-center gap-3 transition duration-200
                   ${
                     isDisabled
-                      ? 'text-gray-400 cursor-not-allowed'
+                      ? 'text-gray-500 cursor-not-allowed'
                       : 'text-gray-900 hover:bg-gray-100 cursor-pointer'
                   }
                   ${item.danger ? 'hover:bg-red-50 hover:text-red-600' : ''}
@@ -113,7 +113,7 @@ const Menu = ({
                   </span>
                 )}
                 {item.shortcut && (
-                  <span className="text-xs text-gray-400">{item.shortcut}</span>
+                  <span className="text-xs text-gray-500">{item.shortcut}</span>
                 )}
               </button>
             );

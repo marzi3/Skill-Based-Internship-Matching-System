@@ -49,15 +49,15 @@ const InterviewModal = ({ isOpen, onClose, onConfirm, application }) => {
                     exit={{ scale: 0.95, opacity: 0, y: 20 }}
                     className="relative bg-white w-full max-w-xl rounded-[3rem] shadow-2xl overflow-hidden border border-slate-100"
                 >
-                    <div className="p-8 lg:p-12">
+                    <div className="p-6 lg:p-12">
                         <div className="flex items-center justify-between mb-8">
                             <div>
                                 <h2 className="text-3xl font-black text-slate-900 tracking-tight italic uppercase">Schedule Interview</h2>
-                                <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest leading-relaxed">
+                                <p className="text-[10px] font-bold text-slate-500 mt-2 uppercase tracking-widest leading-relaxed">
                                     Provide interview details before moving this candidate to interviewing phase.
                                 </p>
                             </div>
-                            <button onClick={onClose} className="p-4 hover:bg-slate-50 rounded-full transition-colors text-slate-400">
+                            <button onClick={onClose} className="p-4 hover:bg-slate-50 rounded-full transition-colors text-slate-500">
                                 <X size={20} />
                             </button>
                         </div>
@@ -67,7 +67,7 @@ const InterviewModal = ({ isOpen, onClose, onConfirm, application }) => {
                                 <div className="space-y-3">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-900 ml-1">Interview Date</label>
                                     <div className="relative group">
-                                        <Calendar size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors pointer-events-none" />
+                                        <Calendar size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-600 transition-colors pointer-events-none" />
                                         <input 
                                             required
                                             type="date"
@@ -81,7 +81,7 @@ const InterviewModal = ({ isOpen, onClose, onConfirm, application }) => {
                                 <div className="space-y-3">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-900 ml-1">Interview Time</label>
                                     <div className="relative group">
-                                        <Clock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors pointer-events-none" />
+                                        <Clock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-600 transition-colors pointer-events-none" />
                                         <input 
                                             required
                                             type="time"
@@ -96,7 +96,7 @@ const InterviewModal = ({ isOpen, onClose, onConfirm, application }) => {
                             <div className="space-y-3">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-900 ml-1">Location / Meeting Link</label>
                                 <div className="relative group">
-                                    <MapPin size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors pointer-events-none" />
+                                    <MapPin size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-600 transition-colors pointer-events-none" />
                                     <input 
                                         required
                                         type="text"
@@ -111,7 +111,7 @@ const InterviewModal = ({ isOpen, onClose, onConfirm, application }) => {
                             <div className="space-y-3">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-900 ml-1">Notes (Optional)</label>
                                 <div className="relative group">
-                                    <FileEdit size={18} className="absolute left-4 top-4 text-slate-400 group-focus-within:text-indigo-600 transition-colors pointer-events-none" />
+                                    <FileEdit size={18} className="absolute left-4 top-4 text-slate-500 group-focus-within:text-indigo-600 transition-colors pointer-events-none" />
                                     <textarea 
                                         rows={4}
                                         value={formData.notes}

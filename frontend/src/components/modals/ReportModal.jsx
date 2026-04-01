@@ -52,7 +52,7 @@ export default function ReportModal({ isOpen, onClose, reportedId, reportedEntit
                 >
                     <button 
                         onClick={onClose}
-                        className="absolute right-4 top-4 p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400"
+                        className="absolute right-4 top-4 p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-500"
                     >
                         <X size={20} />
                     </button>
@@ -72,7 +72,7 @@ export default function ReportModal({ isOpen, onClose, reportedId, reportedEntit
 
                             <form onSubmit={handleSubmit} className="space-y-6">
                                 <div>
-                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Specify Reason</label>
+                                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Specify Reason</label>
                                     <div className="space-y-2">
                                         {REASONS.map((r) => (
                                             <button
@@ -88,7 +88,7 @@ export default function ReportModal({ isOpen, onClose, reportedId, reportedEntit
                                 </div>
 
                                 <div>
-                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Additional Context</label>
+                                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Additional Context</label>
                                     <textarea
                                         value={details}
                                         onChange={(e) => setDetails(e.target.value)}
@@ -106,13 +106,13 @@ export default function ReportModal({ isOpen, onClose, reportedId, reportedEntit
                                     Submit Report for Review
                                 </button>
                                 
-                                <p className="text-[10px] text-center text-slate-400 font-bold uppercase tracking-tighter">
+                                <p className="text-[10px] text-center text-slate-500 font-bold uppercase tracking-tighter">
                                     Your identity remains anonymous to {reportedName}.
                                 </p>
                             </form>
                         </div>
                     ) : (
-                        <div className="p-8 text-center bg-slate-50">
+                        <div className="p-6 text-center bg-slate-50">
                             <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm">
                                 <ShieldCheck size={32} />
                             </div>

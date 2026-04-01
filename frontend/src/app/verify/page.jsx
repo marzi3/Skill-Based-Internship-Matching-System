@@ -138,7 +138,7 @@ export default function VerificationPage() {
                             {user.role === 'student' ? (
                                 <div className="space-y-4">
                                     <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Student ID Number</label>
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider ml-1">Student ID Number</label>
                                         <input 
                                             name="studentId"
                                             required
@@ -152,7 +152,7 @@ export default function VerificationPage() {
                             ) : (
                                 <div className="space-y-4">
                                     <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Company Legal Name</label>
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider ml-1">Company Legal Name</label>
                                         <input 
                                             name="companyName"
                                             required
@@ -164,7 +164,7 @@ export default function VerificationPage() {
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-1">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Reg. Number</label>
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider ml-1">Reg. Number</label>
                                             <input 
                                                 name="businessRegistrationNumber"
                                                 required
@@ -175,7 +175,7 @@ export default function VerificationPage() {
                                             />
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Website</label>
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider ml-1">Website</label>
                                             <input 
                                                 name="website"
                                                 value={formData.website}
@@ -190,7 +190,7 @@ export default function VerificationPage() {
 
                             {/* File Upload Area */}
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider ml-1">
                                     {user.role === 'student' ? 'Upload Student ID (Photo)' : 'Business Incorporation Certificate'}
                                 </label>
                                 <div className={`relative group border-2 border-dashed rounded-3xl p-8 transition-all ${file ? 'border-emerald-300 bg-emerald-50/30' : 'border-slate-200 bg-slate-100/30 hover:border-indigo-300 hover:bg-slate-50'}`}>
@@ -202,7 +202,7 @@ export default function VerificationPage() {
                                         accept="image/*,application/pdf"
                                     />
                                     <div className="text-center">
-                                        <div className={`mx-auto w-12 h-12 rounded-xl flex items-center justify-center mb-3 transition-colors ${file ? 'bg-emerald-500' : 'bg-slate-200 text-slate-400 group-hover:bg-indigo-500 group-hover:text-white'}`}>
+                                        <div className={`mx-auto w-12 h-12 rounded-xl flex items-center justify-center mb-3 transition-colors ${file ? 'bg-emerald-500' : 'bg-slate-200 text-slate-500 group-hover:bg-indigo-500 group-hover:text-white'}`}>
                                             {file ? <CheckCircle className="text-white" /> : <Upload />}
                                         </div>
                                         {file ? (
@@ -210,7 +210,7 @@ export default function VerificationPage() {
                                         ) : (
                                             <>
                                                 <p className="text-sm font-bold text-slate-700">Drag or click to upload</p>
-                                                <p className="text-[10px] text-slate-400 font-medium">Max 5MB (PDF, PNG, JPG)</p>
+                                                <p className="text-[10px] text-slate-500 font-medium">Max 5MB (PDF, PNG, JPG)</p>
                                             </>
                                         )}
                                     </div>
@@ -237,7 +237,7 @@ export default function VerificationPage() {
                                 <button 
                                     type="button"
                                     onClick={() => router.push(user.role === 'employer' ? '/employer/dashboard' : '/student-dashboard')}
-                                    className="text-[10px] text-slate-400 font-black uppercase tracking-widest hover:text-indigo-600 transition-colors"
+                                    className="text-[10px] text-slate-500 font-black uppercase tracking-widest hover:text-indigo-600 transition-colors"
                                 >
                                     Skip for now (Limited access)
                                 </button>
@@ -245,10 +245,10 @@ export default function VerificationPage() {
                         </form>
 
                         <div className="mt-8 pt-8 border-t border-slate-100 flex items-center justify-center gap-6">
-                            <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            <div className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">
                                 <ShieldCheck size={14} className="text-emerald-500" /> AES-256 Encrypted
                             </div>
-                            <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            <div className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">
                                 <Lock size={14} className="text-indigo-500" /> GDPR Compliant
                             </div>
                         </div>

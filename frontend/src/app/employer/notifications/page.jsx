@@ -105,9 +105,9 @@ const NotificationsPage = () => {
                 </div>
             ) : notifications.length === 0 ? (
                 <div className="text-center py-20">
-                    <Bell className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                    <Bell className="w-12 h-12 text-gray-500 mx-auto mb-3" />
                     <p className="font-bold text-gray-600">All caught up!</p>
-                    <p className="text-sm text-gray-400 mt-1">No notifications at this time.</p>
+                    <p className="text-sm text-gray-500 mt-1">No notifications at this time.</p>
                 </div>
             ) : (
                 <div className="max-w-4xl space-y-3">
@@ -134,7 +134,7 @@ const NotificationsPage = () => {
                                                 <p className="text-gray-600 text-sm mt-0.5 leading-relaxed">{notif.message}</p>
                                             </div>
                                             <div className="flex items-center gap-1 flex-shrink-0">
-                                                <span className="text-[10px] font-bold text-gray-400 uppercase flex items-center gap-1">
+                                                <span className="text-[10px] font-bold text-gray-500 uppercase flex items-center gap-1">
                                                     <Clock size={10} />
                                                     {notif.createdAt ? new Date(notif.createdAt).toLocaleDateString() : ''}
                                                 </span>
@@ -148,7 +148,7 @@ const NotificationsPage = () => {
                                                 </button>
                                             )}
                                             <button onClick={() => deleteNotification(notif._id)}
-                                                className="flex items-center gap-1 text-xs font-bold text-gray-400 hover:text-red-600 transition-colors">
+                                                className="flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-red-600 transition-colors">
                                                 <Trash2 size={12} /> Delete
                                             </button>
                                         </div>

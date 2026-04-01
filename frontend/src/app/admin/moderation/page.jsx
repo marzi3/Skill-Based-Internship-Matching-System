@@ -82,7 +82,7 @@ export default function ContentModeration() {
                         </div>
                         <div>
                             <h2 className="text-xl font-black text-gray-900 uppercase tracking-wide">Flagged Internship Protocols</h2>
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">Awaiting Security Clearance: {flaggedListings.length}</p>
+                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mt-1">Awaiting Security Clearance: {flaggedListings.length}</p>
                         </div>
                     </div>
 
@@ -152,7 +152,7 @@ export default function ContentModeration() {
                                 <div key={report._id} className="bg-white border border-gray-100 p-5 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-2">
-                                            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Report ID: {report._id.toString().substring(18)}</span>
+                                            <span className="text-xs font-bold uppercase tracking-wider text-gray-500">Report ID: {report._id.toString().substring(18)}</span>
                                             <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-full">{report.reportedEntity}</span>
                                         </div>
                                         <p className="text-gray-900 font-medium mb-1">

@@ -78,7 +78,7 @@ export default function MatchCard({ match, studentSkills = [], isEmployerMode = 
                                 <span>{subtitle}</span>
                                 {target?.location && (
                                     <>
-                                        <span className="text-gray-300">•</span>
+                                        <span className="text-gray-500">•</span>
                                         <span className="flex items-center gap-1 text-sm"><MapPin size={14} /> {target.location}</span>
                                     </>
                                 )}

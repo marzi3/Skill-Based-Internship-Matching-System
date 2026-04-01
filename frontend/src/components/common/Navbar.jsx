@@ -73,7 +73,7 @@ const Navbar = ({
                           ? 'bg-blue-100 text-blue-600'
                           : variant === 'light'
                             ? 'text-gray-700 hover:bg-gray-100'
-                            : 'text-gray-300 hover:bg-gray-800'
+                            : 'text-gray-500 hover:bg-gray-800'
                         }
                       `}
                     >
@@ -105,7 +105,7 @@ const Navbar = ({
                         ? 'bg-blue-100 text-blue-600'
                         : variant === 'light'
                           ? 'text-gray-700 hover:bg-gray-100'
-                          : 'text-gray-300 hover:bg-gray-800'
+                          : 'text-gray-500 hover:bg-gray-800'
                       }
                     `}
                   >
@@ -155,7 +155,7 @@ const Navbar = ({
                       ? 'bg-blue-100 text-blue-600'
                       : variant === 'light'
                         ? 'text-gray-700 hover:bg-gray-100'
-                        : 'text-gray-300 hover:bg-gray-700'
+                        : 'text-gray-500 hover:bg-gray-700'
                     }
                   `}
                 >
@@ -171,7 +171,7 @@ const Navbar = ({
                           block px-3 py-2 text-sm rounded-md
                           ${variant === 'light'
                             ? 'text-gray-600 hover:bg-gray-100'
-                            : 'text-gray-400 hover:bg-gray-700'
+                            : 'text-gray-500 hover:bg-gray-700'
                           }
                         `}
                       >
@@ -208,7 +208,7 @@ export const SearchBar = ({ placeholder = 'Search...', onSearch = null, variant 
       ${variant === 'light' ? 'bg-gray-100' : 'bg-gray-700'}
       transition duration-300
     `}>
-      <svg className={`w-5 h-5 ${variant === 'light' ? 'text-gray-500' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 20 20">
+      <svg className={`w-5 h-5 ${variant === 'light' ? 'text-gray-500' : 'text-gray-500'}`} fill="currentColor" viewBox="0 0 20 20">
         <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
       </svg>
       <input
@@ -298,7 +298,7 @@ export const Breadcrumb = ({ items = [] }) => {
       </Link>
       {items.map((item, index) => (
         <React.Fragment key={index}>
-          <span className="text-gray-400">/</span>
+          <span className="text-gray-500">/</span>
           {item.href ? (
             <Link href={item.href} className="text-blue-600 hover:underline">
               {item.label}

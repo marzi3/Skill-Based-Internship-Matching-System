@@ -38,7 +38,7 @@ const CustomSelect = React.forwardRef(({
             )}
             <div className="relative group">
                 {Icon && (
-                    <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors z-10 pointer-events-none ${hasError ? 'text-rose-400' : 'text-slate-400 group-focus-within:text-[#6366F1]'}`}>
+                    <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors z-10 pointer-events-none ${hasError ? 'text-rose-400' : 'text-slate-500 group-focus-within:text-[#6366F1]'}`}>
                         <Icon size={18} />
                     </div>
                 )}
@@ -63,7 +63,7 @@ const CustomSelect = React.forwardRef(({
                     `}
                     {...rest}
                 >
-                    <option value="" disabled className="bg-white text-slate-400">{placeholder}</option>
+                    <option value="" disabled className="bg-white text-slate-500">{placeholder}</option>
                     {options.map((opt) => (
                         <option
                             key={typeof opt === 'string' ? opt : opt.value}
@@ -74,7 +74,7 @@ const CustomSelect = React.forwardRef(({
                         </option>
                     ))}
                 </select>
-                <div className={`absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none transition-colors ${hasError ? 'text-rose-400' : 'text-slate-400 group-focus-within:text-[#6366F1]'}`}>
+                <div className={`absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none transition-colors ${hasError ? 'text-rose-400' : 'text-slate-500 group-focus-within:text-[#6366F1]'}`}>
                     <ChevronDown size={18} />
                 </div>
             </div>

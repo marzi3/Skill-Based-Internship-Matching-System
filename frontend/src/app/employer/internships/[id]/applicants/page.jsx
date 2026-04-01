@@ -43,7 +43,7 @@ export default function ApplicantsListPage() {
     );
 
     return (
-        <div className="p-8 space-y-8">
+        <div className="p-6 space-y-8">
             <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-500 hover:text-gray-900 font-bold transition-all">
                 <ArrowLeft size={20} /> Back to Details
             </button>
@@ -55,7 +55,7 @@ export default function ApplicantsListPage() {
 
             <div className="flex gap-4">
                 <div className="flex-1 relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
                     <input
                         type="text"
                         placeholder="Search candidates by name or skill..."
@@ -85,7 +85,7 @@ export default function ApplicantsListPage() {
 
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center bg-gray-50 p-3 rounded-xl">
-                                    <span className="text-xs font-black uppercase text-gray-400">Match Score</span>
+                                    <span className="text-xs font-black uppercase text-gray-500">Match Score</span>
                                     <span className="text-primary-600 font-black">88%</span>
                                 </div>
 
@@ -101,7 +101,7 @@ export default function ApplicantsListPage() {
                 ) : (
                     <div className="col-span-full py-20 text-center space-y-4">
                         <Users className="mx-auto text-gray-200" size={64} />
-                        <p className="text-gray-400 font-bold text-xl uppercase tracking-widest">No candidates have applied yet.</p>
+                        <p className="text-gray-500 font-bold text-xl uppercase tracking-widest">No candidates have applied yet.</p>
                     </div>
                 )}
             </div>

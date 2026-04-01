@@ -89,17 +89,17 @@ export default function StudentPublicProfile() {
                         <div className="flex flex-wrap gap-4 text-sm font-medium text-gray-600">
                             {(user.location || profile?.personalInfo?.location) && (
                                 <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
-                                    <MapPin size={16} className="text-gray-400" />
+                                    <MapPin size={16} className="text-gray-500" />
                                     {user.location || profile?.personalInfo?.location}
                                 </div>
                             )}
                             <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
-                                <Mail size={16} className="text-gray-400" />
+                                <Mail size={16} className="text-gray-500" />
                                 <a href={`mailto:${user.email}`} className="hover:text-primary-600 transition-colors">{user.email}</a>
                             </div>
                             {profile?.personalInfo?.phone && (
                                 <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
-                                    <Phone size={16} className="text-gray-400" />
+                                    <Phone size={16} className="text-gray-500" />
                                     <a href={`tel:${profile.personalInfo.phone}`} className="hover:text-primary-600 transition-colors">{profile.personalInfo.phone}</a>
                                 </div>
                             )}
@@ -122,7 +122,7 @@ export default function StudentPublicProfile() {
                             )}
                             {profile?.portfolio?.portfolio && (
                                 <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
-                                    <LinkIcon size={16} className="text-gray-400" />
+                                    <LinkIcon size={16} className="text-gray-500" />
                                     <a href={profile.portfolio.portfolio.startsWith('http') ? profile.portfolio.portfolio : `https://${profile.portfolio.portfolio}`} target="_blank" rel="noopener noreferrer" className="hover:text-primary-600 transition-colors">
                                         Portfolio
                                     </a>
@@ -162,7 +162,7 @@ export default function StudentPublicProfile() {
                                             <div>
                                                 <h3 className="font-bold text-gray-900 text-lg">{edu.degree} in {edu.field}</h3>
                                                 <p className="text-gray-600 font-medium">{edu.institution}</p>
-                                                <p className="text-sm text-gray-400 mt-1">
+                                                <p className="text-sm text-gray-500 mt-1">
                                                     {new Date(edu.startDate).getFullYear()} - {edu.isCurrentlyStudying ? 'Present' : edu.endDate ? new Date(edu.endDate).getFullYear() : ''}
                                                 </p>
                                             </div>
@@ -202,7 +202,7 @@ export default function StudentPublicProfile() {
                                         <div key={idx} className="pb-3 border-b last:border-0 border-gray-50">
                                             <h3 className="font-bold text-gray-900">{cert.name}</h3>
                                             <div className="flex flex-col gap-1 mt-1">
-                                                <p className="text-xs text-gray-400 font-medium tracking-tight uppercase">Issued: {new Date(cert.issuedDate).toLocaleDateString([], { month: 'long', year: 'numeric' })}</p>
+                                                <p className="text-xs text-gray-500 font-medium tracking-tight uppercase">Issued: {new Date(cert.issuedDate).toLocaleDateString([], { month: 'long', year: 'numeric' })}</p>
                                                 {cert.credentialUrl && (
                                                     <a href={cert.credentialUrl.startsWith('http') ? cert.credentialUrl : `https://${cert.credentialUrl}`} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 mt-1 group">
                                                         <LinkIcon size={12} className="group-hover:rotate-12 transition-transform" /> 

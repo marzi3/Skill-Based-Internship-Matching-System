@@ -19,14 +19,14 @@ const Stepper = ({ currentStep, steps }) => {
                   w-10 h-10 rounded-2xl flex items-center justify-center border-2 transition-all duration-500
                   ${isCompleted || isActive
                                         ? 'bg-[#6366F1] border-[#6366F1] shadow-[0_0_20px_rgba(99,102,241,0.3)]'
-                                        : 'bg-white border-slate-200 text-slate-300'
+                                        : 'bg-white border-slate-200 text-slate-500'
                                     }
                 `}
                             >
                                 {isCompleted ? (
                                     <Check className="text-white w-5 h-5" />
                                 ) : (
-                                    <span className={`text-sm font-bold ${isActive ? 'text-white' : 'text-slate-300'}`}>
+                                    <span className={`text-sm font-bold ${isActive ? 'text-white' : 'text-slate-500'}`}>
                                         {step.id}
                                     </span>
                                 )}
@@ -34,7 +34,7 @@ const Stepper = ({ currentStep, steps }) => {
 
                             {/* Step Title */}
                             <div className="absolute top-12 whitespace-nowrap">
-                                <span className={`text-[10px] font-bold uppercase tracking-widest ${isActive || isCompleted ? 'text-[#6366F1]' : 'text-slate-400'}`}>
+                                <span className={`text-[10px] font-bold uppercase tracking-widest ${isActive || isCompleted ? 'text-[#6366F1]' : 'text-slate-500'}`}>
                                     {step.title}
                                 </span>
                             </div>

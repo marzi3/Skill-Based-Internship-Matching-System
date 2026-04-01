@@ -65,7 +65,7 @@ const EducationForm = ({ entry, onSubmit, onCancel, isLoading }) => {
         <button
           onClick={onCancel}
           type="button"
-          className="text-gray-400 hover:text-rose-500 transition-colors p-2"
+          className="text-gray-500 hover:text-rose-500 transition-colors p-2"
         >
           <X size={24} strokeWidth={3} />
         </button>

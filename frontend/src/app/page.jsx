@@ -102,7 +102,7 @@ export default function Home() {
           {/* Stats/Social Proof */}
           <div className="mt-20 pt-10 border-t border-gray-100 grid grid-cols-2 md:grid-cols-4 gap-8 opacity-70 grayscale hover:grayscale-0 transition-all duration-500">
             {['Google', 'Microsoft', 'Spotify', 'Airbnb'].map((brand) => (
-              <div key={brand} className="flex items-center justify-center text-xl font-bold text-gray-400">{brand}</div>
+              <div key={brand} className="flex items-center justify-center text-xl font-bold text-gray-500">{brand}</div>
             ))}
           </div>
         </div>
@@ -125,7 +125,7 @@ export default function Home() {
               <motion.div
                 whileHover={{ y: -10 }}
                 key={i}
-                className="p-8 rounded-3xl bg-gray-50 border border-gray-100 hover:bg-white hover:shadow-xl transition-all duration-300"
+                className="p-6 rounded-3xl bg-gray-50 border border-gray-100 hover:bg-white hover:shadow-xl transition-all duration-300"
               >
                 <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center mb-6 shadow-lg shadow-indigo-200">
                   <feature.icon size={28} />
@@ -193,12 +193,12 @@ export default function Home() {
               <img src="/images/logo.png" alt="InternMatch Logo" className="h-10 w-auto grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all duration-300" />
               <span className="text-2xl font-bold">InternMatch</span>
             </div>
-            <p className="text-gray-400 text-sm mt-2">© 2026 InternMatch Inc. All rights reserved.</p>
+            <p className="text-gray-500 text-sm mt-2">© 2026 InternMatch Inc. All rights reserved.</p>
           </div>
           <div className="flex space-x-8">
-            <a href="#" className="text-gray-400 hover:text-white transition-colors">Privacy</a>
-            <a href="#" className="text-gray-400 hover:text-white transition-colors">Terms</a>
-            <a href="#" className="text-gray-400 hover:text-white transition-colors">Contact</a>
+            <a href="#" className="text-gray-500 hover:text-white transition-colors">Privacy</a>
+            <a href="#" className="text-gray-500 hover:text-white transition-colors">Terms</a>
+            <a href="#" className="text-gray-500 hover:text-white transition-colors">Contact</a>
           </div>
         </div>
       </footer>

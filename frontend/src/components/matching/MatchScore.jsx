@@ -78,7 +78,7 @@ export default function MatchScore({ score = 0, size = 100, strokeWidth = 8, lab
                 <span className={`text-2xl font-black tabular-nums tracking-tighter ${getColorClass(normalizedScore)}`}>
                     {Math.round(normalizedScore)}%
                 </span>
-                {label && <span className="text-[9px] uppercase font-bold tracking-widest text-gray-400 mt-0.5">{label}</span>}
+                {label && <span className="text-[9px] uppercase font-bold tracking-widest text-gray-500 mt-0.5">{label}</span>}
             </div>
         </div>
     );

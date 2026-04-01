@@ -4,6 +4,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from '@/services/apiClient';
 import Link from 'next/link';
+import NotificationBell from '@/components/notifications/NotificationBell';
 import { useAuth } from '../../../context/AuthContext';
 import Input from '../../../components/common/Input';
 import Button from '../../../components/common/Button';
@@ -12,6 +13,9 @@ import { X, User, GraduationCap, Code, Loader, Upload, Pencil, Plus, Trash2, Bad
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 const imageBaseUrl = apiUrl.includes('/api/v1') ? apiUrl.replace('/api/v1', '') : apiUrl;
+
+import universitiesData from '@/data/universities.json';
+import skillsData from '@/data/skills.json';
 console.log('Resume Debug - API URL:', apiUrl);
 console.log('Resume Debug - Image Base URL:', imageBaseUrl);
 
@@ -49,31 +53,54 @@ export default function StudentProfile() {
       }));
     }
   }, [user]);
-
   const [personalInfo, setPersonalInfo] = useState({
-    fullName: '',
-    designation: '',
+    fullName: user?.name || '',
     email: user?.email || '',
     phone: '',
+    country: '',
     location: '',
     dateOfBirth: '',
     gender: '',
-    // CRITICAL MATCHING FIELDS
     gpa: '',
     portfolioUrl: '',
     preferredLocation: '',
     durationPreference: '',
     industriesOfInterest: [],
     previousInternshipsCount: 0,
-    isPublic: true
+    isPublic: true,
+    github: '',
+    linkedin: '',
+    website: '',
+    seniority: ['Student']
   });
+
+  const countryPhoneCodes = {
+    'Sri Lanka': '+94',
+    'United States': '+1',
+    'United Kingdom': '+44',
+    'India': '+91',
+    'Australia': '+61',
+    'Canada': '+1',
+    'Germany': '+49'
+  };
+
+  const handleCountryChange = (country) => {
+    setPersonalInfo(prev => ({
+      ...prev,
+      country,
+      phone: prev.phone || countryPhoneCodes[country] || ''
+    }));
+  };
+
+  const [universitySuggestions, setUniversitySuggestions] = useState([]);
+  const [skillSuggestions, setSkillSuggestions] = useState([]);
 
   const [education, setEducation] = useState([]);
   const [newEducation, setNewEducation] = useState({
     institution: '',
     degree: '',
     field: '',
-    degreeLevel: '', // REQUIRED for matching
+    degreeLevel: 'BACHELOR', // Default to Bachelor's
     startDate: '',
     endDate: ''
   });
@@ -82,7 +109,42 @@ export default function StudentProfile() {
   const [newSkill, setNewSkill] = useState('');
   const [proficiency, setProficiency] = useState('INTERMEDIATE');
 
-  // NEW MATCHING FIELDS
+  // Logic to predict graduation end date
+  const predictGraduationDate = (startDate, level) => {
+    if (!startDate) return '';
+    const date = new Date(startDate);
+    let yearsToAdd = 4; // Default for Bachelor's
+    if (level === 'MASTER') yearsToAdd = 2;
+    if (level === 'DOCTORATE') yearsToAdd = 3;
+    if (level === 'ASSOCIATE') yearsToAdd = 2;
+    if (level === 'HIGH_SCHOOL') yearsToAdd = 1;
+    
+    date.setFullYear(date.getFullYear() + yearsToAdd);
+    return date.toISOString().split('T')[0];
+  };
+
+  const handleEducationChange = (e) => {
+    const { name, value } = e.target;
+    
+    if (name === 'institution') {
+      const country = personalInfo.country || 'Sri Lanka';
+      const unis = universitiesData[country] || Object.values(universitiesData).flat();
+      const filtered = unis.filter(u => 
+        u.name.toLowerCase().includes(value.toLowerCase()) || 
+        u.aliases?.some(a => a.toLowerCase().includes(value.toLowerCase()))
+      ).slice(0, 5);
+      setUniversitySuggestions(value ? filtered : []);
+    }
+
+    setNewEducation(prev => {
+      const updated = { ...prev, [name]: value };
+      if (name === 'startDate' || name === 'degreeLevel') {
+        updated.endDate = predictGraduationDate(updated.startDate, updated.degreeLevel);
+      }
+      return updated;
+    });
+  };
+
   const [certifications, setCertifications] = useState([]);
   const [newCertification, setNewCertification] = useState({
     name: '',
@@ -90,6 +152,24 @@ export default function StudentProfile() {
     issuedDate: ''
   });
   const [resumeFile, setResumeFile] = useState(null);
+
+  const selectUniversity = (uni) => {
+    setNewEducation(prev => ({ ...prev, institution: uni.name }));
+    setUniversitySuggestions([]);
+  };
+
+  const selectSkill = (skill) => {
+    setNewSkill(skill);
+    setSkillSuggestions([]);
+  };
+
+  const handleSkillInputChange = (value) => {
+    setNewSkill(value);
+    const filtered = skillsData.filter(s => 
+      s.toLowerCase().includes(value.toLowerCase())
+    ).slice(0, 5);
+    setSkillSuggestions(value ? filtered : []);
+  };
   const [showResumePreview, setShowResumePreview] = useState(false);
   const [profileCompletion, setProfileCompletion] = useState(0);
   const [showAllSkills, setShowAllSkills] = useState(false);
@@ -187,14 +267,18 @@ export default function StudentProfile() {
         setPersonalInfo({
           ...personalData,
           email: user?.email || personalData.email,
-          // Ensure all new fields have default values
+          country: personalData.country || '',
           gpa: personalData.gpa || '',
           portfolioUrl: personalData.portfolioUrl || '',
           preferredLocation: personalData.preferredLocation || '',
           durationPreference: personalData.durationPreference || '',
           industriesOfInterest: personalData.industriesOfInterest || [],
           previousInternshipsCount: personalData.previousInternshipsCount || 0,
-          isPublic: personalData.isPublic !== false
+          isPublic: personalData.isPublic !== false,
+          seniority: personalData.seniority || ['Student'],
+          github: data.portfolio?.github || '',
+          linkedin: data.portfolio?.linkedin || '',
+          website: data.portfolio?.website || ''
         });
       }
       if (data.education) {
@@ -261,10 +345,7 @@ export default function StudentProfile() {
     return levelMap[level] || level;
   };
 
-  const handleEducationChange = (e) => {
-    const { name, value } = e.target;
-    setNewEducation(prev => ({ ...prev, [name]: value }));
-  };
+
 
   // Handler for industries of interest (multi-select)
   const handleIndustryChange = (industry, checked) => {
@@ -481,10 +562,11 @@ export default function StudentProfile() {
         portfolioUrl: '',
         preferredLocation: '',
         durationPreference: '',
-        industriesOfInterest: [],
-        previousInternshipsCount: 0,
-        isPublic: true
-      });
+         industriesOfInterest: [],
+         previousInternshipsCount: 0,
+         isPublic: true,
+         seniority: ['Student']
+       });
       setEducation([]);
       setSkills([]);
       setCertifications([]);
@@ -511,6 +593,10 @@ export default function StudentProfile() {
     }
     if (!personalInfo.portfolioUrl) personalErrors.portfolioUrl = 'Portfolio URL is required';
     if (!personalInfo.preferredLocation) personalErrors.preferredLocation = 'Preferred Location is required';
+    
+    if (personalInfo.gpa && (parseFloat(personalInfo.gpa) < 0 || parseFloat(personalInfo.gpa) > 4.0)) {
+        personalErrors.gpa = 'GPA must be between 0.0 and 4.0';
+    }
 
     if (Object.keys(personalErrors).length > 0) {
       setErrors(personalErrors);
@@ -537,7 +623,14 @@ export default function StudentProfile() {
 
       const response = await axios.post(
         `students/profile/personal`,
-        personalInfo,
+        {
+          ...personalInfo,
+          portfolio: {
+            github: personalInfo.github,
+            linkedin: personalInfo.linkedin,
+            website: personalInfo.website
+          }
+        },
         {
           headers: {
             'Authorization': `Bearer ${authToken}`,
@@ -1136,56 +1229,19 @@ export default function StudentProfile() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Collapsable Sidebar */}
-      <aside className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-white border-r border-gray-200 hidden md:flex flex-col transition-all duration-300 ease-in-out z-20`}>
-        <div className={`p-6 flex items-center ${isSidebarOpen ? 'justify-between' : 'justify-center'}`}>
-          {isSidebarOpen && <h2 className="text-2xl font-black text-primary-600 tracking-tighter">InternMatch</h2>}
-          <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 transition-colors">
-            {isSidebarOpen ? <ChevronLeft size={20} /> : <Menu size={20} />}
-          </button>
-        </div>
-        <nav className="flex-1 px-4 space-y-2 mt-2">
-          <Link href="/student-dashboard" className={`flex items-center ${isSidebarOpen ? 'gap-3 px-4' : 'justify-center'} py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-bold transition-all`} title="Dashboard">
-            <LayoutDashboard size={20} className="flex-shrink-0" />
-            {isSidebarOpen && <span>Dashboard</span>}
-          </Link>
-          <Link href="/student-profile" className={`flex items-center ${isSidebarOpen ? 'gap-3 px-4' : 'justify-center'} py-3 bg-primary-50 text-primary-700 rounded-xl font-bold`} title="Profile Settings">
-            <Settings size={20} className="flex-shrink-0" />
-            {isSidebarOpen && <span>Profile Settings</span>}
-          </Link>
-          <Link href="/find-internships" className={`flex items-center ${isSidebarOpen ? 'gap-3 px-4' : 'justify-center'} py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-bold transition-all`} title="Browse Jobs">
-            <Search size={20} className="flex-shrink-0" />
-            {isSidebarOpen && <span>Browse Jobs</span>}
-          </Link>
-          <Link href="/applications" className={`flex items-center ${isSidebarOpen ? 'gap-3 px-4' : 'justify-center'} py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-bold transition-all`} title="My Applications">
-            <Briefcase size={20} className="flex-shrink-0" />
-            {isSidebarOpen && <span>My Applications</span>}
-          </Link>
-          <Link href="/student/matches" className={`flex items-center ${isSidebarOpen ? 'gap-3 px-4' : 'justify-center'} py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-bold transition-all`} title="Best Matches">
-            <Zap size={20} className="flex-shrink-0" />
-            {isSidebarOpen && <span>Best Matches</span>}
-          </Link>
-          <Link href="/messages" className={`flex items-center ${isSidebarOpen ? 'gap-3 px-4' : 'justify-center'} py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-bold transition-all`} title="Messages">
-            <MessageSquare size={20} className="flex-shrink-0" />
-            {isSidebarOpen && <span>Messages</span>}
-          </Link>
-        </nav>
-        <div className="p-4 border-t border-gray-100 space-y-2">
-          <button onClick={logout} className={`w-full flex items-center ${isSidebarOpen ? 'gap-3 px-4' : 'justify-center'} py-3 text-rose-600 hover:bg-rose-50 rounded-xl font-bold transition-all`} title="Logout">
-            <LogOut size={20} className="flex-shrink-0" />
-            {isSidebarOpen && <span>Logout</span>}
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+    <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
         <header className="bg-white border-b border-gray-100 px-8 py-6 flex items-center justify-between sticky top-0 z-10">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Profile Settings</h1>
             <p className="text-sm text-gray-500 font-medium">Manage your profile information and preferences</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <NotificationBell />
+            <div className="h-8 w-px bg-gray-100 mx-2" />
+            <div className="w-10 h-10 rounded-full bg-primary-50 text-primary-600 flex items-center justify-center font-bold border border-primary-100 uppercase">
+              {personalInfo.fullName?.charAt(0) || 'S'}
+            </div>
           </div>
         </header>
 
@@ -1247,7 +1303,7 @@ export default function StudentProfile() {
 
                 {/* Profile Image - Positioned outside cover container */}
                 <div className="relative -mt-12 flex justify-center pb-4">
-                  <div className="w-24 h-24 rounded-full border-4 border-white bg-slate-200 flex items-center justify-center text-2xl font-bold text-slate-400 overflow-hidden shadow-lg relative group">
+                  <div className="w-24 h-24 rounded-full border-4 border-white bg-slate-200 flex items-center justify-center text-2xl font-bold text-slate-500 overflow-hidden shadow-lg relative group">
                     {storedProfileImage ? (
                       <img src={storedProfileImage} alt="Profile" className="w-full h-full object-cover rounded-full" />
                     ) : (
@@ -1371,8 +1427,8 @@ export default function StudentProfile() {
                               : isActive
                                 ? 'border-indigo-600 bg-indigo-600 text-white'
                                 : isPast
-                                  ? 'border-slate-300 bg-white text-slate-400'
-                                  : 'border-slate-300 bg-white text-slate-400 hover:border-indigo-300'
+                                  ? 'border-slate-300 bg-white text-slate-500'
+                                  : 'border-slate-300 bg-white text-slate-500 hover:border-indigo-300'
                               }`}
                           >
                             {isCompleted ? (
@@ -1406,18 +1462,16 @@ export default function StudentProfile() {
                 {/* Personal Details Tab */}
                 {activeTab === 'personal' && (
                   <div className="space-y-6">
-
-                    {/* Personal Info Form */}
-                    <div>
+                    <div className="bg-white">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-base font-semibold text-slate-900">Personal Info</h3>
-                        <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600">
                           <Pencil size={14} />
-                          Edit
-                        </button>
+                          Details
+                        </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <Input
                           label="Full Name"
                           type="text"
@@ -1425,8 +1479,9 @@ export default function StudentProfile() {
                           value={personalInfo.fullName || ''}
                           onChange={(e) => setPersonalInfo({ ...personalInfo, fullName: e.target.value })}
                           error={errors.fullName}
-                          className={`bg-slate-50 ${errors.fullName ? 'ring-2 ring-red-200' : ''}`}
-                          placeholder="Enter your full name"
+                          disabled={!!user?.name}
+                          className="bg-slate-50"
+                          placeholder="Your full name"
                         />
                         <Input
                           label="Designation"
@@ -1434,190 +1489,177 @@ export default function StudentProfile() {
                           name="designation"
                           value={personalInfo.designation || ''}
                           onChange={(e) => setPersonalInfo({ ...personalInfo, designation: e.target.value })}
+                          error={errors.designation}
                           className="bg-slate-50"
-                          placeholder="e.g., Computer Science Student"
+                          placeholder="e.g. Student"
                         />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                        <div className="space-y-1">
+                          <label className="text-sm font-medium text-slate-700">Country</label>
+                          <select
+                            className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm"
+                            value={personalInfo.country || ''}
+                            onChange={(e) => handleCountryChange(e.target.value)}
+                          >
+                            <option value="">Select Country</option>
+                            {Object.keys(countryPhoneCodes).map(c => (
+                              <option key={c} value={c}>{c}</option>
+                            ))}
+                          </select>
+                        </div>
                         <Input
-                          label="Email"
-                          type="email"
-                          value={user?.email || personalInfo.email || ''}
-                          readOnly
-                          disabled
-                          className="bg-slate-100 text-slate-600 cursor-not-allowed"
-                        />
-                        <Input
-                          label="Phone"
+                          label="Phone Number"
                           type="tel"
+                          name="phone"
                           value={personalInfo.phone || ''}
                           onChange={(e) => setPersonalInfo({ ...personalInfo, phone: e.target.value })}
-                          className="bg-slate-50"
+                          error={errors.phone}
+                          className="bg-slate-50 font-medium"
+                          placeholder="+94 123 456 789"
                         />
-                        <Input
-                          label="Location"
-                          type="text"
-                          value={personalInfo.location || ''}
-                          onChange={(e) => setPersonalInfo({ ...personalInfo, location: e.target.value })}
-                          className="bg-slate-50 col-span-2"
-                        />
+                      </div>
 
-                        {/* CRITICAL MATCHING FIELDS */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                         <Input
                           label="GPA"
                           type="number"
                           name="gpa"
-                          value={personalInfo.gpa || ''}
-                          onChange={handlePersonalInfoChange}
-                          className="bg-slate-50 border-slate-200"
-                          placeholder="e.g. 3.5 (Optional)"
-                          min="0.0"
-                          max="4.0"
                           step="0.01"
+                          value={personalInfo.gpa || ''}
+                          onChange={(e) => setPersonalInfo({ ...personalInfo, gpa: e.target.value })}
+                          error={errors.gpa}
+                          className="bg-slate-50 font-medium"
+                          placeholder="3.8"
                         />
-                        <Input
-                          label="Portfolio URL *"
-                          type="url"
-                          name="portfolioUrl"
-                          value={personalInfo.portfolioUrl || ''}
-                          onChange={handlePersonalInfoChange}
-                          error={errors.portfolioUrl}
-                          className={`bg-green-50 border-green-300 ${errors.portfolioUrl ? 'ring-2 ring-red-200' : ''}`}
-                          placeholder="https://yourportfolio.com"
-                          required
-                        />
-
-                        <div className="col-span-1">
-                          <label className="block text-sm font-medium text-slate-700 mb-2">
-                            Preferred Location * <span className="text-blue-500">(+6 points)</span>
-                          </label>
-                          <select
-                            name="preferredLocation"
-                            value={personalInfo.preferredLocation || ''}
-                            onChange={handlePersonalInfoChange}
-                            className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${errors.preferredLocation ? 'border-red-500 bg-red-50' : 'border-green-300 bg-green-50'}`}
-                          >
-                            <option value="">Select Location</option>
-                            <option value="Remote">Remote</option>
-                            <option value="Onsite">Onsite</option>
-                            <option value="Hybrid">Hybrid</option>
-                          </select>
-                        </div>
-
-                        <div className="col-span-1">
-                          <label className="block text-sm font-medium text-slate-700 mb-2">
-                            Duration Preference <span className="text-blue-500">(+6 points)</span>
-                          </label>
-                          <select
-                            name="durationPreference"
-                            value={personalInfo.durationPreference || ''}
-                            onChange={handlePersonalInfoChange}
-                            className="w-full p-3 border border-slate-300 bg-slate-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                          >
-                            <option value="">Select Duration</option>
-                            <option value="1-3 months">1-3 months</option>
-                            <option value="3-6 months">3-6 months</option>
-                            <option value="6+ months">6+ months</option>
-                          </select>
-                        </div>
-
-                        <div className="col-span-2 mb-4">
-                          <label className="block text-sm font-medium text-slate-700 mb-2">
-                            Industries of Interest * <span className="text-green-500">(+7 points per match)</span>
-                          </label>
-                          <div className="grid grid-cols-2 gap-2 p-3 border border-green-300 bg-green-50 rounded-lg">
-                            {[
-                              'Web Development', 'Mobile App Development', 'UI/UX Design',
-                              'Data Science', 'Backend Development', 'Frontend Development',
-                              'DevOps', 'Machine Learning', 'Cloud Architecture', 'Database Design'
-                            ].map(industry => (
-                              <label key={industry} className="flex items-center cursor-pointer">
+                        <div className="space-y-1">
+                          <label className="text-sm font-medium text-slate-700">Seniority</label>
+                          <div className="flex gap-4 mt-1">
+                            {['Student', 'Graduate'].map(level => (
+                              <label key={level} className="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-all">
                                 <input
                                   type="checkbox"
-                                  checked={personalInfo.industriesOfInterest?.includes(industry) || false}
-                                  onChange={(e) => handleIndustryChange(industry, e.target.checked)}
-                                  className="mr-2 rounded"
+                                  className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500"
+                                  checked={personalInfo.seniority ? personalInfo.seniority.includes(level) : false}
+                                  onChange={(e) => {
+                                    const current = personalInfo.seniority || [];
+                                    const updated = e.target.checked 
+                                      ? [...current, level]
+                                      : current.filter(l => l !== level);
+                                    setPersonalInfo({ ...personalInfo, seniority: updated });
+                                  }}
                                 />
-                                <span className="text-xs font-semibold">{industry}</span>
+                                <span className={`text-sm ${personalInfo.seniority?.includes(level) ? 'font-semibold text-indigo-600' : 'text-slate-600'}`}>{level}</span>
                               </label>
                             ))}
                           </div>
                         </div>
+                      </div>
 
-                        <Input
-                          label="Previous Internships Count"
-                          type="number"
-                          name="previousInternshipsCount"
-                          value={personalInfo.previousInternshipsCount || 0}
-                          onChange={handlePersonalInfoChange}
-                          className="bg-slate-50"
-                          min="0"
-                        />
+                      <div className="mt-6">
+                        <div className="space-y-1">
+                          <label className="text-sm font-medium text-slate-700">Work Mode</label>
+                          <div className="flex flex-wrap gap-4 mt-2">
+                            {['On-site', 'Remote', 'Hybrid'].map(mode => (
+                              <label key={mode} className="flex items-center gap-2.5 cursor-pointer px-3 py-2 bg-slate-50 rounded-lg border border-slate-200 hover:border-indigo-300 transition-colors">
+                                <input
+                                  type="checkbox"
+                                  className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500"
+                                  checked={personalInfo.preferredLocation?.includes(mode)}
+                                  onChange={(e) => {
+                                    const current = personalInfo.preferredLocation || [];
+                                    const updated = Array.isArray(current) 
+                                      ? (e.target.checked ? [...current, mode] : current.filter(m => m !== mode))
+                                      : (e.target.checked ? [mode] : []);
+                                    setPersonalInfo({ ...personalInfo, preferredLocation: updated });
+                                  }}
+                                />
+                                <span className="text-sm font-medium text-slate-700">{mode}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
 
-                        <div className="col-span-1">
-                          <label className="flex items-center cursor-pointer p-3 border border-slate-300 bg-slate-50 rounded-lg">
-                            <input
-                              type="checkbox"
-                              name="isPublic"
-                              checked={personalInfo.isPublic !== false}
-                              onChange={(e) => setPersonalInfo(prev => ({ ...prev, isPublic: e.target.checked }))}
-                              className="mr-3 rounded"
-                            />
-                            <span className="text-sm font-medium">Make my profile visible to employers</span>
-                          </label>
+                      <div className="space-y-4 mt-8 pt-6 border-t border-slate-100">
+                        <h3 className="text-xs font-black text-gray-900 uppercase">Connect</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <Input
+                            label="LinkedIn"
+                            type="url"
+                            name="linkedin"
+                            value={personalInfo.linkedin || ''}
+                            onChange={(e) => setPersonalInfo({ ...personalInfo, linkedin: e.target.value })}
+                            className="bg-slate-50 font-medium"
+                            placeholder="linkedin.com/..."
+                          />
+                          <Input
+                            label="GitHub"
+                            type="url"
+                            name="github"
+                            value={personalInfo.github || ''}
+                            onChange={(e) => setPersonalInfo({ ...personalInfo, github: e.target.value })}
+                            className="bg-slate-50 font-medium"
+                            placeholder="github.com/..."
+                          />
+                          <Input
+                            label="Website"
+                            type="url"
+                            name="website"
+                            value={personalInfo.website || ''}
+                            onChange={(e) => setPersonalInfo({ ...personalInfo, website: e.target.value })}
+                            className="bg-slate-50 font-medium"
+                            placeholder="mysite.com"
+                          />
                         </div>
                       </div>
                     </div>
 
-                    {/* Save Button */}
-                    <div className="flex gap-2 pt-4">
-                      <button
+                    <div className="flex justify-end mt-8">
+                      <Button
                         onClick={handleSavePersonalInfo}
-                        disabled={loading}
-                        className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 text-sm font-medium"
+                        loading={loading}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-2.5 rounded-lg"
                       >
-                        {loading ? 'Saving...' : 'Save Changes'}
-                      </button>
-                    </div>
-
-                    {message && (
-                      <p className={`text-xs font-medium ${message.includes('Error') ? 'text-red-600' : 'text-green-600'}`}>
-                        {message}
-                      </p>
-                    )}
-
-                    {/* Step Navigation */}
-                    <div className="flex justify-between pt-6 border-t border-slate-200 mt-8">
-                      <div>
-                        {/* Previous button - hidden on first step */}
-                      </div>
-                      <div className="flex gap-3">
-                        <button
-                          onClick={() => setActiveStep('education')}
-                          className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2"
-                        >
-                          Next: Education
-                          <ArrowRight size={16} />
-                        </button>
-                      </div>
+                        Synchronize
+                      </Button>
                     </div>
                   </div>
                 )}
 
-                {/* Education Tab */}
                 {activeTab === 'education' && (
                   <div className="space-y-6">
                     <div>
                       <h3 className="text-base font-semibold text-slate-900 mb-4">Add Education</h3>
 
                       <div className="grid grid-cols-2 gap-4 mb-4">
-                        <Input
-                          label="Institution *"
-                          name="institution"
-                          value={newEducation.institution}
-                          onChange={handleEducationChange}
-                          error={errors.institution}
-                          className={`bg-slate-50 ${errors.institution ? 'ring-2 ring-red-200' : ''}`}
-                          placeholder="e.g., University of ABC"
-                        />
+                        <div className="relative">
+                          <Input
+                            label="Institution *"
+                            name="institution"
+                            value={newEducation.institution}
+                            onChange={handleEducationChange}
+                            error={errors.institution}
+                            className={`bg-slate-50 ${errors.institution ? 'ring-2 ring-red-200' : ''}`}
+                            placeholder="e.g., University of ABC"
+                            autoComplete="off"
+                          />
+                          {universitySuggestions.length > 0 && (
+                            <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200">
+                              {universitySuggestions.map((uni, idx) => (
+                                <button
+                                  key={idx}
+                                  className="w-full text-left px-4 py-2.5 text-sm hover:bg-indigo-50 transition-colors flex flex-col"
+                                  onClick={() => selectUniversity(uni)}
+                                >
+                                  <span className="font-semibold text-slate-900">{uni.name}</span>
+                                  {uni.aliases && <span className="text-xs text-slate-500">{uni.aliases.join(', ')}</span>}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                         <Input
                           label="Degree *"
                           name="degree"
@@ -1753,14 +1795,30 @@ export default function StudentProfile() {
                         Advanced/Expert levels get bonus points.
                       </p>
 
-                      <div className="grid grid-cols-3 gap-4 mb-6">
-                        <input
-                          type="text"
-                          placeholder="Skill name (e.g., JavaScript, Python)"
-                          value={newSkill}
-                          onChange={(e) => setNewSkill(e.target.value)}
-                          className="px-3 py-2 border border-blue-300 bg-blue-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-                        />
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div className="relative">
+                          <input
+                            type="text"
+                            placeholder="Skill name (e.g., JavaScript, Python)"
+                            value={newSkill}
+                            onChange={(e) => handleSkillInputChange(e.target.value)}
+                            className="w-full px-3 py-2 border border-blue-300 bg-blue-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-medium"
+                            autoComplete="off"
+                          />
+                          {skillSuggestions.length > 0 && (
+                            <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200">
+                              {skillSuggestions.map((skill, idx) => (
+                                <button
+                                  key={idx}
+                                  className="w-full text-left px-4 py-2 text-sm hover:bg-indigo-50 transition-colors font-medium text-slate-700"
+                                  onClick={() => selectSkill(skill)}
+                                >
+                                  {skill}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                         <select
                           value={proficiency}
                           onChange={(e) => setProficiency(e.target.value)}
@@ -1986,11 +2044,11 @@ export default function StudentProfile() {
               </div>
             </div>
           </div>
+          <div className="h-20" /> {/* Spacer */}
         </main>
-      </div>
 
-      {/* Profile Image Upload Modal */}
-      {isProfileImageModalOpen && (
+        {/* Modals Section */}
+        {isProfileImageModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
@@ -1998,7 +2056,7 @@ export default function StudentProfile() {
                 <h3 className="text-lg font-semibold text-slate-900">Update Profile Picture</h3>
                 <button
                   onClick={() => setIsProfileImageModalOpen(false)}
-                  className="text-slate-400 hover:text-slate-600 transition-colors"
+                  className="text-slate-500 hover:text-slate-600 transition-colors"
                 >
                   <X size={20} />
                 </button>
@@ -2012,7 +2070,7 @@ export default function StudentProfile() {
                       {imagePreview ? (
                         <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                       ) : (
-                        <User size={60} className="text-slate-400" />
+                        <User size={60} className="text-slate-500" />
                       )}
                     </div>
                   </div>
@@ -2172,7 +2230,7 @@ export default function StudentProfile() {
                 <h3 className="text-lg font-semibold text-slate-900">Update Cover Photo</h3>
                 <button
                   onClick={() => setIsCoverImageModalOpen(false)}
-                  className="text-slate-400 hover:text-slate-600 transition-colors"
+                  className="text-slate-500 hover:text-slate-600 transition-colors"
                 >
                   <X size={20} />
                 </button>
@@ -2186,7 +2244,7 @@ export default function StudentProfile() {
                       {coverImagePreview ? (
                         <img src={coverImagePreview} alt="Preview" className="w-full h-full object-cover" />
                       ) : (
-                        <div className="text-slate-400 text-sm">Cover Preview</div>
+                        <div className="text-slate-500 text-sm">Cover Preview</div>
                       )}
                     </div>
                   </div>
@@ -2371,7 +2429,7 @@ export default function StudentProfile() {
                 </button>
                 <button
                   onClick={() => setShowResumePreview(false)}
-                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                  className="p-2 text-slate-500 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
                 >
                   <X size={20} />
                 </button>

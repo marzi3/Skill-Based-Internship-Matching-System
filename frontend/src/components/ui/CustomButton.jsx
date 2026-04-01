@@ -20,7 +20,7 @@ const CustomButton = ({
         primary: "bg-[#6366F1] text-white shadow-xl shadow-indigo-600/20 hover:bg-[#4F46E5] hover:shadow-indigo-600/30 border border-transparent",
         secondary: "bg-white text-slate-900 hover:bg-slate-50 border border-slate-200 shadow-sm",
         outline: "bg-transparent border-2 border-slate-200 text-slate-600 hover:border-[#6366F1] hover:text-[#6366F1]",
-        ghost: "bg-transparent text-slate-400 hover:bg-slate-50 hover:text-slate-900"
+        ghost: "bg-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-900"
     };
 
     const sizes = {

@@ -87,7 +87,7 @@ export default function StudentManagement() {
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
                 <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
                     <input
                         type="text"
                         placeholder="Search students by name or email..."
@@ -145,7 +145,7 @@ export default function StudentManagement() {
                                 <tr>
                                     <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
                                         <div className="flex flex-col items-center justify-center">
-                                            <UserX className="h-10 w-10 text-gray-300 mb-3" />
+                                            <UserX className="h-10 w-10 text-gray-500 mb-3" />
                                             <p className="font-medium text-lg text-gray-900">No students found</p>
                                             <p className="text-sm">Try adjusting your search criteria</p>
                                         </div>
@@ -182,7 +182,7 @@ export default function StudentManagement() {
                                                     <button
                                                         onClick={() => handleStatusChange(student._id, 'approved')}
                                                         disabled={actionLoading === student._id}
-                                                        className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors border border-transparent hover:border-green-200"
+                                                        className="p-1.5 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors border border-transparent hover:border-green-200"
                                                         title="Approve / Activate"
                                                     >
                                                         {actionLoading === student._id ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
@@ -193,7 +193,7 @@ export default function StudentManagement() {
                                                     <button
                                                         onClick={() => handleStatusChange(student._id, 'suspended')}
                                                         disabled={actionLoading === student._id}
-                                                        className="p-1.5 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors border border-transparent hover:border-orange-200"
+                                                        className="p-1.5 text-gray-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors border border-transparent hover:border-orange-200"
                                                         title="Suspend Account"
                                                     >
                                                         {actionLoading === student._id ? <Loader2 size={16} className="animate-spin" /> : <Ban size={16} />}
@@ -205,7 +205,7 @@ export default function StudentManagement() {
                                                 <button
                                                     onClick={() => handleDelete(student._id)}
                                                     disabled={actionLoading === student._id}
-                                                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-200"
+                                                    className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-200"
                                                     title="Permanently Delete"
                                                 >
                                                     {actionLoading === student._id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}

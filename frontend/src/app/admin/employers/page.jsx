@@ -97,7 +97,7 @@ export default function EmployersManagement() {
             <div className="glass p-6 rounded-2xl mb-8">
                 <div className="flex flex-col md:flex-row gap-4 mb-6">
                     <div className="relative flex-1">
-                        <Search className="absolute left-3 top-3 text-gray-400" size={20} />
+                        <Search className="absolute left-3 top-3 text-gray-500" size={20} />
                         <input
                             type="text"
                             placeholder="Search by name, company, or email..."
@@ -107,7 +107,7 @@ export default function EmployersManagement() {
                         />
                     </div>
                     <div className="relative w-full md:w-64">
-                        <Filter className="absolute left-3 top-3 text-gray-400" size={20} />
+                        <Filter className="absolute left-3 top-3 text-gray-500" size={20} />
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
@@ -204,7 +204,7 @@ export default function EmployersManagement() {
                                                 <button
                                                     onClick={() => handleDelete(emp._id)}
                                                     disabled={actionLoading === emp._id}
-                                                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-200 flex items-center justify-center"
+                                                    className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-200 flex items-center justify-center"
                                                     title="Permanently Delete"
                                                 >
                                                     {actionLoading === emp._id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
@@ -254,7 +254,7 @@ export default function EmployersManagement() {
                         >
                             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                                 <h3 className="text-xl font-bold text-gray-900">Employer Details</h3>
-                                <button onClick={() => setSelectedEmployer(null)} className="text-gray-400 hover:text-gray-600">
+                                <button onClick={() => setSelectedEmployer(null)} className="text-gray-500 hover:text-gray-600">
                                     <XCircle size={24} />
                                 </button>
                             </div>

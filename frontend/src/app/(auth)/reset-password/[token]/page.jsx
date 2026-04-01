@@ -98,9 +98,9 @@ export default function ResetPassword() {
 
                             {/* New Password */}
                             <div className="space-y-1">
-                                <label htmlFor="password" className="text-xs font-semibold text-gray-400 uppercase tracking-widest ml-1">New Password</label>
+                                <label htmlFor="password" className="text-xs font-semibold text-gray-500 uppercase tracking-widest ml-1">New Password</label>
                                 <div className="relative group">
-                                    <Lock className="absolute left-3 top-3.5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
+                                    <Lock className="absolute left-3 top-3.5 text-gray-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
                                     <input
                                         {...register('password')}
                                         id="password"
@@ -120,9 +120,9 @@ export default function ResetPassword() {
 
                             {/* Confirm Password */}
                             <div className="space-y-1">
-                                <label htmlFor="confirmPassword" className="text-xs font-semibold text-gray-400 uppercase tracking-widest ml-1">Confirm Password</label>
+                                <label htmlFor="confirmPassword" className="text-xs font-semibold text-gray-500 uppercase tracking-widest ml-1">Confirm Password</label>
                                 <div className="relative group">
-                                    <Lock className="absolute left-3 top-4 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
+                                    <Lock className="absolute left-3 top-4 text-gray-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
                                     <input
                                         {...register('confirmPassword')}
                                         id="confirmPassword"

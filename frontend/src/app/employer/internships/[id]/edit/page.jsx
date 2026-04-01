@@ -378,7 +378,7 @@ const EditInternshipPage = () => {
                     <h2 className="text-5xl font-black text-slate-900 tracking-tighter leading-none">
                       Edit <span className="text-[#6366F1] font-medium tracking-normal italic text-4xl">Posting</span>
                     </h2>
-                    <p className="text-slate-400 mt-5 text-[10px] font-black uppercase tracking-[0.4em]">Modification Protocol Active</p>
+                    <p className="text-slate-500 mt-5 text-[10px] font-black uppercase tracking-[0.4em]">Modification Protocol Active</p>
                   </header>
 
                   <div className="grid grid-cols-1 gap-12">
@@ -495,7 +495,7 @@ const EditInternshipPage = () => {
                               onChange={(e) => setDegreeInput(e.target.value)}
                               onKeyDown={(e) => e.key === 'Enter' && handleAddDegree(e)}
                               placeholder="e.g. Computer Science, IT, Software Engineering..."
-                              className={`flex-1 bg-slate-50 border rounded-2xl py-4 px-6 text-slate-900 font-bold focus:outline-none transition-all placeholder:text-slate-300 shadow-sm ${errors.requiredDegreeField ? 'border-rose-500/50 focus:border-rose-500' : 'border-slate-200 focus:border-[#6366F1]/50'}`}
+                              className={`flex-1 bg-slate-50 border rounded-2xl py-4 px-6 text-slate-900 font-bold focus:outline-none transition-all placeholder:text-slate-500 shadow-sm ${errors.requiredDegreeField ? 'border-rose-500/50 focus:border-rose-500' : 'border-slate-200 focus:border-[#6366F1]/50'}`}
                             />
                             <button onClick={handleAddDegree} className="px-10 bg-white border border-slate-200 hover:border-[#6366F1] hover:text-[#6366F1] text-slate-500 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-sm outline-none transition-all">
                               Add Degree
@@ -524,7 +524,7 @@ const EditInternshipPage = () => {
                             </div>
                             <div>
                               <span className="text-[10px] font-black uppercase tracking-widest text-slate-900 block">Prefers Experienced Candidates</span>
-                              <span className="text-[9px] font-semibold text-slate-400 uppercase">Prioritize students with past internships</span>
+                              <span className="text-[9px] font-semibold text-slate-500 uppercase">Prioritize students with past internships</span>
                             </div>
                           </label>
                         </div>
@@ -543,7 +543,7 @@ const EditInternshipPage = () => {
                               </div>
                               <div>
                                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-900 block">Require Minimum GPA</span>
-                                <span className="text-[9px] font-semibold text-slate-400 uppercase">Enforce a grade threshold for applicants</span>
+                                <span className="text-[9px] font-semibold text-slate-500 uppercase">Enforce a grade threshold for applicants</span>
                               </div>
                             </label>
 
@@ -624,7 +624,7 @@ const EditInternshipPage = () => {
             <div className="p-10 border-t border-slate-100 bg-white flex items-center justify-between shrink-0 relative z-20">
               <button
                 onClick={prevStep}
-                className={`flex items-center gap-3 font-black uppercase text-[10px] tracking-[0.3em] px-8 py-5 rounded-2xl transition-all ${currentStep === 1 ? 'opacity-0 pointer-events-none' : 'text-slate-400 hover:text-slate-900 hover:bg-slate-50'}`}
+                className={`flex items-center gap-3 font-black uppercase text-[10px] tracking-[0.3em] px-8 py-5 rounded-2xl transition-all ${currentStep === 1 ? 'opacity-0 pointer-events-none' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}
               >
                 <ChevronLeft size={16} /> Previous
               </button>

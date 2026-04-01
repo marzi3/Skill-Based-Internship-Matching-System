@@ -8,13 +8,9 @@ async function test() {
   const user = await User.findOne({email: 'maryamnagan01@gmail.com'});
   const token = require('jsonwebtoken').sign({id: user._id, role: user.role}, process.env.JWT_SECRET, {expiresIn:'1h'});
 
-  // creating a valid 1KB valid pdf
-  const pdfString = '%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n';
-  fs.writeFileSync('/tmp/test.pdf', pdfString);
-
   const FormData = require('form-data');
   const form = new FormData();
-  form.append('resume', fs.createReadStream('/tmp/test.pdf'));
+  form.append('resume', fs.createReadStream('/tmp/valid.pdf'));
   
   try {
     const fetch = (await import('node-fetch')).default || globalThis.fetch;

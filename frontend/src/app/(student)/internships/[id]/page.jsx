@@ -143,7 +143,7 @@ export default function InternshipDetailPage({ params }) {
             <div className="max-w-6xl mx-auto space-y-8">
 
                 {/* Header Back Button */}
-                <Link href={backHref} className="inline-flex items-center gap-3 text-slate-400 hover:text-slate-900 transition-colors font-black uppercase text-[10px] tracking-widest">
+                <Link href={backHref} className="inline-flex items-center gap-3 text-slate-500 hover:text-slate-900 transition-colors font-black uppercase text-[10px] tracking-widest">
                     <ArrowLeft size={16} /> {backLabel}
                 </Link>
 
@@ -173,7 +173,7 @@ export default function InternshipDetailPage({ params }) {
                                             {internship.employer?.companyName || internship.company || 'Industrial Partner'}
                                         </Link>
                                         <div className="flex items-center gap-2">
-                                            <MapPin size={14} className="text-slate-400" />
+                                            <MapPin size={14} className="text-slate-500" />
                                             <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{internship.workEnvironment || 'Remote'}</span>
                                         </div>
                                     </div>
@@ -200,7 +200,7 @@ export default function InternshipDetailPage({ params }) {
 
                                 <div className="space-y-6">
                                     <div>
-                                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-4">Mission Overview</h3>
+                                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-4">Mission Overview</h3>
                                         <p className="text-slate-600 font-medium leading-relaxed whitespace-pre-line">
                                             {internship.description}
                                         </p>
@@ -211,7 +211,7 @@ export default function InternshipDetailPage({ params }) {
 
                         {/* Required Stack */}
                         <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-slate-100">
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-6">Required Technology Stack</h3>
+                            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-6">Required Technology Stack</h3>
                             <div className="flex flex-wrap gap-3">
                                 {(internship.requiredSkills || []).map((skill, i) => {
                                     const name = typeof skill === 'string' ? skill : skill.name;
@@ -227,7 +227,7 @@ export default function InternshipDetailPage({ params }) {
 
                             {internship.preferredSkills?.length > 0 && (
                                 <div className="mt-8 pt-8 border-t border-slate-100">
-                                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-6">Preferred / Bonus Skills</h3>
+                                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-6">Preferred / Bonus Skills</h3>
                                     <div className="flex flex-wrap gap-3">
                                         {internship.preferredSkills.map((skill, i) => (
                                             <div key={i} className="px-5 py-3 bg-slate-50 text-slate-500 border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest">
@@ -257,12 +257,12 @@ export default function InternshipDetailPage({ params }) {
 
                                 <div className="flex items-end gap-3 text-white">
                                     <span className="text-7xl font-black tracking-tighter leading-none">{normalizedScore || 0}</span>
-                                    <span className="text-lg font-bold text-slate-400 mb-1 tracking-widest uppercase">/ 100</span>
+                                    <span className="text-lg font-bold text-slate-500 mb-1 tracking-widest uppercase">/ 100</span>
                                 </div>
 
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
-                                        <span className="text-slate-400">Match Tier</span>
+                                        <span className="text-slate-500">Match Tier</span>
                                         <span className={`${isDisqualified ? 'text-rose-400' :
                                             tier === 'EXCELLENT' ? 'text-emerald-400' :
                                                 tier === 'GOOD' ? 'text-indigo-400' : 'text-amber-400'
@@ -281,7 +281,7 @@ export default function InternshipDetailPage({ params }) {
 
                                 {/* Match Summary Paragraph */}
                                 <div className="pt-2">
-                                    <p className="text-xs font-bold text-slate-400 leading-relaxed italic">
+                                    <p className="text-xs font-bold text-slate-500 leading-relaxed italic">
                                         {tier === 'EXCELLENT' ? (
                                             "Your profile is a near-perfect synchronization with this protocol's requirements. High technical overlap and credential verification confirmed."
                                         ) : tier === 'GOOD' ? (
@@ -305,7 +305,7 @@ export default function InternshipDetailPage({ params }) {
                                                 {analysis.explanation.filter(item => item.score > 0).map((item, i) => (
                                                     <div key={i} className="flex gap-3 text-[10px] font-bold">
                                                         <div className="w-3.5 h-3.5 bg-emerald-500/20 text-emerald-400 rounded-md flex items-center justify-center text-[8px] shrink-0 mt-0.5">+{item.score}</div>
-                                                        <p className="text-slate-300 leading-snug">{item.detail}</p>
+                                                        <p className="text-slate-500 leading-snug">{item.detail}</p>
                                                     </div>
                                                 ))}
                                             </div>
@@ -322,7 +322,7 @@ export default function InternshipDetailPage({ params }) {
                                                             ) : (
                                                                 <div className="w-3.5 h-3.5 bg-rose-500/20 text-rose-400 rounded-md flex items-center justify-center text-[8px] shrink-0 mt-0.5">{item.score}</div>
                                                             )}
-                                                            <p className="text-slate-400 leading-snug">{item.detail}</p>
+                                                            <p className="text-slate-500 leading-snug">{item.detail}</p>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -367,7 +367,7 @@ export default function InternshipDetailPage({ params }) {
                                     <p className="text-xs font-bold text-slate-500 leading-relaxed">
                                         Your profile does not meet the mandatory criteria for this protocol. Review the evaluation log above.
                                     </p>
-                                    <button disabled className="w-full mt-4 bg-slate-100 text-slate-400 font-black uppercase tracking-widest text-[10px] py-5 rounded-2xl cursor-not-allowed">
+                                    <button disabled className="w-full mt-4 bg-slate-100 text-slate-500 font-black uppercase tracking-widest text-[10px] py-5 rounded-2xl cursor-not-allowed">
                                         Apply Action Locked
                                     </button>
                                 </div>
@@ -412,7 +412,7 @@ export default function InternshipDetailPage({ params }) {
                                          user?.verificationStatus !== 'approved' ? "Your ID must be verified by an administrator before you can apply." : 
                                          "Your profile synchronization is awaiting administrative approval."}
                                     </p>
-                                    <button disabled className="w-full mt-4 bg-slate-100 text-slate-400 font-black uppercase tracking-widest text-[10px] py-5 rounded-2xl cursor-not-allowed">
+                                    <button disabled className="w-full mt-4 bg-slate-100 text-slate-500 font-black uppercase tracking-widest text-[10px] py-5 rounded-2xl cursor-not-allowed">
                                         Awaiting Verification
                                     </button>
                                 </div>
@@ -435,7 +435,7 @@ export default function InternshipDetailPage({ params }) {
                         <div className="pt-2">
                             <button 
                                 onClick={() => setShowReport(true)}
-                                className="w-full flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-rose-500 transition-colors group py-4 bg-white/50 border border-transparent hover:border-rose-100 rounded-2xl"
+                                className="w-full flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 hover:text-rose-500 transition-colors group py-4 bg-white/50 border border-transparent hover:border-rose-100 rounded-2xl"
                             >
                                 <AlertTriangle size={14} className="group-hover:scale-110 transition-transform" />
                                 Report this Listing

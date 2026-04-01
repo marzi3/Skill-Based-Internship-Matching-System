@@ -90,7 +90,7 @@ export default function ReportsAnalytics() {
     };
 
     return (
-        <div className="p-8 space-y-10 max-w-[1400px] mx-auto min-h-screen">
+        <div className="p-6 space-y-10 max-w-[1400px] mx-auto min-h-screen">
             <header>
                 <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
                     <div className="flex items-center gap-3 mb-2">
@@ -112,7 +112,7 @@ export default function ReportsAnalytics() {
             >
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-end relative z-10">
                     <div className="space-y-2">
-                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex items-center gap-2">
                             <Zap size={12} className="text-amber-500" /> Temporal Scope
                         </label>
                         <select
@@ -128,7 +128,7 @@ export default function ReportsAnalytics() {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex items-center gap-2">
                             <Search size={12} className="text-indigo-500" /> Domain Filter
                         </label>
                         <select
@@ -169,7 +169,7 @@ export default function ReportsAnalytics() {
                                 <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-indigo-500 flex items-center justify-center text-[10px] font-black text-white">A</div>
                             ))}
                         </div>
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Authorized Access Only</p>
+                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Authorized Access Only</p>
                     </div>
                     <div className="text-[10px] font-black text-indigo-600 flex items-center gap-2">
                         <ShieldCheck size={14} /> SYSTEM BROADCAST SECURE
@@ -184,22 +184,22 @@ export default function ReportsAnalytics() {
                 transition={{ delay: 0.1 }} 
                 className="bg-white/40 backdrop-blur-xl rounded-[2.5rem] border border-white/50 shadow-xl overflow-hidden"
             >
-                <div className="p-8 border-b border-white/50 flex justify-between items-center bg-white/20">
+                <div className="p-6 border-b border-white/50 flex justify-between items-center bg-white/20">
                     <h2 className="text-xl font-black text-gray-900 flex items-center gap-3">
                          Transmission Preview <span className="px-3 py-1 bg-indigo-50 text-indigo-600 text-[10px] rounded-full">{reportData.length} SECURE RECORDS</span>
                     </h2>
-                    <div className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] animate-pulse">Live Signal Feed</div>
+                    <div className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] animate-pulse">Live Signal Feed</div>
                 </div>
 
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead>
                             <tr className="bg-gray-50/50">
-                                <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Protocol ID: Applicant</th>
-                                <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Vector: Position</th>
-                                <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Entity: Company</th>
-                                <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Sync Status</th>
-                                <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Timestamp</th>
+                                <th className="px-8 py-4 text-[10px] font-black text-gray-500 uppercase tracking-widest">Protocol ID: Applicant</th>
+                                <th className="px-8 py-4 text-[10px] font-black text-gray-500 uppercase tracking-widest">Vector: Position</th>
+                                <th className="px-8 py-4 text-[10px] font-black text-gray-500 uppercase tracking-widest">Entity: Company</th>
+                                <th className="px-8 py-4 text-[10px] font-black text-gray-500 uppercase tracking-widest">Sync Status</th>
+                                <th className="px-8 py-4 text-[10px] font-black text-gray-500 uppercase tracking-widest">Timestamp</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/20">
@@ -209,13 +209,13 @@ export default function ReportsAnalytics() {
                                         <td colSpan="5" className="px-8 py-20 text-center">
                                             <div className="flex flex-col items-center gap-3">
                                                 <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
-                                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Decrypting Segments...</span>
+                                                <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Decrypting Segments...</span>
                                             </div>
                                         </td>
                                     </tr>
                                 ) : reportData.length === 0 ? (
                                     <tr>
-                                        <td colSpan="5" className="px-8 py-20 text-center text-gray-400 font-bold">
+                                        <td colSpan="5" className="px-8 py-20 text-center text-gray-500 font-bold">
                                             Zero intelligence signals detected in current temporal scope.
                                         </td>
                                     </tr>
@@ -246,7 +246,7 @@ export default function ReportsAnalytics() {
                                                     {row.Status}
                                                 </span>
                                             </td>
-                                            <td className="px-8 py-5 text-[10px] font-black text-gray-300 tracking-widest">{row.AppliedDate}</td>
+                                            <td className="px-8 py-5 text-[10px] font-black text-gray-500 tracking-widest">{row.AppliedDate}</td>
                                         </motion.tr>
                                     ))
                                 )}
@@ -255,7 +255,7 @@ export default function ReportsAnalytics() {
                     </table>
                     {!loading && reportData.length > 15 && (
                         <div className="p-4 text-center bg-gray-50/10 backdrop-blur-md">
-                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em]">Sector Baseline Reached</span>
+                            <span className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em]">Sector Baseline Reached</span>
                         </div>
                     )}
                 </div>

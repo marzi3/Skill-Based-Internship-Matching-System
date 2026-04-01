@@ -57,13 +57,13 @@ export default function StudentApplications() {
     };
 
     return (
-        <div className="p-8 max-w-6xl mx-auto space-y-8 min-h-screen">
+        <div className="p-6 max-w-6xl mx-auto space-y-8 min-h-screen">
             <div className="flex items-center gap-4 mb-2">
                 <Link href="/student-dashboard" className="p-3 bg-white border border-gray-200 hover:border-primary-300 hover:bg-primary-50 rounded-xl transition-all group shadow-sm flex-shrink-0">
                     <ArrowLeft size={20} className="text-gray-500 group-hover:text-primary-600 transition-colors" />
                 </Link>
                 <div>
-                    <h1 className="text-3xl font-black text-gray-900 tracking-tight uppercase">Applied Protocols</h1>
+                    <h1 className="text-3xl font-black text-gray-900 tracking-tight uppercase">Applied Internships</h1>
                     <p className="text-gray-500 font-medium">Tracking your active synchronization requests across the network</p>
                 </div>
             </div>
@@ -84,7 +84,7 @@ export default function StudentApplications() {
                                                 className="w-full h-full object-cover"
                                             />
                                         ) : (
-                                            <FileText size={24} className="text-gray-400" />
+                                            <FileText size={24} className="text-gray-500" />
                                         )}
                                     </div>
                                     <div>
@@ -95,11 +95,11 @@ export default function StudentApplications() {
 
                                 <div className="flex items-center gap-12 text-sm">
                                     <div className="flex flex-col items-center">
-                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Status</span>
+                                        <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Status</span>
                                         <Badge variant={getStatusStyle(app.status)}>{app.status}</Badge>
                                     </div>
                                     <div className="flex flex-col items-center">
-                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Applied</span>
+                                        <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Applied</span>
                                         <span className="text-gray-900 font-bold">{new Date(app.createdAt).toLocaleDateString()}</span>
                                     </div>
                                 </div>
@@ -120,7 +120,7 @@ export default function StudentApplications() {
                     ))
                 ) : (
                     <Card className="py-20 text-center space-y-4 border-dashed border-2">
-                        <p className="text-gray-400 font-bold uppercase tracking-widest">No active applications detected.</p>
+                        <p className="text-gray-500 font-bold uppercase tracking-widest">No active applications detected.</p>
                         <Link href="/find-internships" className="inline-block bg-primary-600 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg hover:bg-primary-700">
                             Browse Internships
                         </Link>

@@ -47,17 +47,19 @@ exports.initializeProfile = asyncHandler(async (req, res, next) => {
 // @route   POST /api/student/profile/personal
 // @access  Private
 exports.savePersonalInfo = asyncHandler(async (req, res, next) => {
-  const { 
-    fullName, 
-    designation, 
-    email, 
-    phone, 
+  const {
+    fullName,
+    email,
+    phone,
+    designation,
     location, 
+    country,
     dateOfBirth, 
     gender,
     // CRITICAL MATCHING ENGINE FIELDS
     gpa,
     portfolioUrl,
+    portfolio,
     preferredLocation,
     durationPreference,
     industriesOfInterest,
@@ -90,18 +92,29 @@ exports.savePersonalInfo = asyncHandler(async (req, res, next) => {
     designation: designation?.trim() || '',
     email: email.toLowerCase().trim(),
     phone: phone?.trim() || '',
+    country: country?.trim() || student.personalInfo?.country || '',
     location: location?.trim() || '',
     dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : student.personalInfo?.dateOfBirth,
     gender: gender || student.personalInfo?.gender,
     // CRITICAL MATCHING ENGINE FIELDS
     gpa: gpa?.trim() || student.personalInfo?.gpa || '',
     portfolioUrl: portfolioUrl?.trim() || student.personalInfo?.portfolioUrl || '',
-    preferredLocation: preferredLocation?.trim() || student.personalInfo?.preferredLocation || '',
+    preferredLocation: preferredLocation || student.personalInfo?.preferredLocation || '',
     durationPreference: durationPreference || student.personalInfo?.durationPreference,
     industriesOfInterest: Array.isArray(industriesOfInterest) ? industriesOfInterest : (student.personalInfo?.industriesOfInterest || []),
     previousInternshipsCount: typeof previousInternshipsCount === 'number' ? previousInternshipsCount : (student.personalInfo?.previousInternshipsCount || 0),
     isPublic: typeof isPublic === 'boolean' ? isPublic : (student.personalInfo?.isPublic !== false),
   };
+
+  // Update portfolio if provided
+  if (portfolio) {
+    student.portfolio = {
+      github: portfolio.github?.trim() || student.portfolio?.github || '',
+      linkedin: portfolio.linkedin?.trim() || student.portfolio?.linkedin || '',
+      website: portfolio.website?.trim() || student.portfolio?.website || '',
+      portfolio: portfolio.portfolio?.trim() || student.portfolio?.portfolio || student.personalInfo?.portfolioUrl || '',
+    };
+  }
 
   // Update user email if different
   if (email && email !== req.user.email) {

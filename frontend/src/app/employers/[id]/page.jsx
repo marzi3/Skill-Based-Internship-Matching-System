@@ -44,7 +44,7 @@ export default function EmployerProfilePage({ params }) {
         return (
             <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-8">
                 <Loader2 className="w-12 h-12 text-indigo-500 animate-spin mb-4" />
-                <p className="text-slate-400 font-black uppercase tracking-[0.2em] text-[10px]">Accessing Corporate Node...</p>
+                <p className="text-slate-500 font-black uppercase tracking-[0.2em] text-[10px]">Accessing Corporate Node...</p>
             </div>
         );
     }
@@ -76,7 +76,7 @@ export default function EmployerProfilePage({ params }) {
             {/* Top Navigation */}
             <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-100 px-6 py-4">
                 <div className="max-w-6xl mx-auto flex items-center justify-between">
-                    <button onClick={() => router.back()} className="flex items-center gap-3 text-slate-400 hover:text-slate-900 transition-colors font-black uppercase text-[10px] tracking-widest group">
+                    <button onClick={() => router.back()} className="flex items-center gap-3 text-slate-500 hover:text-slate-900 transition-colors font-black uppercase text-[10px] tracking-widest group">
                         <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back
                     </button>
                     <div className="flex items-center gap-2">
@@ -116,12 +116,12 @@ export default function EmployerProfilePage({ params }) {
                                         <ExternalLink size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                                     </a>
                                 )}
-                                <div className="flex items-center gap-2 text-slate-400 font-bold text-sm uppercase tracking-widest">
+                                <div className="flex items-center gap-2 text-slate-500 font-bold text-sm uppercase tracking-widest">
                                     <MapPin size={16} />
                                     <span>Headquarters: {employer.location || 'Undisclosed'}</span>
                                 </div>
                                 {employer.industry && (
-                                    <div className="flex items-center gap-2 text-slate-400 font-bold text-sm uppercase tracking-widest border-l border-slate-200 pl-6">
+                                    <div className="flex items-center gap-2 text-slate-500 font-bold text-sm uppercase tracking-widest border-l border-slate-200 pl-6">
                                         <Briefcase size={16} />
                                         <span>Sector: {employer.industry}</span>
                                     </div>
@@ -138,7 +138,7 @@ export default function EmployerProfilePage({ params }) {
                             </p>
                         </div>
                         <div className="lg:col-span-4 bg-slate-50 rounded-[2.5rem] p-8 space-y-6 self-start border border-slate-100">
-                             <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Network Stats</h4>
+                             <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Network Stats</h4>
                              <div className="space-y-4">
                                 <div className="flex justify-between items-center">
                                     <span className="text-xs font-bold text-slate-500 tracking-wide uppercase">Open Positions</span>
@@ -171,7 +171,7 @@ export default function EmployerProfilePage({ params }) {
                         <h2 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-4">
                             <Briefcase className="text-indigo-600" size={24} /> 
                             Active Protocols
-                            <span className="text-slate-300 text-sm font-bold">/ Opportunities</span>
+                            <span className="text-slate-500 text-sm font-bold">/ Opportunities</span>
                         </h2>
                     </div>
 
@@ -201,7 +201,7 @@ export default function EmployerProfilePage({ params }) {
                                             {job.positionTitle}
                                         </h3>
                                         
-                                        <div className="flex items-center gap-4 text-slate-400 font-bold mb-6 text-xs uppercase tracking-widest">
+                                        <div className="flex items-center gap-4 text-slate-500 font-bold mb-6 text-xs uppercase tracking-widest">
                                             <div className="flex items-center gap-1.5">
                                                 <MapPin size={14} /> {job.location || job.workEnvironment}
                                             </div>
@@ -214,7 +214,7 @@ export default function EmployerProfilePage({ params }) {
                                         <div className="flex items-center justify-between pt-6 border-t border-slate-50">
                                             <span className="text-[10px] font-black uppercase tracking-widest text-[#6366F1]">Protocol Established: {new Date(job.createdAt).toLocaleDateString()}</span>
                                             <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-indigo-50 group-hover:translate-x-1 transition-all">
-                                                <ChevronRight size={16} className="text-slate-400 group-hover:text-indigo-600" />
+                                                <ChevronRight size={16} className="text-slate-500 group-hover:text-indigo-600" />
                                             </div>
                                         </div>
                                     </Link>
@@ -224,7 +224,7 @@ export default function EmployerProfilePage({ params }) {
                     ) : (
                         <div className="bg-white rounded-[2.5rem] p-20 text-center border border-slate-100 border-dashed">
                             <Briefcase className="mx-auto w-12 h-12 text-slate-200 mb-6" />
-                            <p className="text-slate-400 font-bold">No active internship protocols found at this node.</p>
+                            <p className="text-slate-500 font-bold">No active internship protocols found at this node.</p>
                         </div>
                     )}
                 </section>

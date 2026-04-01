@@ -59,7 +59,7 @@ const ProfileCompletenessBar = ({ completion = {} }) => {
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span className="text-3xl font-black text-gray-900 tracking-tighter">{Math.round(overall)}%</span>
-            <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">Complete</span>
+            <span className="text-[9px] font-black uppercase tracking-widest text-gray-500">Complete</span>
           </div>
         </div>
 
@@ -68,7 +68,7 @@ const ProfileCompletenessBar = ({ completion = {} }) => {
           <div className="flex items-center justify-between">
             <div>
               <h4 className="text-xl font-black text-gray-900 tracking-tighter">Profile Connectivity</h4>
-              <p className="text-xs font-bold text-gray-400 mt-1 uppercase tracking-widest">Strength across matching dimensions.</p>
+              <p className="text-xs font-bold text-gray-500 mt-1 uppercase tracking-widest">Strength across matching dimensions.</p>
             </div>
             {isReadyForMatch ? (
               <div className="flex items-center gap-2 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm">
@@ -85,7 +85,7 @@ const ProfileCompletenessBar = ({ completion = {} }) => {
             {stats.map((stat, i) => (
               <div key={i} className="space-y-2">
                 <div className="flex items-center justify-between px-1">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">{stat.label}</span>
+                  <span className="text-[9px] font-black uppercase tracking-widest text-gray-500">{stat.label}</span>
                   <span className="text-[10px] font-black text-gray-700">{Math.round(stat.value)}%</span>
                 </div>
                 <div className="h-2.5 bg-gray-50 rounded-full overflow-hidden border border-gray-100 flex shadow-inner">

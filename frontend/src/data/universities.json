@@ -1,0 +1,31 @@
+{
+  "Sri Lanka": [
+    { "name": "University of Moratuwa", "aliases": ["UoM", "Moratuwa University"] },
+    { "name": "University of Colombo", "aliases": ["UoC", "Colombo University"] },
+    { "name": "Sri Lanka Institute of Information Technology", "aliases": ["SLIIT"] },
+    { "name": "Informatics Institute of Technology", "aliases": ["IIT"] },
+    { "name": "General Sir John Kotelawala Defence University", "aliases": ["KDU"] },
+    { "name": "NSBM Green University", "aliases": ["NSBM"] },
+    { "name": "University of Kelaniya", "aliases": ["UoK"] },
+    { "name": "University of Peradeniya", "aliases": ["UoP"] }
+  ],
+  "United States": [
+    { "name": "Stanford University", "aliases": ["Stanford"] },
+    { "name": "Massachusetts Institute of Technology", "aliases": ["MIT"] },
+    { "name": "University of California, Berkeley", "aliases": ["UC Berkeley", "Berkeley"] },
+    { "name": "Carnegie Mellon University", "aliases": ["CMU"] },
+    { "name": "Harvard University", "aliases": ["Harvard"] }
+  ],
+  "India": [
+    { "name": "Indian Institute of Technology Bombay", "aliases": ["IIT Bombay", "IITB"] },
+    { "name": "Indian Institute of Technology Delhi", "aliases": ["IIT Delhi", "IITD"] },
+    { "name": "Indian Institute of Technology Madras", "aliases": ["IIT Madras", "IITM"] },
+    { "name": "Birla Institute of Technology and Science, Pilani", "aliases": ["BITS Pilani"] }
+  ],
+  "United Kingdom": [
+    { "name": "University of Oxford", "aliases": ["Oxford"] },
+    { "name": "University of Cambridge", "aliases": ["Cambridge"] },
+    { "name": "Imperial College London", "aliases": ["Imperial"] },
+    { "name": "University College London", "aliases": ["UCL"] }
+  ]
+}

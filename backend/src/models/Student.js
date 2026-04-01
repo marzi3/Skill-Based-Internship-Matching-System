@@ -104,6 +104,10 @@ const studentSchema = new mongoose.Schema({
       trim: true,
       match: [/^\+?[1-9]\d{1,14}$/, 'Please use a valid phone number format (E.164)']
     },
+    country: {
+      type: String,
+      trim: true
+    },
     location: {
       type: String,
       trim: true,
@@ -225,6 +229,13 @@ const studentSchema = new mongoose.Schema({
     internshipType: [String], // Full-time, Part-time, Freelance, etc.
     industry: [String],
     workMode: [String], // Remote, On-site, Hybrid
+  },
+
+  // Seniority Level
+  seniority: {
+    type: [String],
+    enum: ['Student', 'Graduate'],
+    default: ['Student'],
   },
 
   // Timestamps

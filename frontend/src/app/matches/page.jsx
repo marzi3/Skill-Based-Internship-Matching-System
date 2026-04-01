@@ -132,7 +132,7 @@ export default function BestMatchesPage() {
                     </div>
                 </header>
 
-                <div className="p-8 max-w-5xl mx-auto space-y-6">
+                <div className="p-6 max-w-5xl mx-auto space-y-6">
                     {/* Page specific content */}
 
                     {loading ? (
@@ -143,7 +143,7 @@ export default function BestMatchesPage() {
                     ) : matches.length === 0 ? (
                         <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center mt-10">
                             <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <Search className="w-10 h-10 text-gray-400" />
+                                <Search className="w-10 h-10 text-gray-500" />
                             </div>
                             <h3 className="text-xl font-bold text-gray-900 mb-2">No Matches Found Yet</h3>
                             <p className="text-gray-500 max-w-md mx-auto mb-6">We could not find any internships aligning with your current profile. Update your skills to improve your chances!</p>
@@ -176,17 +176,17 @@ export default function BestMatchesPage() {
 
                                                 <div className="flex items-center gap-4 text-sm text-gray-500 mb-4 mt-2 font-medium">
                                                     <div className="flex items-center gap-1.5 shrink-0">
-                                                        <Building2 className="w-4 h-4 text-gray-400" />
+                                                        <Building2 className="w-4 h-4 text-gray-500" />
                                                         <span className="truncate max-w-[150px]">{match.internship.company || match.internship.employer?.companyName || 'Unknown Company'}</span>
                                                     </div>
                                                     <div className="w-1 h-1 rounded-full bg-gray-300 shrink-0"></div>
                                                     <div className="flex items-center gap-1.5 shrink-0">
-                                                        <MapPin className="w-4 h-4 text-gray-400" />
+                                                        <MapPin className="w-4 h-4 text-gray-500" />
                                                         <span>{match.internship.workEnvironment || 'Remote'}</span>
                                                     </div>
                                                     <div className="w-1 h-1 rounded-full bg-gray-300 shrink-0"></div>
                                                     <div className="flex items-center gap-1.5 shrink-0">
-                                                        <Clock className="w-4 h-4 text-gray-400" />
+                                                        <Clock className="w-4 h-4 text-gray-500" />
                                                         <span>{match.internship.duration || '3 Months'}</span>
                                                     </div>
                                                 </div>
@@ -231,7 +231,7 @@ export default function BestMatchesPage() {
                                                         <span className="text-lg font-black text-gray-900 leading-none">{Math.round(match.score)}</span>
                                                     </div>
                                                 </div>
-                                                <span className="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-wider">Score</span>
+                                                <span className="text-[10px] font-bold text-gray-500 mt-1 uppercase tracking-wider">Score</span>
                                             </div>
                                         </div>
 

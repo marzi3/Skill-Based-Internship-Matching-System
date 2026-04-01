@@ -89,7 +89,7 @@ export default function VerifyStudent() {
                         <div className="space-y-2">
                             <label className="text-sm font-semibold text-gray-700 ml-1">Student ID Number</label>
                             <div className="relative">
-                                <User className="absolute left-4 top-3.5 text-gray-400" size={18} />
+                                <User className="absolute left-4 top-3.5 text-gray-500" size={18} />
                                 <input
                                     type="text"
                                     required
@@ -105,9 +105,9 @@ export default function VerifyStudent() {
                             <label className="text-sm font-semibold text-gray-700 ml-1">Upload ID Card (Image/PDF)</label>
                             <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:bg-indigo-50 hover:border-indigo-300 transition-all bg-white/50 group">
                                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                    <Upload className="w-8 h-8 mb-3 text-gray-400 group-hover:text-indigo-500 transition-colors" />
+                                    <Upload className="w-8 h-8 mb-3 text-gray-500 group-hover:text-indigo-500 transition-colors" />
                                     <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                                    <p className="text-xs text-gray-400">JPG, PNG or PDF (MAX. 5MB)</p>
+                                    <p className="text-xs text-gray-500">JPG, PNG or PDF (MAX. 5MB)</p>
                                 </div>
                                 <input type="file" accept="image/*,.pdf" className="hidden" onChange={(e) => setFile(e.target.files[0])} />
                             </label>

@@ -27,7 +27,7 @@ export default function SkillComparison({ requiredSkills = [], candidateSkills =
                 <div className="space-y-3 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
                     <h5 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Required by Role</h5>
                     <div className="flex flex-wrap gap-2">
-                        {(!requiredSkills || requiredSkills.length === 0) ? <p className="text-sm text-gray-400 italic">None specified</p> : null}
+                        {(!requiredSkills || requiredSkills.length === 0) ? <p className="text-sm text-gray-500 italic">None specified</p> : null}
                         {requiredSkills.map((skill, i) => {
                             const name = typeof skill === 'string' ? skill : skill.name;
                             if (!name) return null;
@@ -35,7 +35,7 @@ export default function SkillComparison({ requiredSkills = [], candidateSkills =
                             return (
                                 <div key={i} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors ${isMatch ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-white border-gray-200 text-gray-500'}`}>
                                     {/* ICON FEEDBACK: Visual proof of a matching skill */}
-                                    {isMatch ? <CheckCircle2 size={14} className="text-emerald-500" /> : <XCircle size={14} className="text-gray-300" />}
+                                    {isMatch ? <CheckCircle2 size={14} className="text-emerald-500" /> : <XCircle size={14} className="text-gray-500" />}
                                     {name}
                                 </div>
                             )
@@ -47,7 +47,7 @@ export default function SkillComparison({ requiredSkills = [], candidateSkills =
                 <div className="space-y-3 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
                     <h5 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Possessed Skills</h5>
                     <div className="flex flex-wrap gap-2">
-                        {(!candidateSkills || candidateSkills.length === 0) ? <p className="text-sm text-gray-400 italic">No skills listed</p> : null}
+                        {(!candidateSkills || candidateSkills.length === 0) ? <p className="text-sm text-gray-500 italic">No skills listed</p> : null}
                         {candidateSkills.map((skill, i) => {
                             const name = typeof skill === 'string' ? skill : skill.name;
                             if (!name) return null;

@@ -1,6 +1,7 @@
 const logger = require('../utils/logger');
 const Message = require('../models/Message');
 const Application = require('../models/Application');
+const User = require('../models/User');
 const asyncHandler = require('express-async-handler');
 const { send: sendNotification } = require('../services/notificationService');
 const { emitToUser } = require('../config/socket');
@@ -43,6 +44,35 @@ const sendMessage = asyncHandler(async (req, res) => {
     if (!applicationId || !receiverId || !content) {
         res.status(400);
         throw new Error('Please provide applicationId, receiverId, and content');
+    }
+
+    // 1. Check Application Status
+    const application = await Application.findById(applicationId);
+    if (!application) {
+        res.status(404);
+        throw new Error('Application context is missing or invalid');
+    }
+
+    if (application.status === 'Rejected') {
+        res.status(403);
+        throw new Error('Communication is restricted for rejected applications. You may still message other active contacts.');
+    }
+
+    // 2. Check Blocking Status
+    const sender = await User.findById(req.user._id);
+    const receiver = await User.findById(receiverId);
+
+    if (!receiver) {
+        res.status(404);
+        throw new Error('Recipient no longer exists in the network');
+    }
+
+    const isBlockedBySender = sender.blockedUsers && sender.blockedUsers.includes(receiverId);
+    const isBlockedByReceiver = receiver.blockedUsers && receiver.blockedUsers.includes(req.user._id);
+
+    if (isBlockedBySender || isBlockedByReceiver) {
+        res.status(403);
+        throw new Error('Message transmission failure: Communication with this user is currently restricted.');
     }
 
     const message = await Message.create({

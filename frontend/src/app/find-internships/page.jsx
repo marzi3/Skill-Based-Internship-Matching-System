@@ -143,7 +143,7 @@ function FindInternshipsContent() {
                             <div className="flex items-center gap-4">
                                 <div className="hidden sm:flex flex-col items-end">
                                     <span className="text-sm font-bold text-gray-900">{user.name}</span>
-                                    <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest">{user.role}</span>
+                                    <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest">{user.role}</span>
                                 </div>
                                 <Avatar
                                     src={user.profilePicture}
@@ -153,7 +153,7 @@ function FindInternshipsContent() {
                                 />
                                 <button
                                     onClick={logout}
-                                    className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-red-500 transition-colors"
+                                    className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-red-500 transition-colors"
                                     title="Logout"
                                 >
                                     <LogOut className="w-5 h-5" />
@@ -215,13 +215,13 @@ function FindInternshipsContent() {
                             />
                         </div>
                         <div className="hidden sm:flex items-center gap-4 border-l border-gray-100 flex-1 px-6">
-                            <MapPin className="w-5 h-5 text-gray-300 shrink-0" />
+                            <MapPin className="w-5 h-5 text-gray-500 shrink-0" />
                             <input
                                 type="text"
                                 placeholder="Location or Remote"
                                 value={locationQuery}
                                 onChange={handleLocationChange}
-                                className="w-full py-4 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none font-bold bg-transparent appearance-none"
+                                className="w-full py-4 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none font-bold bg-transparent appearance-none"
                             />
                         </div>
                         <button
@@ -244,7 +244,7 @@ function FindInternshipsContent() {
                         <div className="sticky top-24 bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-8">
                             <div className="flex items-center justify-between">
                                 <h3 className="text-lg font-bold text-gray-900">Filters</h3>
-                                <Filter className="w-5 h-5 text-gray-400" />
+                                <Filter className="w-5 h-5 text-gray-500" />
                             </div>
 
                             {/* Job Type */}
@@ -294,7 +294,7 @@ function FindInternshipsContent() {
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                             <div>
                                 <h2 className="text-xl font-bold text-gray-900">Recommended for you</h2>
-                                <span className="text-sm text-gray-400 font-medium">
+                                <span className="text-sm text-gray-500 font-medium">
                                     Showing {filtered.length} result{filtered.length !== 1 ? 's' : ''}
                                 </span>
                             </div>
@@ -315,15 +315,15 @@ function FindInternshipsContent() {
                         {loading ? (
                             <div className="flex flex-col items-center justify-center py-20 gap-3">
                                 <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
-                                <p className="text-gray-400 text-sm font-medium">Loading internships…</p>
+                                <p className="text-gray-500 text-sm font-medium">Loading internships…</p>
                             </div>
                         ) : filtered.length === 0 ? (
                             <div className="text-center py-20 bg-gray-50 rounded-2xl border border-gray-100">
                                 <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                    <Briefcase className="w-8 h-8 text-gray-300" />
+                                    <Briefcase className="w-8 h-8 text-gray-500" />
                                 </div>
                                 <p className="text-lg font-bold text-gray-900 mb-2">No internships found</p>
-                                <p className="text-gray-400 text-sm">Try adjusting your search or filters.</p>
+                                <p className="text-gray-500 text-sm">Try adjusting your search or filters.</p>
                             </div>
                         ) : (
                             <div className="space-y-4">
@@ -351,7 +351,7 @@ function FindInternshipsContent() {
                                                     <h3 className="text-base font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
                                                         {job.positionTitle}
                                                     </h3>
-                                                    <div className="flex items-center gap-3 mt-1 text-sm text-gray-400">
+                                                    <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
                                                         <Link href={`/employers/${job.employer?._id || job.employerId}`} className="flex items-center gap-1 hover:text-indigo-600 transition-colors">
                                                             <Building2 className="w-3.5 h-3.5" />
                                                             {job.employer?.companyName || job.company || 'Company'}
@@ -377,7 +377,7 @@ function FindInternshipsContent() {
                                                             );
                                                         })}
                                                         {job.requiredSkills?.length > 4 && (
-                                                            <span className="px-3 py-1 bg-gray-50 text-gray-400 rounded-lg text-xs font-semibold">
+                                                            <span className="px-3 py-1 bg-gray-50 text-gray-500 rounded-lg text-xs font-semibold">
                                                                 +{job.requiredSkills.length - 4}
                                                             </span>
                                                         )}

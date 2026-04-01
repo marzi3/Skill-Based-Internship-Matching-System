@@ -146,7 +146,7 @@ export default function MessageThread({ applicationId, receiverId, currentUserId
             {/* Message List */}
             <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-[#F8FAFC]">
                 {messages.length === 0 ? (
-                    <div className="text-center text-gray-400 mt-10">
+                    <div className="text-center text-gray-500 mt-10">
                         <p className="font-medium">No messages yet.</p>
                         <p className="text-sm mt-1">Start the conversation below!</p>
                     </div>
@@ -181,13 +181,13 @@ export default function MessageThread({ applicationId, receiverId, currentUserId
 
                                         {/* Time + Read tick */}
                                         <div className={`flex items-center gap-1 mt-1 ${mine ? 'flex-row-reverse' : 'flex-row'}`}>
-                                            <span className="text-[10px] text-gray-400">
+                                            <span className="text-[10px] text-gray-500">
                                                 {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                             </span>
                                             {mine && (
                                                 msg.isRead
                                                     ? <CheckCheck size={13} className="text-indigo-500" title="Seen" />
-                                                    : <Check size={13} className="text-gray-400" title="Sent" />
+                                                    : <Check size={13} className="text-gray-500" title="Sent" />
                                             )}
                                         </div>
                                     </div>
