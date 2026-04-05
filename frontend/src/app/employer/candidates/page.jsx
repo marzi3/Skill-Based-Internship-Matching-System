@@ -212,13 +212,13 @@ const CandidateSearchPage = () => {
                         >
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-100">
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Field of Study</label>
+                                    <label className="block text-xs font-black text-gray-900 uppercase tracking-[0.2em] mb-2">Field of Study</label>
                                     <input type="text" value={fieldFilter} onChange={e => setFieldFilter(e.target.value)}
                                         placeholder="e.g. Computer Science"
                                         className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Location</label>
+                                    <label className="block text-xs font-black text-gray-900 uppercase tracking-[0.2em] mb-2">Location</label>
                                     <input type="text" value={locationFilter} onChange={e => setLocationFilter(e.target.value)}
                                         placeholder="e.g. San Francisco"
                                         className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
@@ -302,10 +302,17 @@ const CandidateSearchPage = () => {
                                             <h3 className="text-xl font-black text-gray-900">{name}</h3>
                                             <div className="flex items-center gap-3 mt-1">
                                                 {location && (
+<<<<<<< Updated upstream
                                                     <span className="flex items-center gap-1 text-xs text-gray-400 font-medium"><MapPin size={12} /> {location}</span>
                                                 )}
                                                 {field && (
                                                     <span className="flex items-center gap-1 text-xs text-gray-400 font-medium"><GraduationCap size={12} /> {field}</span>
+=======
+                                                    <span className="flex items-center gap-1 text-xs text-gray-800 font-black uppercase tracking-wide"><MapPin size={12} className="text-indigo-600" /> {location}</span>
+                                                )}
+                                                {field && (
+                                                    <span className="flex items-center gap-1 text-xs text-gray-800 font-black uppercase tracking-wide"><GraduationCap size={12} className="text-indigo-600" /> {field}</span>
+>>>>>>> Stashed changes
                                                 )}
                                             </div>
                                         </div>

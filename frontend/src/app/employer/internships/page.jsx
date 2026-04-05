@@ -153,7 +153,11 @@ export default function MyPostingsPage() {
                                     <span className="text-[10px] font-black text-primary-600 uppercase tracking-[0.2em]">Operational Management</span>
                                 </div>
                                 <h1 className="text-4xl font-black text-gray-900 tracking-tight">Postings Management</h1>
+<<<<<<< Updated upstream
                                 <p className="text-sm text-gray-400 font-bold mt-1 uppercase tracking-widest leading-none">Track and coordinate your active internship roles</p>
+=======
+                                <p className="text-sm text-gray-900 font-bold mt-1 uppercase tracking-widest leading-none">Track and coordinate your active internship roles</p>
+>>>>>>> Stashed changes
                             </div>
                         </div>
                         
@@ -177,7 +181,11 @@ export default function MyPostingsPage() {
                             className="bg-white/80 backdrop-blur-xl rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500 p-8 flex items-center justify-between group relative overflow-hidden">
                             <div className={`absolute inset-0 bg-gradient-to-br ${s.gradient} opacity-0 group-hover:opacity-[0.03] transition-opacity duration-700`} />
                             <div>
+<<<<<<< Updated upstream
                                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">{s.label}</p>
+=======
+                                <p className="text-sm font-black text-gray-900 uppercase tracking-[0.2em]">{s.label}</p>
+>>>>>>> Stashed changes
                                 <p className="text-5xl font-black text-gray-900 mt-2 tracking-tighter">{s.value}</p>
                             </div>
                             <div className={`w-16 h-16 rounded-3xl bg-gradient-to-br ${s.gradient} flex items-center justify-center shadow-2xl transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500`}>
@@ -252,7 +260,11 @@ export default function MyPostingsPage() {
                                 <thead>
                                     <tr className="bg-gray-50/50">
                                         {['Position Identity', 'Inception Date', 'Status', 'Actions'].map((h, i) => (
+<<<<<<< Updated upstream
                                             <th key={h} className={`px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] border-b border-gray-100 ${i === 3 ? 'text-right' : ''}`}>
+=======
+                                            <th key={h} className={`px-8 py-5 text-sm font-black text-gray-900 uppercase tracking-[0.2em] border-b border-gray-100 ${i === 3 ? 'text-right' : ''}`}>
+>>>>>>> Stashed changes
                                                 {h}
                                             </th>
                                         ))}
@@ -302,7 +314,7 @@ export default function MyPostingsPage() {
 
                                         {/* Actions */}
                                         <td className="px-8 py-6">
-                                            <div className="flex items-center justify-end gap-3 invisible group-hover:visible animate-in fade-in slide-in-from-right-2 duration-300">
+                                            <div className="flex items-center justify-end gap-3 animate-in fade-in duration-500">
 
                                                 {/* Toggle */}
                                                 <button

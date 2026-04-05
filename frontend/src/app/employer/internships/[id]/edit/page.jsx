@@ -128,7 +128,7 @@ const EditInternshipPage = () => {
   const categories = [
     'Web Development', 'Mobile App Development', 'UI/UX Design',
     'Data Science', 'Backend Development', 'Frontend Development',
-    'DevOps', 'Machine Learning', 'Cloud Architecture', 'Database Design'
+    'Cloud & DevOps', 'Machine Learning', 'Cloud Architecture', 'Database Design'
   ];
 
   const locationTypes = ['Remote', 'On-site', 'Hybrid'];
@@ -619,12 +619,11 @@ const EditInternshipPage = () => {
                 </motion.div>
               </AnimatePresence>
             </div>
-
             {/* Action Footer */}
             <div className="p-10 border-t border-slate-100 bg-white flex items-center justify-between shrink-0 relative z-20">
               <button
                 onClick={prevStep}
-                className={`flex items-center gap-3 font-black uppercase text-[10px] tracking-[0.3em] px-8 py-5 rounded-2xl transition-all ${currentStep === 1 ? 'opacity-0 pointer-events-none' : 'text-slate-400 hover:text-slate-900 hover:bg-slate-50'}`}
+                className={`flex items-center gap-3 font-black uppercase text-[10px] tracking-[0.3em] px-8 py-5 rounded-2xl transition-all ${currentStep === 1 ? 'opacity-0 pointer-events-none' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}
               >
                 <ChevronLeft size={16} /> Previous
               </button>
@@ -634,7 +633,7 @@ const EditInternshipPage = () => {
                   onClick={nextStep}
                   className="flex items-center gap-4 bg-[#6366F1] text-white font-black uppercase text-[11px] tracking-[0.3em] px-12 py-5 rounded-2xl hover:bg-[#4F46E5] shadow-lg"
                 >
-                  Continuum <ChevronRight size={16} />
+                  Continue <ChevronRight size={16} />
                 </button>
               ) : (
                 <button

@@ -431,6 +431,9 @@ exports.uploadProfileImage = asyncHandler(async (req, res, next) => {
     });
   }
 
+  logger.info(`Profile image upload for user ${req.user.id}: ${req.file.path}`);
+
+
   // Update profile image
   const profilePicturePath = req.file.path.replace(/\\/g, '/'); // Normalize path for cross-platform
   student.profileImage = {
@@ -648,11 +651,14 @@ exports.uploadCoverImage = asyncHandler(async (req, res, next) => {
   }
 
   // Update cover image
+  const coverImagePath = req.file.path.replace(/\\/g, '/');
   student.coverImage = {
     fileName: req.file.filename,
-    filePath: req.file.path,
+    filePath: coverImagePath,
     uploadedAt: new Date(),
   };
+
+  logger.info(`Cover image upload for user ${req.user.id}: ${req.file.path}`);
 
   // Calculate profile completion
   student.calculateProfileCompletion();

@@ -1,0 +1,270 @@
+﻿diff --git a/frontend/src/app/employer/candidates/page.jsx b/frontend/src/app/employer/candidates/page.jsx
+index 7a501a7..0b707e7 100644
+--- a/frontend/src/app/employer/candidates/page.jsx
++++ b/frontend/src/app/employer/candidates/page.jsx
+@@ -302,17 +302,10 @@ const CandidateSearchPage = () => {
+                                             <h3 className="text-xl font-black text-gray-900">{name}</h3>
+                                             <div className="flex items-center gap-3 mt-1">
+                                                 {location && (
+-<<<<<<< Updated upstream
+                                                     <span className="flex items-center gap-1 text-xs text-gray-400 font-medium"><MapPin size={12} /> {location}</span>
+                                                 )}
+                                                 {field && (
+                                                     <span className="flex items-center gap-1 text-xs text-gray-400 font-medium"><GraduationCap size={12} /> {field}</span>
+-=======
+-                                                    <span className="flex items-center gap-1 text-xs text-gray-800 font-black uppercase tracking-wide"><MapPin size={12} className="text-indigo-600" /> {location}</span>
+-                                                )}
+-                                                {field && (
+-                                                    <span className="flex items-center gap-1 text-xs text-gray-800 font-black uppercase tracking-wide"><GraduationCap size={12} className="text-indigo-600" /> {field}</span>
+->>>>>>> Stashed changes
+                                                 )}
+                                             </div>
+                                         </div>
+diff --git a/frontend/src/app/employer/dashboard/page.jsx b/frontend/src/app/employer/dashboard/page.jsx
+index ed56a02..1f843fe 100644
+--- a/frontend/src/app/employer/dashboard/page.jsx
++++ b/frontend/src/app/employer/dashboard/page.jsx
+@@ -269,11 +269,7 @@ const EmployerDashboard = () => {
+             >
+               <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-[0.04] transition-opacity duration-500`} />
+               <div className="flex justify-between items-start mb-4 relative z-10">
+-<<<<<<< Updated upstream
+-                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{stat.label}</span>
+-=======
+                 <span className="text-sm font-bold text-gray-900 uppercase tracking-widest">{stat.label}</span>
+->>>>>>> Stashed changes
+                 <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center shadow-lg`}>
+                   <Icon className="w-5 h-5 text-white" />
+                 </div>
+diff --git a/frontend/src/app/employer/internships/[id]/edit/page.jsx b/frontend/src/app/employer/internships/[id]/edit/page.jsx
+index 55d3fc7..1ae164f 100644
+--- a/frontend/src/app/employer/internships/[id]/edit/page.jsx
++++ b/frontend/src/app/employer/internships/[id]/edit/page.jsx
+@@ -93,20 +93,12 @@ const EditInternshipPage = () => {
+         { value: '12', label: '12 Months' },
+     ];
+ 
+-<<<<<<< Updated upstream
+     useEffect(() => {
+         const fetchInternship = async () => {
+             try {
+                 setFetching(true);
+                 const response = await axios.get(`/internships/${id}`);
+                 const data = response.data.data;
+-=======
+-  const categories = [
+-    'Web Development', 'Mobile App Development', 'UI/UX Design',
+-    'Data Science', 'Backend Development', 'Frontend Development',
+-    'Cloud & DevOps', 'Machine Learning', 'Cloud Architecture', 'Database Design'
+-  ];
+->>>>>>> Stashed changes
+ 
+                 setFormData({
+                     position: data.positionTitle,
+@@ -663,9 +655,6 @@ const EditInternshipPage = () => {
+ 
+                 </div>
+             </div>
+-<<<<<<< Updated upstream
+-            <style jsx global>{`
+-=======
+ 
+             {/* Action Footer */}
+             <div className="p-10 border-t border-slate-100 bg-white flex items-center justify-between shrink-0 relative z-20">
+@@ -732,11 +721,10 @@ const EditInternshipPage = () => {
+       </div>
+ 
+       <style jsx global>{`
+->>>>>>> Stashed changes
+         .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+       `}</style>
+-        </div >
++        </div>
+     );
+ };
+ 
+diff --git a/frontend/src/app/employer/internships/page.jsx b/frontend/src/app/employer/internships/page.jsx
+index 94bb9a7..6a13460 100644
+--- a/frontend/src/app/employer/internships/page.jsx
++++ b/frontend/src/app/employer/internships/page.jsx
+@@ -153,11 +153,7 @@ export default function MyPostingsPage() {
+                                     <span className="text-[10px] font-black text-primary-600 uppercase tracking-[0.2em]">Operational Management</span>
+                                 </div>
+                                 <h1 className="text-4xl font-black text-gray-900 tracking-tight">Postings Management</h1>
+-<<<<<<< Updated upstream
+                                 <p className="text-sm text-gray-400 font-bold mt-1 uppercase tracking-widest leading-none">Track and coordinate your active internship roles</p>
+-=======
+-                                <p className="text-sm text-gray-900 font-bold mt-1 uppercase tracking-widest leading-none">Track and coordinate your active internship roles</p>
+->>>>>>> Stashed changes
+                             </div>
+                         </div>
+                         
+@@ -181,11 +177,7 @@ export default function MyPostingsPage() {
+                             className="bg-white/80 backdrop-blur-xl rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500 p-8 flex items-center justify-between group relative overflow-hidden">
+                             <div className={`absolute inset-0 bg-gradient-to-br ${s.gradient} opacity-0 group-hover:opacity-[0.03] transition-opacity duration-700`} />
+                             <div>
+-<<<<<<< Updated upstream
+                                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">{s.label}</p>
+-=======
+-                                <p className="text-sm font-black text-gray-900 uppercase tracking-[0.2em]">{s.label}</p>
+->>>>>>> Stashed changes
+                                 <p className="text-5xl font-black text-gray-900 mt-2 tracking-tighter">{s.value}</p>
+                             </div>
+                             <div className={`w-16 h-16 rounded-3xl bg-gradient-to-br ${s.gradient} flex items-center justify-center shadow-2xl transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500`}>
+@@ -260,11 +252,7 @@ export default function MyPostingsPage() {
+                                 <thead>
+                                     <tr className="bg-gray-50/50">
+                                         {['Position Identity', 'Inception Date', 'Status', 'Actions'].map((h, i) => (
+-<<<<<<< Updated upstream
+                                             <th key={h} className={`px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] border-b border-gray-100 ${i === 3 ? 'text-right' : ''}`}>
+-=======
+-                                            <th key={h} className={`px-8 py-5 text-sm font-black text-gray-900 uppercase tracking-[0.2em] border-b border-gray-100 ${i === 3 ? 'text-right' : ''}`}>
+->>>>>>> Stashed changes
+                                                 {h}
+                                             </th>
+                                         ))}
+diff --git a/frontend/src/app/find-internships/page.jsx b/frontend/src/app/find-internships/page.jsx
+index fcc15cd..e6a53a5 100644
+--- a/frontend/src/app/find-internships/page.jsx
++++ b/frontend/src/app/find-internships/page.jsx
+@@ -142,13 +142,8 @@ function FindInternshipsContent() {
+                         {user ? (
+                             <div className="flex items-center gap-4">
+                                 <div className="hidden sm:flex flex-col items-end">
+-<<<<<<< Updated upstream
+                                     <span className="text-sm font-bold text-gray-900">{user.name}</span>
+                                     <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest">{user.role}</span>
+-=======
+-                                    <span className="text-sm font-black text-slate-900">{user.name}</span>
+-                                    <span className="text-[10px] text-slate-900 uppercase font-black tracking-widest">{user.role}</span>
+->>>>>>> Stashed changes
+                                 </div>
+                                 <Avatar
+                                     src={user.profilePicture}
+@@ -217,23 +212,14 @@ function FindInternshipsContent() {
+                                 showSubmitButton={false}
+                             />
+                         </div>
+-<<<<<<< Updated upstream
+                         <div className="hidden sm:flex items-center gap-4 border-l border-gray-100 flex-1 px-6">
+                             <MapPin className="w-5 h-5 text-gray-300 shrink-0" />
+-=======
+-                        <div className="hidden sm:flex items-center gap-4 border-l border-slate-100 flex-1 px-6">
+-                            <MapPin className="w-5 h-5 text-[#6366F1] shrink-0" />
+->>>>>>> Stashed changes
+                             <input
+                                 type="text"
+                                 placeholder="Location or Remote"
+                                 value={locationQuery}
+                                 onChange={handleLocationChange}
+-<<<<<<< Updated upstream
+                                 className="w-full py-4 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none font-bold bg-transparent appearance-none"
+-=======
+-                                className="w-full py-4 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none font-black uppercase tracking-widest bg-transparent appearance-none"
+->>>>>>> Stashed changes
+                             />
+                         </div>
+                         <button
+@@ -248,7 +234,6 @@ function FindInternshipsContent() {
+             </section>
+ 
+             {/* ΓöÇΓöÇ Main Content ΓöÇΓöÇ */}
+-<<<<<<< Updated upstream
+             <section className="max-w-7xl mx-auto px-6 lg:px-8 py-10">
+                 <div className="flex gap-10">
+ 
+@@ -258,22 +243,6 @@ function FindInternshipsContent() {
+                             <div className="flex items-center justify-between">
+                                 <h3 className="text-lg font-bold text-gray-900">Filters</h3>
+                                 <Filter className="w-5 h-5 text-gray-400" />
+-=======
+-            <section className="max-w-[1400px] mx-auto px-6 lg:px-12 py-12">
+-                <div className="flex gap-10">                    {/* Filters Sidebar */}
+-                    <aside className="w-72 shrink-0 hidden lg:block">
+-                        <div className="sticky top-24 bg-slate-50/40 backdrop-blur-xl rounded-[2.5rem] border border-slate-200/60 shadow-xl shadow-slate-200/20 p-8 space-y-10">
+-                            
+-                            {/* Filter Header */}
+-                            <div className="flex items-center justify-between pb-5 border-b-2 border-indigo-100">
+-                                <div>
+-                                    <h3 className="text-[13px] font-black text-slate-900 uppercase tracking-[0.35em]">Advanced</h3>
+-                                    <h3 className="text-[13px] font-black text-[#6366F1] uppercase tracking-[0.35em]">Filters</h3>
+-                                </div>
+-                                <div className="p-3 bg-white rounded-2xl shadow-md border border-slate-100">
+-                                    <SlidersHorizontal className="w-5 h-5 text-[#6366F1]" />
+-                                </div>
+->>>>>>> Stashed changes
+                             </div>
+ 
+                             {/* Work Environment Section */}
+@@ -334,15 +303,9 @@ function FindInternshipsContent() {
+                     <div className="flex-1">
+                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                             <div>
+-<<<<<<< Updated upstream
+                                 <h2 className="text-xl font-bold text-gray-900">Recommended for you</h2>
+                                 <span className="text-sm text-gray-400 font-medium">
+                                     Showing {filtered.length} result{filtered.length !== 1 ? 's' : ''}
+-=======
+-                                <h2 className="text-4xl font-black text-slate-900 tracking-tighter">Recommended <span className="text-[#6366F1] italic font-medium">for you</span></h2>
+-                                <span className="text-[12px] font-black uppercase tracking-[0.2em] text-slate-500 mt-3 block">
+-                                    Displaying {filtered.length} matching protocol{filtered.length !== 1 ? 's' : ''}
+->>>>>>> Stashed changes
+                                 </span>
+                             </div>
+                             <div className="flex items-center gap-3 p-1.5 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm">
+@@ -403,13 +366,8 @@ function FindInternshipsContent() {
+                                                     <h3 className="text-2xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors tracking-tight">
+                                                         {job.positionTitle}
+                                                     </h3>
+-<<<<<<< Updated upstream
+                                                     <div className="flex items-center gap-3 mt-1 text-sm text-gray-400">
+                                                         <Link href={`/employers/${job.employer?._id || job.employerId}`} className="flex items-center gap-1 hover:text-indigo-600 transition-colors">
+-=======
+-                                                    <div className="flex items-center gap-4 mt-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+-                                                        <Link href={`/employers/${job.employer?._id || job.employerId}`} className="flex items-center gap-1.5 hover:text-indigo-600 transition-colors">
+->>>>>>> Stashed changes
+                                                             <Building2 className="w-3.5 h-3.5" />
+                                                             {job.employer?.companyName || job.company || 'Company'}
+                                                         </Link>
+diff --git a/frontend/src/components/ui/Stepper.jsx b/frontend/src/components/ui/Stepper.jsx
+index 031eb48..548983b 100644
+--- a/frontend/src/components/ui/Stepper.jsx
++++ b/frontend/src/components/ui/Stepper.jsx
+@@ -18,24 +18,15 @@ const Stepper = ({ currentStep, steps }) => {
+                                 className={`
+                   w-14 h-14 rounded-[1.25rem] flex items-center justify-center border-2 transition-all duration-500
+                   ${isCompleted || isActive
+-<<<<<<< Updated upstream
+-                                        ? 'bg-[#6366F1] border-[#6366F1] shadow-[0_0_20px_rgba(99,102,241,0.3)]'
+-                                        : 'bg-white border-slate-200 text-slate-300'
+-=======
+                                         ? 'bg-[#6366F1] border-[#6366F1] shadow-[0_0_30px_rgba(99,102,241,0.4)]'
+                                         : 'bg-white border-slate-200 text-slate-500'
+->>>>>>> Stashed changes
+                                     }
+                 `}
+                             >
+                                 {isCompleted ? (
+                                     <Check className="text-white w-5 h-5" />
+                                 ) : (
+-<<<<<<< Updated upstream
+-                                    <span className={`text-sm font-bold ${isActive ? 'text-white' : 'text-slate-300'}`}>
+-=======
+                                     <span className={`text-lg font-black ${isActive ? 'text-white' : 'text-slate-500'}`}>
+->>>>>>> Stashed changes
+                                         {step.id}
+                                     </span>
+                                 )}
+@@ -43,11 +34,7 @@ const Stepper = ({ currentStep, steps }) => {
+ 
+                             {/* Step Title */}
+                             <div className="absolute top-12 whitespace-nowrap">
+-<<<<<<< Updated upstream
+-                                <span className={`text-[10px] font-bold uppercase tracking-widest ${isActive || isCompleted ? 'text-[#6366F1]' : 'text-slate-400'}`}>
+-=======
+                                 <span className={`text-[11px] font-black uppercase tracking-[0.2em] ${isActive || isCompleted ? 'text-[#6366F1]' : 'text-slate-500'}`}>
+->>>>>>> Stashed changes
+                                     {step.title}
+                                 </span>
+                             </div>
