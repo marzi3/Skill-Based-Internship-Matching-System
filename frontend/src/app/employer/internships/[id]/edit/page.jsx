@@ -619,6 +619,7 @@ const EditInternshipPage = () => {
                 </motion.div>
               </AnimatePresence>
             </div>
+
             {/* Action Footer */}
             <div className="p-10 border-t border-slate-100 bg-white flex items-center justify-between shrink-0 relative z-20">
               <button

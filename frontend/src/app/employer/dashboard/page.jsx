@@ -269,11 +269,7 @@ const EmployerDashboard = () => {
             >
               <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-[0.04] transition-opacity duration-500`} />
               <div className="flex justify-between items-start mb-4 relative z-10">
-<<<<<<< Updated upstream
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{stat.label}</span>
-=======
                 <span className="text-sm font-bold text-gray-900 uppercase tracking-widest">{stat.label}</span>
->>>>>>> Stashed changes
                 <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center shadow-lg`}>
                   <Icon className="w-5 h-5 text-white" />
                 </div>

@@ -302,17 +302,10 @@ const CandidateSearchPage = () => {
                                             <h3 className="text-xl font-black text-gray-900">{name}</h3>
                                             <div className="flex items-center gap-3 mt-1">
                                                 {location && (
-<<<<<<< Updated upstream
                                                     <span className="flex items-center gap-1 text-xs text-gray-400 font-medium"><MapPin size={12} /> {location}</span>
                                                 )}
                                                 {field && (
                                                     <span className="flex items-center gap-1 text-xs text-gray-400 font-medium"><GraduationCap size={12} /> {field}</span>
-=======
-                                                    <span className="flex items-center gap-1 text-xs text-gray-800 font-black uppercase tracking-wide"><MapPin size={12} className="text-indigo-600" /> {location}</span>
-                                                )}
-                                                {field && (
-                                                    <span className="flex items-center gap-1 text-xs text-gray-800 font-black uppercase tracking-wide"><GraduationCap size={12} className="text-indigo-600" /> {field}</span>
->>>>>>> Stashed changes
                                                 )}
                                             </div>
                                         </div>

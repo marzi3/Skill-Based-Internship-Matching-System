@@ -142,13 +142,8 @@ function FindInternshipsContent() {
                         {user ? (
                             <div className="flex items-center gap-4">
                                 <div className="hidden sm:flex flex-col items-end">
-<<<<<<< Updated upstream
                                     <span className="text-sm font-bold text-gray-900">{user.name}</span>
                                     <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest">{user.role}</span>
-=======
-                                    <span className="text-sm font-black text-slate-900">{user.name}</span>
-                                    <span className="text-[10px] text-slate-900 uppercase font-black tracking-widest">{user.role}</span>
->>>>>>> Stashed changes
                                 </div>
                                 <Avatar
                                     src={user.profilePicture}
@@ -217,23 +212,14 @@ function FindInternshipsContent() {
                                 showSubmitButton={false}
                             />
                         </div>
-<<<<<<< Updated upstream
                         <div className="hidden sm:flex items-center gap-4 border-l border-gray-100 flex-1 px-6">
                             <MapPin className="w-5 h-5 text-gray-300 shrink-0" />
-=======
-                        <div className="hidden sm:flex items-center gap-4 border-l border-slate-100 flex-1 px-6">
-                            <MapPin className="w-5 h-5 text-[#6366F1] shrink-0" />
->>>>>>> Stashed changes
                             <input
                                 type="text"
                                 placeholder="Location or Remote"
                                 value={locationQuery}
                                 onChange={handleLocationChange}
-<<<<<<< Updated upstream
                                 className="w-full py-4 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none font-bold bg-transparent appearance-none"
-=======
-                                className="w-full py-4 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none font-black uppercase tracking-widest bg-transparent appearance-none"
->>>>>>> Stashed changes
                             />
                         </div>
                         <button
@@ -248,7 +234,6 @@ function FindInternshipsContent() {
             </section>
 
             {/* ── Main Content ── */}
-<<<<<<< Updated upstream
             <section className="max-w-7xl mx-auto px-6 lg:px-8 py-10">
                 <div className="flex gap-10">
 
@@ -258,22 +243,6 @@ function FindInternshipsContent() {
                             <div className="flex items-center justify-between">
                                 <h3 className="text-lg font-bold text-gray-900">Filters</h3>
                                 <Filter className="w-5 h-5 text-gray-400" />
-=======
-            <section className="max-w-[1400px] mx-auto px-6 lg:px-12 py-12">
-                <div className="flex gap-10">                    {/* Filters Sidebar */}
-                    <aside className="w-72 shrink-0 hidden lg:block">
-                        <div className="sticky top-24 bg-slate-50/40 backdrop-blur-xl rounded-[2.5rem] border border-slate-200/60 shadow-xl shadow-slate-200/20 p-8 space-y-10">
-                            
-                            {/* Filter Header */}
-                            <div className="flex items-center justify-between pb-5 border-b-2 border-indigo-100">
-                                <div>
-                                    <h3 className="text-[13px] font-black text-slate-900 uppercase tracking-[0.35em]">Advanced</h3>
-                                    <h3 className="text-[13px] font-black text-[#6366F1] uppercase tracking-[0.35em]">Filters</h3>
-                                </div>
-                                <div className="p-3 bg-white rounded-2xl shadow-md border border-slate-100">
-                                    <SlidersHorizontal className="w-5 h-5 text-[#6366F1]" />
-                                </div>
->>>>>>> Stashed changes
                             </div>
 
                             {/* Work Environment Section */}
@@ -334,15 +303,9 @@ function FindInternshipsContent() {
                     <div className="flex-1">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                             <div>
-<<<<<<< Updated upstream
                                 <h2 className="text-xl font-bold text-gray-900">Recommended for you</h2>
                                 <span className="text-sm text-gray-400 font-medium">
                                     Showing {filtered.length} result{filtered.length !== 1 ? 's' : ''}
-=======
-                                <h2 className="text-4xl font-black text-slate-900 tracking-tighter">Recommended <span className="text-[#6366F1] italic font-medium">for you</span></h2>
-                                <span className="text-[12px] font-black uppercase tracking-[0.2em] text-slate-500 mt-3 block">
-                                    Displaying {filtered.length} matching protocol{filtered.length !== 1 ? 's' : ''}
->>>>>>> Stashed changes
                                 </span>
                             </div>
                             <div className="flex items-center gap-3 p-1.5 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm">
@@ -403,13 +366,8 @@ function FindInternshipsContent() {
                                                     <h3 className="text-2xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors tracking-tight">
                                                         {job.positionTitle}
                                                     </h3>
-<<<<<<< Updated upstream
                                                     <div className="flex items-center gap-3 mt-1 text-sm text-gray-400">
                                                         <Link href={`/employers/${job.employer?._id || job.employerId}`} className="flex items-center gap-1 hover:text-indigo-600 transition-colors">
-=======
-                                                    <div className="flex items-center gap-4 mt-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                                                        <Link href={`/employers/${job.employer?._id || job.employerId}`} className="flex items-center gap-1.5 hover:text-indigo-600 transition-colors">
->>>>>>> Stashed changes
                                                             <Building2 className="w-3.5 h-3.5" />
                                                             {job.employer?.companyName || job.company || 'Company'}
                                                         </Link>
