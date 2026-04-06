@@ -128,7 +128,7 @@ const EditInternshipPage = () => {
   const categories = [
     'Web Development', 'Mobile App Development', 'UI/UX Design',
     'Data Science', 'Backend Development', 'Frontend Development',
-    'DevOps', 'Machine Learning', 'Cloud Architecture', 'Database Design'
+    'Cloud & DevOps', 'Machine Learning', 'Cloud Architecture', 'Database Design'
   ];
 
   const locationTypes = ['Remote', 'On-site', 'Hybrid'];
@@ -634,7 +634,7 @@ const EditInternshipPage = () => {
                   onClick={nextStep}
                   className="flex items-center gap-4 bg-[#6366F1] text-white font-black uppercase text-[11px] tracking-[0.3em] px-12 py-5 rounded-2xl hover:bg-[#4F46E5] shadow-lg"
                 >
-                  Continuum <ChevronRight size={16} />
+                  Continue <ChevronRight size={16} />
                 </button>
               ) : (
                 <button

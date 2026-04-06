@@ -187,17 +187,15 @@ function FindInternshipsContent() {
             </div>
 
             {/* ── Hero / Search Section ── */}
-            <section className="bg-gradient-to-b from-indigo-50/40 to-white pt-16 pb-12">
-                <div className="max-w-4xl mx-auto px-6 text-center">
-                    <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 tracking-tight leading-[1.1] mb-4">
+            <section className="bg-gradient-to-b from-indigo-50/40 to-white pt-20 pb-16">
+                <div className="max-w-6xl mx-auto px-6 text-center">
+                    <h1 className="text-6xl lg:text-8xl font-black text-slate-900 tracking-tighter leading-[1.05] mb-6">
                         Find your next{' '}
-                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 italic">
+                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] italic font-medium tracking-normal">
                             big opportunity.
                         </span>
                     </h1>
-                    <p className="text-gray-500 text-lg mb-10">
-                        Discover thousands of verified internships tailored to your unique skill set.
-                    </p>
+
 
                     {/* Search Bar Container */}
                     <form 
@@ -210,7 +208,7 @@ function FindInternshipsContent() {
                                 initialValue={searchQuery}
                                 onSearch={handleSearch}
                                 isLoading={loading}
-                                className="!border-none !shadow-none !ring-0"
+                                className="!border-none !shadow-none !ring-0 !text-slate-900 !font-black !uppercase !tracking-widest"
                                 showSubmitButton={false}
                             />
                         </div>
@@ -227,9 +225,9 @@ function FindInternshipsContent() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-[2rem] text-sm font-black uppercase tracking-widest transition-all shadow-xl shadow-indigo-200 active:scale-95 disabled:opacity-50"
+                            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#6366F1] hover:bg-[#4F46E5] text-white px-8 py-4 rounded-[2rem] text-xs font-black uppercase tracking-[0.2em] transition-all shadow-xl shadow-indigo-200/50 active:scale-95 disabled:opacity-50"
                         >
-                            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Search size={18} /> Search</>}
+                            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Search size={16} /> Search</>}
                         </button>
                     </form>
                 </div>
@@ -247,19 +245,24 @@ function FindInternshipsContent() {
                                 <Filter className="w-5 h-5 text-gray-500" />
                             </div>
 
-                            {/* Job Type */}
-                            <div>
-                                <h4 className="text-sm font-bold text-gray-900 mb-3">Job Type</h4>
-                                <div className="space-y-2.5">
+                            {/* Work Environment Section */}
+                            <div className="group/filter">
+                                <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.25em] mb-6 flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 bg-[#6366F1] rounded-full"></span>
+                                    Work Environment
+                                </h4>
+                                <div className="space-y-4">
                                     {jobTypeOptions.map((type) => (
-                                        <label key={type} className="flex items-center gap-3 cursor-pointer group">
-                                            <input
-                                                type="checkbox"
-                                                checked={filters.jobType.includes(type)}
-                                                onChange={() => toggleFilter('jobType', type)}
-                                                className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                            />
-                                            <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">
+                                        <label key={type} className="flex items-center gap-4 cursor-pointer group/label">
+                                            <div className="relative flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={filters.jobType.includes(type)}
+                                                    onChange={() => toggleFilter('jobType', type)}
+                                                    className="w-5 h-5 rounded-lg border-2 border-slate-300 text-[#6366F1] focus:ring-[#6366F1] transition-all cursor-pointer bg-white checked:border-[#6366F1]"
+                                                />
+                                            </div>
+                                            <span className="text-[12px] font-black uppercase tracking-widest text-slate-500 group-hover/label:text-slate-900 group-data-[checked=true]:text-slate-900 transition-colors">
                                                 {type}
                                             </span>
                                         </label>
@@ -267,25 +270,32 @@ function FindInternshipsContent() {
                                 </div>
                             </div>
 
-                            {/* Industry */}
-                            <div>
-                                <h4 className="text-sm font-bold text-gray-900 mb-3">Industry</h4>
-                                <div className="space-y-2.5">
+                            {/* Industry Domain Section */}
+                            <div className="pt-8 border-t border-slate-200/60">
+                                <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.25em] mb-6 flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 bg-[#6366F1] rounded-full"></span>
+                                    Industry Domain
+                                </h4>
+                                <div className="space-y-4">
                                     {industryOptions.map((ind) => (
-                                        <label key={ind} className="flex items-center gap-3 cursor-pointer group">
-                                            <input
-                                                type="checkbox"
-                                                checked={filters.industry.includes(ind)}
-                                                onChange={() => toggleFilter('industry', ind)}
-                                                className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                            />
-                                            <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">
+                                        <label key={ind} className="flex items-center gap-4 cursor-pointer group/label">
+                                            <div className="relative flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={filters.industry.includes(ind)}
+                                                    onChange={() => toggleFilter('industry', ind)}
+                                                    className="w-5 h-5 rounded-lg border-2 border-slate-300 text-[#6366F1] focus:ring-[#6366F1] transition-all cursor-pointer bg-white checked:border-[#6366F1]"
+                                                />
+                                            </div>
+                                            <span className="text-[12px] font-black uppercase tracking-widest text-slate-500 group-hover/label:text-slate-900 transition-colors">
                                                 {ind}
                                             </span>
                                         </label>
                                     ))}
                                 </div>
                             </div>
+
+                            {/* Active Filters count indicator or clear button can go here */}
                         </div>
                     </aside>
 
@@ -298,17 +308,22 @@ function FindInternshipsContent() {
                                     Showing {filtered.length} result{filtered.length !== 1 ? 's' : ''}
                                 </span>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium text-gray-500">Sort by:</span>
-                                <select
-                                    value={sort}
-                                    onChange={(e) => setSort(e.target.value)}
-                                    className="bg-white border text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2 outline-none cursor-pointer font-medium border-gray-200 shadow-sm transition-all"
-                                >
-                                    {['Newest', 'Best Matches', 'Oldest', 'Salary', 'Deadline Soon'].map(opt => (
-                                        <option key={opt} value={opt}>{opt}</option>
-                                    ))}
-                                </select>
+                            <div className="flex items-center gap-3 p-1.5 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm">
+                                <span className="text-[12px] font-black text-slate-900 uppercase tracking-[0.2em] px-3">Sort by:</span>
+                                <div className="relative">
+                                    <select
+                                        value={sort}
+                                        onChange={(e) => setSort(e.target.value)}
+                                        className="bg-white text-slate-900 text-[12px] font-black uppercase tracking-widest pl-4 pr-10 py-2.5 rounded-xl border border-slate-100 shadow-sm cursor-pointer outline-none appearance-none hover:border-[#6366F1] focus:ring-2 focus:ring-indigo-500/20 transition-all min-w-[180px]"
+                                    >
+                                        {['Newest', 'Best Matches', 'Oldest', 'Salary', 'Deadline Soon'].map(opt => (
+                                            <option key={opt} value={opt}>{opt}</option>
+                                        ))}
+                                    </select>
+                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                        <Filter className="w-4 h-4" />
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -348,7 +363,7 @@ function FindInternshipsContent() {
                                                  </Link>
 
                                                 <div>
-                                                    <h3 className="text-base font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                                                    <h3 className="text-2xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors tracking-tight">
                                                         {job.positionTitle}
                                                     </h3>
                                                     <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
@@ -356,9 +371,9 @@ function FindInternshipsContent() {
                                                             <Building2 className="w-3.5 h-3.5" />
                                                             {job.employer?.companyName || job.company || 'Company'}
                                                         </Link>
-                                                        <span>•</span>
-                                                        <span className="flex items-center gap-1">
-                                                            <MapPin className="w-3.5 h-3.5" />
+                                                        <span className="text-slate-200">•</span>
+                                                        <span className="flex items-center gap-1.5 text-slate-900">
+                                                            <MapPin className="w-3.5 h-3.5 text-[#6366F1]" />
                                                             {job.location || job.workEnvironment || 'Remote'}
                                                         </span>
                                                     </div>
@@ -389,9 +404,9 @@ function FindInternshipsContent() {
                                             <div className="flex flex-col items-end gap-3 shrink-0">
                                                 <Link
                                                     href={`/internships/${job._id}?from=search`}
-                                                    className="flex items-center gap-1 text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-all"
+                                                    className="flex items-center gap-3 bg-[#6366F1] text-white px-8 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] shadow-lg shadow-indigo-200/50 hover:bg-[#4F46E5] hover:shadow-xl hover:shadow-indigo-300/60 transition-all active:scale-95"
                                                 >
-                                                    Apply <ChevronRight className="w-4 h-4" />
+                                                    Secure Protocol <ChevronRight className="w-3.5 h-3.5" />
                                                 </Link>
                                             </div>
                                         </div>

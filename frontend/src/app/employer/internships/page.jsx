@@ -302,7 +302,7 @@ export default function MyPostingsPage() {
 
                                         {/* Actions */}
                                         <td className="px-8 py-6">
-                                            <div className="flex items-center justify-end gap-3 invisible group-hover:visible animate-in fade-in slide-in-from-right-2 duration-300">
+                                            <div className="flex items-center justify-end gap-3 animate-in fade-in duration-500">
 
                                                 {/* Toggle */}
                                                 <button

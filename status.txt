@@ -1,0 +1,8 @@
+﻿M  frontend/src/app/employer/candidates/page.jsx
+M  frontend/src/app/employer/dashboard/page.jsx
+M  frontend/src/app/employer/internships/[id]/edit/page.jsx
+M  frontend/src/app/employer/internships/page.jsx
+M  frontend/src/app/find-internships/page.jsx
+M  frontend/src/components/ui/Stepper.jsx
+?? diff.txt
+?? status.txt

@@ -16,7 +16,7 @@ const Stepper = ({ currentStep, steps }) => {
                         <div className="flex flex-col items-center relative">
                             <div
                                 className={`
-                  w-10 h-10 rounded-2xl flex items-center justify-center border-2 transition-all duration-500
+                  w-14 h-14 rounded-[1.25rem] flex items-center justify-center border-2 transition-all duration-500
                   ${isCompleted || isActive
                                         ? 'bg-[#6366F1] border-[#6366F1] shadow-[0_0_20px_rgba(99,102,241,0.3)]'
                                         : 'bg-white border-slate-200 text-slate-500'

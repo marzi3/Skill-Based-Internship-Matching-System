@@ -130,7 +130,7 @@ const CreateInternshipPage = () => {
   const categories = [
     'Web Development', 'Mobile App Development', 'UI/UX Design',
     'Data Science', 'Backend Development', 'Frontend Development',
-    'DevOps', 'Machine Learning', 'Cloud Architecture', 'Database Design'
+    'Cloud & DevOps', 'Machine Learning', 'Cloud Architecture', 'Database Design'
   ];
 
   const locationTypes = ['Remote', 'On-site', 'Hybrid'];
