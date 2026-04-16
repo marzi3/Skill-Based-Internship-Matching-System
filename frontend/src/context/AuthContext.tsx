@@ -66,6 +66,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const checkUserLoggedIn = async () => {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+        if (!token) {
+            setUser(null);
+            syncUserToStorage(null);
+            setLoading(false);
+            return;
+        }
+
         try {
             const { data } = await apiClient.get<User>('/auth/me');
             setUser(data);

@@ -58,6 +58,10 @@ const educationSchema = new mongoose.Schema({
     enum: ['HIGH_SCHOOL', 'ASSOCIATE', 'BACHELOR', 'MASTER', 'DOCTORATE', 'CERTIFICATE'],
     // Note: Not required to maintain compatibility with existing data
   },
+  durationMonths: {
+    type: Number,
+    min: [1, 'Duration must be at least 1 month'],
+  },
   startDate: {
     type: Date,
     required: [true, 'Start date is required'],
@@ -68,6 +72,117 @@ const educationSchema = new mongoose.Schema({
   isCurrentlyStudying: {
     type: Boolean,
     default: false,
+  },
+  addedAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+const schoolSchema = new mongoose.Schema({
+  school: {
+    type: String,
+    required: [true, 'School name is required'],
+    trim: true,
+  },
+  addedAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+const uploadedCertificateSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    trim: true,
+    maxlength: [120, 'Title cannot exceed 120 characters'],
+  },
+  fileName: {
+    type: String,
+    required: [true, 'File name is required'],
+    trim: true,
+  },
+  filePath: {
+    type: String,
+    required: [true, 'File path is required'],
+    trim: true,
+  },
+  publicId: {
+    type: String,
+    required: [true, 'Cloudinary public id is required'],
+    trim: true,
+  },
+  mimeType: {
+    type: String,
+    trim: true,
+  },
+  fileSize: {
+    type: Number,
+    min: 0,
+  },
+  uploadedAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+const projectScreenshotSchema = new mongoose.Schema({
+  fileName: {
+    type: String,
+    required: [true, 'File name is required'],
+    trim: true,
+  },
+  filePath: {
+    type: String,
+    required: [true, 'File path is required'],
+    trim: true,
+  },
+  publicId: {
+    type: String,
+    required: [true, 'Cloudinary public id is required'],
+    trim: true,
+  },
+  mimeType: {
+    type: String,
+    trim: true,
+  },
+  fileSize: {
+    type: Number,
+    min: 0,
+  },
+  uploadedAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+const projectSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: [true, 'Project title is required'],
+    trim: true,
+    maxlength: [120, 'Project title cannot exceed 120 characters'],
+  },
+  description: {
+    type: String,
+    trim: true,
+    maxlength: [500, 'Project description cannot exceed 500 characters'],
+  },
+  technologies: [{
+    type: String,
+    trim: true,
+  }],
+  repositoryUrl: {
+    type: String,
+    trim: true,
+  },
+  liveUrl: {
+    type: String,
+    trim: true,
+  },
+  screenshots: {
+    type: [projectScreenshotSchema],
+    default: [],
   },
   addedAt: {
     type: Date,
@@ -104,6 +219,11 @@ const studentSchema = new mongoose.Schema({
       trim: true,
       match: [/^\+?[1-9]\d{1,14}$/, 'Please use a valid phone number format (E.164)']
     },
+    about: {
+      type: String,
+      trim: true,
+      maxlength: [200, 'About cannot exceed 200 characters']
+    },
     country: {
       type: String,
       trim: true
@@ -112,12 +232,22 @@ const studentSchema = new mongoose.Schema({
       type: String,
       trim: true,
     },
+    age: {
+      type: Number,
+      min: 0,
+      max: 100,
+    },
     dateOfBirth: {
       type: Date,
     },
     gender: {
       type: String,
       enum: ['Male', 'Female', 'Other', 'Prefer not to say'],
+    },
+    seniority: {
+      type: [String],
+      enum: ['Student', 'Graduate'],
+      default: ['Student'],
     },
     // CRITICAL MATCHING ENGINE FIELDS
     gpa: {
@@ -128,10 +258,10 @@ const studentSchema = new mongoose.Schema({
       type: String,
       trim: true,
     },
-    preferredLocation: {
+    preferredLocation: [{
       type: String,
       trim: true,
-    },
+    }],
     durationPreference: {
       type: String,
       enum: ['1-3 months', '3-6 months', '6-12 months', '12+ months'],
@@ -168,11 +298,20 @@ const studentSchema = new mongoose.Schema({
   // Education Details
   education: [educationSchema],
 
+  // Schools
+  schools: [schoolSchema],
+
   // Skills
   skills: [skillSchema],
 
   // Certifications
   certifications: [certificationSchema],
+
+  // Uploaded certificate files (separate from online certifications)
+  uploadedCertificates: [uploadedCertificateSchema],
+
+  // Projects
+  projects: [projectSchema],
 
   // Profile Completeness
   profileCompletion: {
@@ -272,7 +411,7 @@ studentSchema.methods.calculateProfileCompletion = function () {
     if (this.personalInfo?.phone) personalScore += 5;
     if (this.personalInfo?.gpa) personalScore += 15; // CRITICAL for matching
     if (this.personalInfo?.portfolioUrl) personalScore += 15; // CRITICAL for matching  
-    if (this.personalInfo?.preferredLocation) personalScore += 10; // CRITICAL for matching
+    if (this.personalInfo?.preferredLocation?.length > 0) personalScore += 10; // CRITICAL for matching
     if (this.personalInfo?.industriesOfInterest && this.personalInfo.industriesOfInterest.length > 0) personalScore += 10; // CRITICAL
     if (this.personalInfo?.durationPreference) personalScore += 5;
     if (this.personalInfo?.location) personalScore += 5;
@@ -299,6 +438,7 @@ studentSchema.methods.calculateProfileCompletion = function () {
     let bonusScore = 0;
     if (this.resume && this.resume.filePath) bonusScore += 10;
     if (this.certifications && this.certifications.length > 0) bonusScore += 10;
+    if (this.projects && this.projects.length > 0) bonusScore += 10;
 
     // Cap scores at 100
     this.profileCompletion = this.profileCompletion || {};
@@ -315,7 +455,7 @@ studentSchema.methods.calculateProfileCompletion = function () {
     if (this.status !== 'verified') {
       if (this.profileCompletion.overall >= 80 &&
         this.personalInfo?.gpa &&
-        this.personalInfo?.preferredLocation &&
+        this.personalInfo?.preferredLocation?.length > 0 &&
         this.personalInfo?.industriesOfInterest?.length > 0 &&
         this.education && this.education.some(edu => edu.degreeLevel) &&
         this.skills && this.skills.length >= 3) {

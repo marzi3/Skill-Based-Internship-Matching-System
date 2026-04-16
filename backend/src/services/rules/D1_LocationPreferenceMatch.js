@@ -32,11 +32,17 @@ const rule = {
             return false;
         }
 
-        // Case-insensitive direct comparison
-        const prefLoc = String(student.preferredLocation).trim().toLowerCase();
+        const preferredLocations = Array.isArray(student.preferredLocation)
+            ? student.preferredLocation
+            : [student.preferredLocation];
+
+        // Case-insensitive direct comparison against any selected work mode
+        const prefLocs = preferredLocations
+            .filter(Boolean)
+            .map(value => String(value).trim().toLowerCase());
         const intLoc = String(internship.location).trim().toLowerCase();
 
-        return prefLoc === intLoc;
+        return prefLocs.includes(intLoc);
     },
 
     /**

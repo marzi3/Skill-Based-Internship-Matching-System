@@ -46,7 +46,9 @@ export default function StudentLayout({ children }) {
                     </div>
                     <nav className="flex-1 px-4 space-y-2 mt-2">
                         {navLinks.map((link) => {
-                            const isActive = pathname === link.href;
+                            const isActive = link.href === '/student-profile'
+                                ? pathname === '/student-profile' || pathname.startsWith('/student-profile/')
+                                : pathname === link.href;
                             return (
                                 <Link 
                                     key={link.href}

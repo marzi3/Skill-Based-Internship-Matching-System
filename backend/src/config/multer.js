@@ -21,6 +21,10 @@ const storage = new CloudinaryStorage({
       folder = 'internmatch/profile-images';
     } else if (file.fieldname === 'resume') {
       folder = 'internmatch/resumes';
+    } else if (file.fieldname === 'certificateFile') {
+      folder = 'internmatch/certificate-files';
+    } else if (file.fieldname === 'projectImages') {
+      folder = 'internmatch/project-images';
     } else if (file.fieldname === 'companyLogo') {
       folder = 'internmatch/company-logos';
     }
@@ -28,7 +32,7 @@ const storage = new CloudinaryStorage({
     return {
       folder: folder,
       resource_type: 'auto', // Important for PDF support
-      public_id: file.fieldname + '-' + Date.now(),
+      public_id: `${file.fieldname}-${Date.now()}-${Math.round(Math.random() * 1e9)}`,
     };
   },
 });

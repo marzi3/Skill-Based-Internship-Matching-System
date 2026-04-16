@@ -4,6 +4,107 @@ const User = require('../models/User');
 const Internship = require('../models/Internship');
 const asyncHandler = require('express-async-handler');
 const ErrorResponse = require('../utils/errorResponse');
+const cloudinary = require('cloudinary').v2;
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const normalizePreferredLocation = (preferredLocation, fallback = []) => {
+  if (Array.isArray(preferredLocation)) {
+    return preferredLocation.filter(Boolean);
+  }
+
+  if (typeof preferredLocation === 'string' && preferredLocation.trim()) {
+    return [preferredLocation.trim()];
+  }
+
+  return Array.isArray(fallback) ? fallback : [];
+};
+
+const calculateAgeFromDate = (dateValue) => {
+  const dob = new Date(dateValue);
+  if (Number.isNaN(dob.getTime())) return null;
+
+  const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  const monthDiff = today.getMonth() - dob.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+    age -= 1;
+  }
+
+  return age;
+};
+
+const normalizeProjectTechnologies = (technologies) => {
+  if (Array.isArray(technologies)) {
+    return technologies.map((tech) => String(tech || '').trim()).filter(Boolean);
+  }
+
+  if (typeof technologies === 'string' && technologies.trim()) {
+    return technologies
+      .split(',')
+      .map((tech) => tech.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+};
+
+const normalizeProjectUrl = (value = '') => {
+  const trimmed = String(value).trim();
+  if (!trimmed) return '';
+  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+};
+
+const mapProjectScreenshotUpload = (file) => ({
+  fileName: file.originalname || file.filename,
+  filePath: String(file.path || '').replace(/\\/g, '/'),
+  publicId: file.filename,
+  mimeType: file.mimetype,
+  fileSize: file.size,
+  uploadedAt: new Date(),
+});
+
+const deleteCloudinaryImages = async (files = []) => {
+  const imageFiles = Array.isArray(files)
+    ? files.filter((file) => file?.publicId)
+    : [];
+
+  if (imageFiles.length === 0) return;
+
+  await Promise.allSettled(
+    imageFiles.map((file) => cloudinary.uploader.destroy(file.publicId, { resource_type: 'image' }))
+  );
+};
+
+const parseScreenshotIds = (value) => {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item || '').trim()).filter(Boolean);
+  }
+
+  if (typeof value !== 'string' || !value.trim()) {
+    return [];
+  }
+
+  const trimmed = value.trim();
+
+  try {
+    const parsed = JSON.parse(trimmed);
+    if (Array.isArray(parsed)) {
+      return parsed.map((item) => String(item || '').trim()).filter(Boolean);
+    }
+  } catch (error) {
+    // Fallback to comma-separated values.
+  }
+
+  return trimmed
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+};
 
 // @desc    Get student profile
 // @route   GET /api/student/profile
@@ -51,8 +152,10 @@ exports.savePersonalInfo = asyncHandler(async (req, res, next) => {
     fullName,
     email,
     phone,
+    about,
     designation,
     location, 
+    age,
     country,
     dateOfBirth, 
     gender,
@@ -64,7 +167,8 @@ exports.savePersonalInfo = asyncHandler(async (req, res, next) => {
     durationPreference,
     industriesOfInterest,
     previousInternshipsCount,
-    isPublic
+    isPublic,
+    seniority
   } = req.body;
 
   // Validation
@@ -77,6 +181,22 @@ exports.savePersonalInfo = asyncHandler(async (req, res, next) => {
     );
   }
 
+  let parsedDateOfBirth = null;
+  if (dateOfBirth) {
+    parsedDateOfBirth = new Date(dateOfBirth);
+    if (Number.isNaN(parsedDateOfBirth.getTime())) {
+      return next(new ErrorResponse('Invalid date of birth', 400));
+    }
+
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    if (parsedDateOfBirth > today) {
+      return next(new ErrorResponse('Date of birth cannot be in the future', 400));
+    }
+  }
+
+  const computedAge = parsedDateOfBirth ? calculateAgeFromDate(parsedDateOfBirth) : null;
+
   let student = await Student.findOne({ userId: req.user.id });
 
   if (!student) {
@@ -85,6 +205,8 @@ exports.savePersonalInfo = asyncHandler(async (req, res, next) => {
     });
   }
 
+  const hasGpa = Object.prototype.hasOwnProperty.call(req.body, 'gpa');
+
   // Update personal info with all new fields
   student.personalInfo = {
     ...(student.personalInfo || {}), // Preserve existing data
@@ -92,27 +214,51 @@ exports.savePersonalInfo = asyncHandler(async (req, res, next) => {
     designation: designation?.trim() || '',
     email: email.toLowerCase().trim(),
     phone: phone?.trim() || '',
+    about: typeof about === 'string' ? about.trim().slice(0, 200) : (student.personalInfo?.about || ''),
     country: country?.trim() || student.personalInfo?.country || '',
     location: location?.trim() || '',
-    dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : student.personalInfo?.dateOfBirth,
+    age: computedAge !== null
+      ? computedAge
+      : (age === '' || age === null || age === undefined ? student.personalInfo?.age : Number(age)),
+    dateOfBirth: parsedDateOfBirth || student.personalInfo?.dateOfBirth,
     gender: gender || student.personalInfo?.gender,
     // CRITICAL MATCHING ENGINE FIELDS
-    gpa: gpa?.trim() || student.personalInfo?.gpa || '',
+    gpa: hasGpa ? String(gpa ?? '').trim() : (student.personalInfo?.gpa || ''),
     portfolioUrl: portfolioUrl?.trim() || student.personalInfo?.portfolioUrl || '',
-    preferredLocation: preferredLocation || student.personalInfo?.preferredLocation || '',
+    preferredLocation: normalizePreferredLocation(preferredLocation, student.personalInfo?.preferredLocation),
     durationPreference: durationPreference || student.personalInfo?.durationPreference,
     industriesOfInterest: Array.isArray(industriesOfInterest) ? industriesOfInterest : (student.personalInfo?.industriesOfInterest || []),
     previousInternshipsCount: typeof previousInternshipsCount === 'number' ? previousInternshipsCount : (student.personalInfo?.previousInternshipsCount || 0),
     isPublic: typeof isPublic === 'boolean' ? isPublic : (student.personalInfo?.isPublic !== false),
+    seniority: Array.isArray(seniority)
+      ? seniority.filter(Boolean)
+      : (typeof seniority === 'string' && seniority.trim()
+        ? [seniority.trim()]
+        : (student.personalInfo?.seniority || ['Student'])),
   };
 
-  // Update portfolio if provided
-  if (portfolio) {
+  student.seniority = student.personalInfo.seniority;
+
+  // Update portfolio if provided. Explicit empty strings should clear existing values.
+  if (portfolio && typeof portfolio === 'object') {
+    const hasGithub = Object.prototype.hasOwnProperty.call(portfolio, 'github');
+    const hasLinkedin = Object.prototype.hasOwnProperty.call(portfolio, 'linkedin');
+    const hasWebsite = Object.prototype.hasOwnProperty.call(portfolio, 'website');
+    const hasPortfolio = Object.prototype.hasOwnProperty.call(portfolio, 'portfolio');
+
     student.portfolio = {
-      github: portfolio.github?.trim() || student.portfolio?.github || '',
-      linkedin: portfolio.linkedin?.trim() || student.portfolio?.linkedin || '',
-      website: portfolio.website?.trim() || student.portfolio?.website || '',
-      portfolio: portfolio.portfolio?.trim() || student.portfolio?.portfolio || student.personalInfo?.portfolioUrl || '',
+      github: hasGithub
+        ? String(portfolio.github || '').trim()
+        : (student.portfolio?.github || ''),
+      linkedin: hasLinkedin
+        ? String(portfolio.linkedin || '').trim()
+        : (student.portfolio?.linkedin || ''),
+      website: hasWebsite
+        ? String(portfolio.website || '').trim()
+        : (student.portfolio?.website || ''),
+      portfolio: hasPortfolio
+        ? String(portfolio.portfolio || '').trim()
+        : (student.portfolio?.portfolio || student.personalInfo?.portfolioUrl || ''),
     };
   }
 
@@ -139,9 +285,9 @@ exports.savePersonalInfo = asyncHandler(async (req, res, next) => {
 // @access  Private
 exports.saveEducation = asyncHandler(async (req, res, next) => {
   try {
-    const { institution, degree, field, degreeLevel, startDate, endDate, isCurrentlyStudying } = req.body;
+    const { institution, degree, field, degreeLevel, durationMonths, startDate, endDate, isCurrentlyStudying } = req.body;
     
-    logger.info('Education request data:', { institution, degree, field, degreeLevel, startDate, endDate });
+    logger.info('Education request data:', { institution, degree, field, degreeLevel, durationMonths, startDate, endDate });
 
     // Validation
     if (!institution || !degree || !field || !startDate) {
@@ -183,6 +329,18 @@ exports.saveEducation = asyncHandler(async (req, res, next) => {
     );
   }
 
+  if (durationMonths !== undefined && durationMonths !== null && durationMonths !== '') {
+    const parsedDuration = Number(durationMonths);
+    if (Number.isNaN(parsedDuration) || parsedDuration <= 0) {
+      return next(
+        new ErrorResponse(
+          'Invalid durationMonths. It must be a positive number of months',
+          400
+        )
+      );
+    }
+  }
+
   let student = await Student.findOne({ userId: req.user.id });
 
   if (!student) {
@@ -204,6 +362,10 @@ exports.saveEducation = asyncHandler(async (req, res, next) => {
     // Add degreeLevel if provided
     if (degreeLevel) {
       newEducation.degreeLevel = degreeLevel;
+    }
+
+    if (durationMonths !== undefined && durationMonths !== null && durationMonths !== '') {
+      newEducation.durationMonths = Number(durationMonths);
     }
 
     logger.info('Processed education:', newEducation);
@@ -232,6 +394,201 @@ exports.saveEducation = asyncHandler(async (req, res, next) => {
     logger.error('Education save error:', error);
     return next(new ErrorResponse(`Failed to save education: ${error.message}`, 500));
   }
+});
+
+// @desc    Update education entry
+// @route   PUT /api/student/profile/education/:educationId
+// @access  Private
+exports.updateEducation = asyncHandler(async (req, res, next) => {
+  try {
+    const { educationId } = req.params;
+    const { institution, degree, field, degreeLevel, durationMonths, startDate, endDate, isCurrentlyStudying } = req.body;
+
+    logger.info('Education update request data:', { educationId, institution, degree, field, degreeLevel, durationMonths, startDate, endDate });
+
+    if (!institution || !degree || !field || !startDate) {
+      return next(
+        new ErrorResponse(
+          'Institution, degree, field, and start date are required',
+          400
+        )
+      );
+    }
+
+    if (isNaN(new Date(startDate).getTime())) {
+      return next(new ErrorResponse('Invalid start date format', 400));
+    }
+
+    if (endDate && isNaN(new Date(endDate).getTime())) {
+      return next(new ErrorResponse('Invalid end date format', 400));
+    }
+
+    const validDegreeLevels = ['HIGH_SCHOOL', 'ASSOCIATE', 'BACHELOR', 'MASTER', 'DOCTORATE', 'CERTIFICATE'];
+    if (degreeLevel && !validDegreeLevels.includes(degreeLevel)) {
+      return next(
+        new ErrorResponse(
+          'Invalid degree level. Must be: HIGH_SCHOOL, ASSOCIATE, BACHELOR, MASTER, DOCTORATE, or CERTIFICATE',
+          400
+        )
+      );
+    }
+
+    if (durationMonths !== undefined && durationMonths !== null && durationMonths !== '') {
+      const parsedDuration = Number(durationMonths);
+      if (Number.isNaN(parsedDuration) || parsedDuration <= 0) {
+        return next(
+          new ErrorResponse(
+            'Invalid durationMonths. It must be a positive number of months',
+            400
+          )
+        );
+      }
+    }
+
+    const student = await Student.findOne({ userId: req.user.id });
+
+    if (!student) {
+      return next(new ErrorResponse('Student profile not found', 404));
+    }
+
+    const educationEntry = student.education.id(educationId);
+
+    if (!educationEntry) {
+      return next(new ErrorResponse('Education entry not found', 404));
+    }
+
+    educationEntry.institution = institution.trim();
+    educationEntry.degree = degree.trim();
+    educationEntry.field = field.trim();
+    educationEntry.startDate = new Date(startDate);
+    educationEntry.endDate = endDate && endDate.trim() ? new Date(endDate) : null;
+    educationEntry.isCurrentlyStudying = isCurrentlyStudying || false;
+
+    if (degreeLevel) {
+      educationEntry.degreeLevel = degreeLevel;
+    } else {
+      educationEntry.degreeLevel = undefined;
+    }
+
+    if (durationMonths !== undefined && durationMonths !== null && durationMonths !== '') {
+      educationEntry.durationMonths = Number(durationMonths);
+    } else {
+      educationEntry.durationMonths = undefined;
+    }
+
+    student.calculateProfileCompletion();
+    await student.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Education details updated successfully',
+      data: student,
+    });
+  } catch (error) {
+    logger.error('Education update error:', error);
+    return next(new ErrorResponse(`Failed to update education: ${error.message}`, 500));
+  }
+});
+
+// @desc    Save school
+// @route   POST /api/student/profile/school
+// @access  Private
+exports.saveSchool = asyncHandler(async (req, res, next) => {
+  try {
+    const { school } = req.body;
+
+    logger.info('School request data:', { school });
+
+    // Validation
+    if (!school || !school.trim()) {
+      return next(
+        new ErrorResponse('School name is required', 400)
+      );
+    }
+
+    let student = await Student.findOne({ userId: req.user.id });
+
+    if (!student) {
+      student = await Student.create({
+        userId: req.user.id,
+      });
+    }
+
+    // Create school entry
+    const newSchool = {
+      school: school.trim(),
+    };
+
+    logger.info('Processed school:', newSchool);
+
+    // Check if school already exists
+    const existingIndex = student.schools.findIndex(
+      (s) => s.school.toLowerCase() === school.trim().toLowerCase()
+    );
+
+    if (existingIndex === -1) {
+      student.schools.push(newSchool);
+    } else {
+      logger.info('School already exists, skipping duplicate');
+    }
+
+    // Calculate profile completion
+    student.calculateProfileCompletion();
+    await student.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'School saved successfully',
+      data: student,
+    });
+  } catch (error) {
+    logger.error('School save error:', error);
+    return next(new ErrorResponse(`Failed to save school: ${error.message}`, 500));
+  }
+});
+
+// @desc    Update school
+// @route   PUT /api/student/profile/school/:schoolId
+// @access  Private
+exports.updateSchool = asyncHandler(async (req, res, next) => {
+  const { schoolId } = req.params;
+  const { school } = req.body;
+
+  if (!school || !school.trim()) {
+    return next(new ErrorResponse('School name is required', 400));
+  }
+
+  const student = await Student.findOne({ userId: req.user.id });
+
+  if (!student) {
+    return next(new ErrorResponse('Student profile not found', 404));
+  }
+
+  const schoolEntry = student.schools.id(schoolId);
+
+  if (!schoolEntry) {
+    return next(new ErrorResponse('School entry not found', 404));
+  }
+
+  const normalizedSchool = school.trim();
+  const duplicateSchool = student.schools.find(
+    (s) => s._id.toString() !== schoolId && s.school.toLowerCase() === normalizedSchool.toLowerCase()
+  );
+
+  if (duplicateSchool) {
+    return next(new ErrorResponse('School already exists', 400));
+  }
+
+  schoolEntry.school = normalizedSchool;
+
+  student.calculateProfileCompletion();
+  await student.save();
+
+  res.status(200).json({
+    success: true,
+    message: 'School updated successfully',
+    data: student,
+  });
 });
 
 // @desc    Add or update skill
@@ -307,6 +664,165 @@ exports.removeSkill = asyncHandler(async (req, res, next) => {
   });
 });
 
+// @desc    Add project
+// @route   POST /api/student/profile/project
+// @access  Private
+exports.saveProject = asyncHandler(async (req, res, next) => {
+  const { title, description, technologies, repositoryUrl, liveUrl } = req.body;
+
+  if (!title || !title.trim()) {
+    return next(new ErrorResponse('Project title is required', 400));
+  }
+
+  let student = await Student.findOne({ userId: req.user.id });
+
+  if (!student) {
+    student = await Student.create({
+      userId: req.user.id,
+    });
+  }
+
+  const normalizedTitle = title.trim();
+  const duplicateProject = student.projects.find(
+    (project) => project.title.toLowerCase() === normalizedTitle.toLowerCase()
+  );
+
+  if (duplicateProject) {
+    return next(new ErrorResponse('Project with this title already exists', 400));
+  }
+
+  const uploadedScreenshots = Array.isArray(req.files)
+    ? req.files.map(mapProjectScreenshotUpload)
+    : [];
+
+  if (uploadedScreenshots.length > 10) {
+    return next(new ErrorResponse('You can upload up to 10 project screenshots', 400));
+  }
+
+  student.projects.push({
+    title: normalizedTitle,
+    description: description ? String(description).trim() : '',
+    technologies: normalizeProjectTechnologies(technologies),
+    repositoryUrl: normalizeProjectUrl(repositoryUrl),
+    liveUrl: normalizeProjectUrl(liveUrl),
+    screenshots: uploadedScreenshots,
+  });
+
+  student.calculateProfileCompletion();
+  await student.save();
+
+  res.status(200).json({
+    success: true,
+    message: 'Project added successfully',
+    data: student,
+  });
+});
+
+// @desc    Update project
+// @route   PUT /api/student/profile/project/:projectId
+// @access  Private
+exports.updateProject = asyncHandler(async (req, res, next) => {
+  const { projectId } = req.params;
+  const { title, description, technologies, repositoryUrl, liveUrl, removeScreenshotIds } = req.body;
+
+  if (!title || !title.trim()) {
+    return next(new ErrorResponse('Project title is required', 400));
+  }
+
+  const student = await Student.findOne({ userId: req.user.id });
+
+  if (!student) {
+    return next(new ErrorResponse('Student profile not found', 404));
+  }
+
+  const projectEntry = student.projects.id(projectId);
+
+  if (!projectEntry) {
+    return next(new ErrorResponse('Project not found', 404));
+  }
+
+  const normalizedTitle = title.trim();
+  const duplicateProject = student.projects.find(
+    (project) =>
+      project._id.toString() !== projectId &&
+      project.title.toLowerCase() === normalizedTitle.toLowerCase()
+  );
+
+  if (duplicateProject) {
+    return next(new ErrorResponse('Project with this title already exists', 400));
+  }
+
+  const existingScreenshots = Array.isArray(projectEntry.screenshots)
+    ? projectEntry.screenshots
+    : [];
+  const screenshotIdsToRemove = parseScreenshotIds(removeScreenshotIds);
+  const screenshotsToDelete = existingScreenshots.filter((shot) =>
+    screenshotIdsToRemove.includes(shot._id.toString())
+  );
+  const screenshotsToKeep = existingScreenshots.filter(
+    (shot) => !screenshotIdsToRemove.includes(shot._id.toString())
+  );
+  const uploadedScreenshots = Array.isArray(req.files)
+    ? req.files.map(mapProjectScreenshotUpload)
+    : [];
+
+  if (screenshotsToKeep.length + uploadedScreenshots.length > 10) {
+    return next(new ErrorResponse('You can upload up to 10 project screenshots per project', 400));
+  }
+
+  await deleteCloudinaryImages(screenshotsToDelete);
+
+  projectEntry.title = normalizedTitle;
+  projectEntry.description = description ? String(description).trim() : '';
+  projectEntry.technologies = normalizeProjectTechnologies(technologies);
+  projectEntry.repositoryUrl = normalizeProjectUrl(repositoryUrl);
+  projectEntry.liveUrl = normalizeProjectUrl(liveUrl);
+  projectEntry.screenshots = [...screenshotsToKeep, ...uploadedScreenshots];
+
+  student.calculateProfileCompletion();
+  await student.save();
+
+  res.status(200).json({
+    success: true,
+    message: 'Project updated successfully',
+    data: student,
+  });
+});
+
+// @desc    Remove project
+// @route   DELETE /api/student/profile/project/:projectId
+// @access  Private
+exports.removeProject = asyncHandler(async (req, res, next) => {
+  const { projectId } = req.params;
+
+  const student = await Student.findOne({ userId: req.user.id });
+
+  if (!student) {
+    return next(new ErrorResponse('Student profile not found', 404));
+  }
+
+  const projectToRemove = student.projects.id(projectId);
+
+  if (!projectToRemove) {
+    return next(new ErrorResponse('Project not found', 404));
+  }
+
+  await deleteCloudinaryImages(projectToRemove.screenshots || []);
+
+  student.projects = student.projects.filter(
+    (project) => project._id.toString() !== projectId
+  );
+
+  student.calculateProfileCompletion();
+  await student.save();
+
+  res.status(200).json({
+    success: true,
+    message: 'Project removed successfully',
+    data: student,
+  });
+});
+
 // @desc    Get all skills
 // @route   GET /api/student/profile/skills
 // @access  Private
@@ -368,6 +884,33 @@ exports.removeEducation = asyncHandler(async (req, res, next) => {
   res.status(200).json({
     success: true,
     message: 'Education entry removed successfully',
+    data: student,
+  });
+});
+
+// @desc    Remove school
+// @route   DELETE /api/student/profile/school/:schoolId
+// @access  Private
+exports.removeSchool = asyncHandler(async (req, res, next) => {
+  const { schoolId } = req.params;
+
+  const student = await Student.findOne({ userId: req.user.id });
+
+  if (!student) {
+    return next(new ErrorResponse('Student profile not found', 404));
+  }
+
+  student.schools = student.schools.filter(
+    (school) => school._id.toString() !== schoolId
+  );
+
+  // Calculate profile completion
+  student.calculateProfileCompletion();
+  await student.save();
+
+  res.status(200).json({
+    success: true,
+    message: 'School entry removed successfully',
     data: student,
   });
 });
@@ -530,6 +1073,63 @@ exports.addCertification = asyncHandler(async (req, res, next) => {
   });
 });
 
+// @desc    Update certification
+// @route   PUT /api/student/profile/certification/:certificationId
+// @access  Private
+exports.updateCertification = asyncHandler(async (req, res, next) => {
+  const { certificationId } = req.params;
+  const { name, credentialUrl, issuedDate } = req.body;
+
+  if (!name || !issuedDate) {
+    return next(
+      new ErrorResponse(
+        'Certification name and issued date are required',
+        400
+      )
+    );
+  }
+
+  const student = await Student.findOne({ userId: req.user.id });
+
+  if (!student) {
+    return next(new ErrorResponse('Student profile not found', 404));
+  }
+
+  const certToUpdate = student.certifications.id(certificationId);
+
+  if (!certToUpdate) {
+    return next(new ErrorResponse('Certification not found', 404));
+  }
+
+  const duplicateCert = student.certifications.find(
+    (cert) =>
+      cert._id.toString() !== certificationId &&
+      cert.name.toLowerCase() === name.toLowerCase()
+  );
+
+  if (duplicateCert) {
+    return next(
+      new ErrorResponse(
+        'Certification with this name already exists',
+        400
+      )
+    );
+  }
+
+  certToUpdate.name = name.trim();
+  certToUpdate.credentialUrl = credentialUrl?.trim() || '';
+  certToUpdate.issuedDate = new Date(issuedDate);
+
+  student.calculateProfileCompletion();
+  await student.save();
+
+  res.status(200).json({
+    success: true,
+    message: 'Certification updated successfully',
+    data: student,
+  });
+});
+
 // @desc    Remove certification
 // @route   DELETE /api/student/profile/certification/:certificationId
 // @access  Private
@@ -560,6 +1160,87 @@ exports.removeCertification = asyncHandler(async (req, res, next) => {
   res.status(200).json({
     success: true,
     message: 'Certification removed successfully',
+    data: student,
+  });
+});
+
+// @desc    Upload certificate file (separate from online certifications)
+// @route   POST /api/student/profile/certificate-file
+// @access  Private
+exports.uploadCertificateFile = asyncHandler(async (req, res, next) => {
+  if (!req.file) {
+    return next(new ErrorResponse('Please upload a certificate file', 400));
+  }
+
+  const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  if (!allowedTypes.includes(req.file.mimetype)) {
+    return next(new ErrorResponse('Please upload a valid certificate file (PDF, JPG, PNG, GIF, WEBP)', 400));
+  }
+
+  let student = await Student.findOne({ userId: req.user.id });
+
+  if (!student) {
+    student = await Student.create({ userId: req.user.id });
+  }
+
+  const filePath = req.file.path.replace(/\\/g, '/');
+  const title = req.body?.title ? String(req.body.title).trim() : '';
+
+  student.uploadedCertificates.push({
+    title,
+    fileName: req.file.originalname || req.file.filename,
+    filePath,
+    publicId: req.file.filename,
+    mimeType: req.file.mimetype,
+    fileSize: req.file.size,
+    uploadedAt: new Date(),
+  });
+
+  await student.save();
+
+  res.status(200).json({
+    success: true,
+    message: 'Certificate file uploaded successfully',
+    data: student,
+  });
+});
+
+// @desc    Remove uploaded certificate file
+// @route   DELETE /api/student/profile/certificate-file/:fileId
+// @access  Private
+exports.removeUploadedCertificate = asyncHandler(async (req, res, next) => {
+  const { fileId } = req.params;
+
+  const student = await Student.findOne({ userId: req.user.id });
+  if (!student) {
+    return next(new ErrorResponse('Student profile not found', 404));
+  }
+
+  const fileIndex = student.uploadedCertificates.findIndex(
+    (file) => file._id.toString() === fileId
+  );
+
+  if (fileIndex === -1) {
+    return next(new ErrorResponse('Uploaded certificate file not found', 404));
+  }
+
+  const fileToRemove = student.uploadedCertificates[fileIndex];
+
+  if (fileToRemove?.publicId) {
+    try {
+      const resourceType = fileToRemove?.mimeType?.startsWith('image/') ? 'image' : 'raw';
+      await cloudinary.uploader.destroy(fileToRemove.publicId, { resource_type: resourceType });
+    } catch (cloudinaryError) {
+      logger.error(`Failed to delete certificate file from Cloudinary: ${fileToRemove.publicId}`, cloudinaryError);
+    }
+  }
+
+  student.uploadedCertificates.splice(fileIndex, 1);
+  await student.save();
+
+  res.status(200).json({
+    success: true,
+    message: 'Uploaded certificate file removed successfully',
     data: student,
   });
 });
@@ -608,6 +1289,31 @@ exports.uploadResume = asyncHandler(async (req, res, next) => {
   });
 });
 
+// @desc    Delete resume
+// @route   DELETE /api/student/profile/resume
+// @access  Private
+exports.deleteResume = asyncHandler(async (req, res, next) => {
+  const student = await Student.findOne({ userId: req.user.id });
+
+  if (!student) {
+    return next(new ErrorResponse('Student profile not found', 404));
+  }
+
+  student.resume = {};
+
+  // Recalculate profile completion after removing resume
+  student.calculateProfileCompletion();
+  await student.save();
+
+  res.status(200).json({
+    success: true,
+    message: 'Resume deleted successfully',
+    data: {
+      student
+    }
+  });
+});
+
 // @desc    Reset/Delete all profile data
 // @route   DELETE /api/student/profile/reset
 // @access  Private
@@ -621,11 +1327,17 @@ exports.resetProfile = asyncHandler(async (req, res, next) => {
     });
   }
 
+  await deleteCloudinaryImages(
+    student.projects?.flatMap((project) => project.screenshots || []) || []
+  );
+
   // Clear all profile data
   student.personalInfo = {};
   student.education = [];
   student.skills = [];
+  student.projects = [];
   student.certifications = [];
+  student.uploadedCertificates = [];
   student.profileImage = {};
   student.coverImage = {};
   student.resume = {};

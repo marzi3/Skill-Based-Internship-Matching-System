@@ -39,6 +39,7 @@ const validateStudentProfile = [
     check('personalInfo.phone', 'Valid phone number is required').optional().isMobilePhone(),
     check('personalInfo.gpa', 'GPA must be roughly between 0 and 4.0').optional().isFloat({ min: 0, max: 4.3 }),
     check('personalInfo.location', 'Location is required').optional().trim().escape(),
+    check('personalInfo.age', 'Age must be a whole number between 0 and 100').optional({ nullable: true, checkFalsy: true }).isInt({ min: 0, max: 100 }),
     check('education.*.institution', 'Institution is required').optional().not().isEmpty().trim().escape(),
     validateRequest
 ];
