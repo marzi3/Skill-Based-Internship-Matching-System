@@ -406,7 +406,7 @@ function FindInternshipsContent() {
                                                     href={`/internships/${job._id}?from=search`}
                                                     className="flex items-center gap-3 bg-[#6366F1] text-white px-8 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] shadow-lg shadow-indigo-200/50 hover:bg-[#4F46E5] hover:shadow-xl hover:shadow-indigo-300/60 transition-all active:scale-95"
                                                 >
-                                                    Secure Protocol <ChevronRight className="w-3.5 h-3.5" />
+                                                    Apply <ChevronRight className="w-3.5 h-3.5" />
                                                 </Link>
                                             </div>
                                         </div>

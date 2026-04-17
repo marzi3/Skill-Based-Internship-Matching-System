@@ -5,15 +5,51 @@ const NotificationSettings = require('../models/NotificationSettings');
 const User = require('../models/User');
 const { emitToUser } = require('../config/socket');
 
-// Configure Nodemailer transporter (using fallbacks for local dev if env missing)
-const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.mailtrap.io',
-    port: process.env.SMTP_PORT || 2525,
-    auth: {
-        user: process.env.SMTP_USER || 'testuser',
-        pass: process.env.SMTP_PASS || 'testpass'
+/**
+ * Lazily-initialised transporter.
+ * Uses real SMTP creds when available; otherwise spins up a free Ethereal
+ * test account so emails work out-of-the-box in development.
+ */
+let _transporter = null;
+
+const getTransporter = async () => {
+    if (_transporter) return _transporter;
+
+    const hasRealCreds =
+        process.env.SMTP_USER &&
+        process.env.SMTP_PASS &&
+        process.env.SMTP_USER !== 'your_email@gmail.com' &&
+        process.env.SMTP_PASS !== 'your_app_password';
+
+    if (hasRealCreds) {
+        _transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST || 'smtp.gmail.com',
+            port: parseInt(process.env.SMTP_PORT, 10) || 587,
+            secure: false,
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS
+            }
+        });
+        logger.info('[Email Service] Using configured SMTP credentials.');
+    } else {
+        // Generate a disposable Ethereal test account
+        const testAccount = await nodemailer.createTestAccount();
+        _transporter = nodemailer.createTransport({
+            host: testAccount.smtp.host,
+            port: testAccount.smtp.port,
+            secure: testAccount.smtp.secure,
+            auth: {
+                user: testAccount.user,
+                pass: testAccount.pass
+            }
+        });
+        logger.info('[Email Service] No real SMTP credentials found — using Ethereal test account.');
+        logger.info(`[Email Service] Ethereal user: ${testAccount.user}`);
     }
-});
+
+    return _transporter;
+};
 
 /**
  * Generates an HTML template for email notifications
@@ -65,15 +101,23 @@ const generateEmailTemplate = (type, message, link) => {
  * Helper to send email with automatic retries on failure
  */
 const sendEmailWithRetry = async (to, subject, html, retries = 3) => {
+    const transporter = await getTransporter();
     for (let i = 0; i < retries; i++) {
         try {
-            await transporter.sendMail({
+            const info = await transporter.sendMail({
                 from: process.env.SMTP_FROM || '"InternMatch" <noreply@internmatch.com>',
                 to,
                 subject,
                 html
             });
             logger.info(`[Email Service] Sent successful email to ${to}`);
+
+            // In dev with Ethereal, log a clickable preview URL
+            const previewUrl = nodemailer.getTestMessageUrl(info);
+            if (previewUrl) {
+                logger.info(`[Email Service] ✉ Preview URL: ${previewUrl}`);
+            }
+
             return true;
         } catch (error) {
             logger.error(`[Email Service] Attempt ${i + 1} to send email failed:`, error.message);

@@ -401,16 +401,14 @@ export default function InternshipDetailPage({ params }) {
                                         {applying ? <Loader2 className="animate-spin" size={16} /> : <>Re-initialize Protocol <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" /></>}
                                     </button>
                                 </div>
-                            ) : (studentProfile?.status !== 'verified' || !user?.isVerified || user?.verificationStatus !== 'approved') ? (
+                            ) : (user?.isVerified === false) ? (
                                 <div className="text-center space-y-4">
                                     <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4">
                                         <AlertTriangle className="text-amber-500" size={28} />
                                     </div>
                                     <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest">Verification Required</h4>
                                     <p className="text-xs font-bold text-slate-500 leading-relaxed">
-                                        {!user?.isVerified ? "Please verify your email address to continue." : 
-                                         user?.verificationStatus !== 'approved' ? "Your ID must be verified by an administrator before you can apply." : 
-                                         "Your profile synchronization is awaiting administrative approval."}
+                                        Please verify your email address to continue.
                                     </p>
                                     <button disabled className="w-full mt-4 bg-slate-100 text-slate-500 font-black uppercase tracking-widest text-[10px] py-5 rounded-2xl cursor-not-allowed">
                                         Awaiting Verification

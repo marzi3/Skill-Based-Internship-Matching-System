@@ -163,35 +163,35 @@ export default function StudentDashboard() {
                     )}
 
                     {/* Stats Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <Card className="bg-gradient-to-br from-indigo-500 to-indigo-600 text-white p-6 relative overflow-hidden group">
-                            <div className="relative z-10 space-y-4">
-                                <div className="p-3 bg-white/20 rounded-xl w-fit"><Briefcase size={24} /></div>
+                    <div className="grid grid-cols-3 gap-3 md:gap-6">
+                        <Card className="bg-gradient-to-br from-indigo-500 to-indigo-600 text-white p-4 md:p-6 relative overflow-hidden group">
+                            <div className="relative z-10 space-y-2 md:space-y-4">
+                                <div className="p-2 md:p-3 bg-white/20 rounded-xl w-fit"><Briefcase className="w-5 h-5 md:w-6 md:h-6" /></div>
                                 <div>
-                                    <h3 className="text-indigo-100 font-bold uppercase text-[10px] tracking-widest">Active Applications</h3>
-                                    <p className="text-4xl font-black">{stats.applicationsCount}</p>
+                                    <h3 className="text-indigo-100 font-bold uppercase text-[9px] md:text-[10px] tracking-wider md:tracking-widest line-clamp-1">Active Apps</h3>
+                                    <p className="text-2xl md:text-4xl font-black">{stats.applicationsCount}</p>
                                 </div>
                             </div>
-                            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
-                                <Briefcase size={120} />
+                            <div className="absolute top-0 right-0 p-4 md:p-8 opacity-10 group-hover:scale-110 transition-transform">
+                                <Briefcase className="w-20 h-20 md:w-[120px] md:h-[120px]" />
                             </div>
                         </Card>
 
-                        <Card className="p-4 border border-gray-100 space-y-4">
-                            <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl w-fit"><Zap size={24} /></div>
+                        <Card className="p-4 md:p-6 border border-gray-100 space-y-2 md:space-y-4">
+                            <div className="p-2 md:p-3 bg-emerald-50 text-emerald-600 rounded-xl w-fit"><Zap className="w-5 h-5 md:w-6 md:h-6" /></div>
                             <div>
-                                <h3 className="text-gray-500 font-bold uppercase text-[10px] tracking-widest">A.I. Skill Matches</h3>
-                                <p className="text-4xl font-black text-gray-900 items-baseline flex gap-2">
-                                    {stats.skillMatches} <span className="text-sm text-emerald-500 font-bold mt-2 flex items-center"><TrendingUp size={14} /> +0 pending</span>
+                                <h3 className="text-gray-500 font-bold uppercase text-[9px] md:text-[10px] tracking-wider md:tracking-widest line-clamp-1">A.I. Matches</h3>
+                                <p className="text-2xl md:text-4xl font-black text-gray-900 items-baseline flex flex-wrap gap-1 md:gap-2">
+                                    {stats.skillMatches} <span className="text-[10px] md:text-sm text-emerald-500 font-bold flex items-center md:mt-2"><TrendingUp size={12} className="md:w-3.5 md:h-3.5 mr-0.5" /> +0</span>
                                 </p>
                             </div>
                         </Card>
 
-                        <Card className="p-4 border border-gray-100 space-y-4">
-                            <div className="p-3 bg-amber-50 text-amber-600 rounded-xl w-fit"><Star size={24} /></div>
+                        <Card className="p-4 md:p-6 border border-gray-100 space-y-2 md:space-y-4">
+                            <div className="p-2 md:p-3 bg-amber-50 text-amber-600 rounded-xl w-fit"><Star className="w-5 h-5 md:w-6 md:h-6" /></div>
                             <div>
-                                <h3 className="text-gray-500 font-bold uppercase text-[10px] tracking-widest">Verification Points</h3>
-                                <p className="text-4xl font-black text-gray-900">{stats.verificationPoints}</p>
+                                <h3 className="text-gray-500 font-bold uppercase text-[9px] md:text-[10px] tracking-wider md:tracking-widest line-clamp-1">Verifications</h3>
+                                <p className="text-2xl md:text-4xl font-black text-gray-900">{stats.verificationPoints}</p>
                             </div>
                         </Card>
                     </div>
