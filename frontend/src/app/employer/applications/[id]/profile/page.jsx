@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import axios from 'axios';
-import { ArrowLeft, Loader2, Mail, Phone, MapPin, Calendar, Briefcase } from 'lucide-react';
+import { ArrowLeft, Loader2, Mail, Phone, MapPin, Calendar, Briefcase, ExternalLink } from 'lucide-react';
 
 import Card from '@/components/common/Card';
 import Badge from '@/components/common/Badge';
@@ -61,6 +61,11 @@ export default function EmployerApplicantProfilePage() {
     const user = student.userId || {};
     const personal = student.personalInfo || {};
     const portfolio = student.portfolio || {};
+    const links = {
+        github: personal.github || portfolio.github || '',
+        linkedin: personal.linkedin || portfolio.linkedin || '',
+        portfolio: personal.website || personal.portfolioUrl || portfolio.website || portfolio.portfolio || '',
+    };
     const application = profileData.application || {};
 
     return (
@@ -150,10 +155,10 @@ export default function EmployerApplicantProfilePage() {
 
                     <h3 className="text-sm font-black uppercase tracking-widest text-gray-500 mt-8 mb-3">Links</h3>
                     <div className="space-y-2 text-sm">
-                        {portfolio.github && <a href={portfolio.github} target="_blank" rel="noreferrer" className="text-primary-600 hover:text-primary-800 font-semibold block">GitHub</a>}
-                        {portfolio.linkedin && <a href={portfolio.linkedin} target="_blank" rel="noreferrer" className="text-primary-600 hover:text-primary-800 font-semibold block">LinkedIn</a>}
-                        {portfolio.website && <a href={portfolio.website} target="_blank" rel="noreferrer" className="text-primary-600 hover:text-primary-800 font-semibold block">Website</a>}
-                        {!portfolio.github && !portfolio.linkedin && !portfolio.website && (
+                        {links.github && <a href={links.github} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-800 font-semibold block">GitHub <ExternalLink size={14} /></a>}
+                        {links.linkedin && <a href={links.linkedin} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-800 font-semibold block">LinkedIn <ExternalLink size={14} /></a>}
+                        {links.portfolio && <a href={links.portfolio} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-800 font-semibold block">Portfolio <ExternalLink size={14} /></a>}
+                        {!links.github && !links.linkedin && !links.portfolio && (
                             <p className="text-sm text-gray-500">No portfolio links available.</p>
                         )}
                     </div>

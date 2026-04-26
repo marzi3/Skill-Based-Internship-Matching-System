@@ -106,7 +106,7 @@ const Input = ({
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <Icon
               size={20}
-              className={isFocused ? 'text-blue-600' : 'text-gray-400'}
+              className={isFocused ? 'text-blue-600' : 'text-gray-500'}
             />
           </div>
         )}
@@ -131,7 +131,7 @@ const Input = ({
               <button
                 type="button"
                 onClick={handleClear}
-                className="text-gray-400 hover:text-gray-600 transition duration-200"
+                className="text-gray-500 hover:text-gray-600 transition duration-200"
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                   <path
@@ -144,7 +144,7 @@ const Input = ({
             ) : Icon ? (
               <Icon
                 size={20}
-                className={isFocused ? 'text-blue-600' : 'text-gray-400'}
+                className={isFocused ? 'text-blue-600' : 'text-gray-500'}
               />
             ) : null}
           </div>
@@ -299,7 +299,7 @@ export const Select = ({
         <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
           <svg
             className={`w-5 h-5 ${
-              isFocused ? 'text-blue-600' : 'text-gray-400'
+              isFocused ? 'text-blue-600' : 'text-gray-500'
             }`}
             fill="currentColor"
             viewBox="0 0 20 20"

@@ -17,6 +17,8 @@ const Avatar = ({
     md: 'w-10 h-10 text-sm',
     lg: 'w-12 h-12 text-base',
     xl: 'w-16 h-16 text-lg',
+    '2xl': 'w-24 h-24 text-xl',
+    full: 'w-full h-full text-2xl',
   };
 
   const colorStyles = {
@@ -37,23 +39,51 @@ const Avatar = ({
 
   const displayInitials = initials || (name ? name.charAt(0).toUpperCase() : 'U');
 
+  const getImageUrl = (source) => {
+    if (!source) return null;
+    if (source.startsWith('http') || source.startsWith('data:')) return source;
+    
+    // For relative paths, prepend the base API URL (origin)
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    let baseUrl = apiUrl;
+    try {
+      const url = new URL(apiUrl);
+      baseUrl = url.origin;
+    } catch (e) {
+      // Fallback: remove /api/v1 if present
+      baseUrl = apiUrl.replace('/api/v1', '');
+    }
+    
+    // Ensure no double slashes
+    const cleanSource = source.startsWith('/') ? source.substring(1) : source;
+    return `${baseUrl}/${cleanSource}`;
+  };
+
+  const imageSrc = getImageUrl(src);
+  const wrapperClassName = className
+    .replace(/\b(rounded[^\s]*|border[^\s]*|ring[^\s]*|shadow[^\s]*)\b/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
   return (
-    <div className={`relative inline-block ${className}`.trim()}>
-      {src ? (
+    <div className={`relative inline-block ${wrapperClassName}`.trim()}>
+      {imageSrc ? (
         <img
-          src={src}
+          src={imageSrc}
           alt={name}
           className={`
             ${sizeStyles[size]}
-            rounded-full object-cover border-2 border-gray-200
+            object-cover border-2 border-gray-200
+            ${className} rounded-full
           `.trim()}
         />
       ) : (
         <div
           className={`
             ${sizeStyles[size]}
-            rounded-full flex items-center justify-center font-bold
+            flex items-center justify-center font-bold
             text-white ${colorStyles[color]}
+            ${className} rounded-full
           `.trim()}
         >
           {displayInitials}

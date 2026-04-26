@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '@/services/apiClient';
 import {
     Search,
     MapPin,
@@ -34,7 +34,7 @@ const StudentInternshipsPage = () => {
             try {
                 setLoading(true);
                 // Protocol: Fetching personalized matches
-                const response = await axios.post('/api/matching/internships', {
+                const response = await axios.post('matching/internships', {
                     studentId: user._id
                 });
                 if (response.data.success) {
@@ -74,7 +74,7 @@ const StudentInternshipsPage = () => {
                             <h1 className="text-6xl font-black text-slate-900 tracking-tighter leading-none">
                                 Find Your <span className="text-[#6366F1] italic font-medium tracking-normal">Mission.</span>
                             </h1>
-                            <p className="text-slate-400 font-bold max-w-lg">
+                            <p className="text-slate-500 font-bold max-w-lg">
                                 Connect with verified industrial partners and deploy your talent into real-world software ecosystems.
                             </p>
                         </div>
@@ -96,14 +96,14 @@ const StudentInternshipsPage = () => {
                 <div className="mb-10 flex items-center justify-between px-2">
                     <div className="flex items-center gap-4">
                         <div className="h-px w-8 bg-slate-200" />
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300">
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">
                             {filteredMatches.length} Matches Found
                         </p>
                     </div>
                     {searchQuery && (
                         <button
                             onClick={() => setSearchQuery('')}
-                            className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-rose-500 transition-colors"
+                            className="text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-rose-500 transition-colors"
                         >
                             Clear Filters
                         </button>
@@ -135,7 +135,16 @@ const StudentInternshipsPage = () => {
                             <Filter className="text-slate-200" size={40} />
                         </div>
                         <h3 className="text-3xl font-black text-slate-900 tracking-tight">Zero Matches Detected</h3>
-                        <p className="text-slate-400 font-bold mt-3 max-w-sm mx-auto">Your profile does not currently intersect with any active hiring protocols matching your parameters.</p>
+                        <p className="text-slate-500 font-bold mt-3 max-w-sm mx-auto">Your profile does not currently intersect with any active hiring protocols matching your parameters.</p>
+                        
+                        <div className="mt-12 flex justify-center">
+                            <Link
+                                href="/find-internships"
+                                className="flex items-center gap-3 bg-indigo-600 text-white px-10 py-5 rounded-[2rem] font-black uppercase tracking-[0.2em] text-xs shadow-2xl shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all duration-300"
+                            >
+                                Browse All Internships <ArrowRight size={18} />
+                            </Link>
+                        </div>
                     </motion.div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
@@ -168,7 +177,7 @@ const StudentInternshipsPage = () => {
                                         <div className="w-16 h-16 bg-slate-50 rounded-[1.5rem] flex items-center justify-center border border-slate-100 group-hover:bg-[#6366F1]/5 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-inner">
                                             <Building size={28} className="text-[#6366F1]" />
                                         </div>
-                                        <p className="text-slate-400 font-black text-[9px] uppercase tracking-[0.3em] mt-6 ml-1">
+                                        <p className="text-slate-500 font-black text-[9px] uppercase tracking-[0.3em] mt-6 ml-1">
                                             {internship.company || 'Industrial Partner'}
                                         </p>
                                     </div>
@@ -191,7 +200,7 @@ const StudentInternshipsPage = () => {
 
                                         {/* Skill Sequence */}
                                         <div>
-                                            <p className="text-[9px] font-black text-slate-300 uppercase tracking-[0.3em] mb-4">Required Stack</p>
+                                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4">Required Stack</p>
                                             <div className="flex flex-wrap gap-2.5">
                                                 {internship.requiredSkills?.slice(0, 3).map(skill => {
                                                     const skillName = typeof skill === 'string' ? skill : skill.name;
@@ -202,7 +211,7 @@ const StudentInternshipsPage = () => {
                                                     );
                                                 })}
                                                 {internship.requiredSkills?.length > 3 && (
-                                                    <span className="px-3 py-2 bg-slate-50 text-slate-400 rounded-xl text-[9px] font-black">
+                                                    <span className="px-3 py-2 bg-slate-50 text-slate-500 rounded-xl text-[9px] font-black">
                                                         +{internship.requiredSkills.length - 3}
                                                     </span>
                                                 )}

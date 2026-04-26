@@ -1,0 +1,3 @@
+69c2119a65999306905a1436, student1@jaffna.test, 69bed471fcbeb047e3dc123f, UI/UX Design Intern, Selected, Tue Mar 24 2026 09:52:50 GMT+0530 (India Standard Time)
+69c231d654ed34c5086f65dd, student1@jaffna.test, 69bed471fcbeb047e3dc123f, Test Full Stack Developer, Applied, Tue Mar 24 2026 12:10:22 GMT+0530 (India Standard Time)
+69c23a756c79ce1461f87b9f, student1@jaffna.test, 69bed471fcbeb047e3dc123f, full stack developmet, Reviewing, Tue Mar 24 2026 12:47:09 GMT+0530 (India Standard Time)

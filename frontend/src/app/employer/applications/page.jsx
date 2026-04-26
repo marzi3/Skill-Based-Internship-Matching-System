@@ -1,21 +1,39 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FileText, Search, Filter, Calendar, CheckCircle2, Clock, XCircle, Loader2 } from 'lucide-react';
-import axios from 'axios';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { FileText, Search, Loader2, ArrowLeft, ArrowRight } from 'lucide-react';
+import axios from '@/services/apiClient';
 import Card from '@/components/common/Card';
-import Badge from '@/components/common/Badge';
+import Avatar from '@/components/common/Avatar';
+import Link from 'next/link';
+
+const decodeHtmlEntities = (value = '') => {
+    const input = String(value);
+    return input
+        .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+        .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(parseInt(dec, 10)))
+        .replace(/&amp;/gi, '&')
+        .replace(/&lt;/gi, '<')
+        .replace(/&gt;/gi, '>')
+        .replace(/&quot;/gi, '"')
+        .replace(/&#39;/g, "'");
+};
 
 const ApplicationsPage = () => {
+    const router = useRouter();
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
 
+    const openApplication = (applicationId) => {
+        router.push(`/employer/applications/${applicationId}`);
+    };
+
     useEffect(() => {
         const fetchApplications = async () => {
             try {
-                const res = await axios.get('/api/applications/employer');
+                const res = await axios.get('/applications/employer');
                 if (res.data.success) {
                     setApplications(res.data.data || []);
                 }
@@ -29,44 +47,44 @@ const ApplicationsPage = () => {
         fetchApplications();
     }, []);
 
-    const getStatusIcon = (status) => {
-        switch (status) {
-            case 'Reviewing': return <Clock size={16} className="text-warning-500" />;
-            case 'Interviewing': return <Calendar size={16} className="text-primary-500" />;
-            case 'Selected': return <CheckCircle2 size={16} className="text-success-500" />;
-            case 'Rejected': return <XCircle size={16} className="text-danger-500" />;
-            default: return <Clock size={16} className="text-gray-400" />;
-        }
-    };
-
     const filteredApplications = applications.filter(app =>
         app.student?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        app.internship?.positionTitle?.toLowerCase().includes(searchTerm.toLowerCase())
+        decodeHtmlEntities(app.internship?.positionTitle || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const updateStatus = async (id, newStatus) => {
-        try {
-            const res = await axios.patch(`/api/applications/${id}/status`, { status: newStatus });
-            if (res.data.success) {
-                setApplications(applications.map(app =>
-                    app._id === id ? { ...app, status: newStatus } : app
-                ));
-            }
-        } catch (err) {
-            alert('Failed to update status');
+    const getStatusPillClass = (status) => {
+        switch ((status || '').toLowerCase()) {
+            case 'selected':
+            case 'accepted':
+                return 'bg-emerald-100 text-emerald-800';
+            case 'rejected':
+            case 'withdrawn':
+                return 'bg-rose-100 text-rose-800';
+            case 'shortlisted':
+            case 'interviewing':
+                return 'bg-amber-100 text-amber-800';
+            default:
+                return 'bg-slate-100 text-slate-700';
         }
     };
 
+    const desktopGridCols = 'md:grid-cols-[minmax(0,2.1fr)_minmax(0,2.1fr)_130px_180px_120px_96px]';
+
     return (
-        <div className="p-8 space-y-8">
+        <div className="p-6 space-y-8">
             <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Applications Pipeline</h1>
-                    <p className="text-gray-600">Track and manage candidate submissions through the matching funnel</p>
+                <div className="flex items-center gap-4">
+                    <button onClick={() => router.push('/employer/dashboard')} className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600 transition-all">
+                        <ArrowLeft className="w-4 h-4" />
+                    </button>
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900">Applications</h1>
+                        <p className="text-gray-600">Track and manage candidate submissions through the matching funnel</p>
+                    </div>
                 </div>
                 <div className="flex gap-4">
                     <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4" />
                         <input
                             type="text"
                             placeholder="Search applicants..."
@@ -78,7 +96,7 @@ const ApplicationsPage = () => {
                 </div>
             </div>
 
-            <Card shadow="sm" rounded="lg" padding="none" className="overflow-hidden border border-gray-100">
+            <Card shadow="sm" rounded="lg" padding="none" className="overflow-hidden border border-gray-100 bg-transparent">
                 {loading ? (
                     <div className="flex items-center justify-center py-20">
                         <Loader2 className="animate-spin text-primary-600" size={32} />
@@ -89,65 +107,99 @@ const ApplicationsPage = () => {
                         <p>No applications found matching your criteria.</p>
                     </div>
                 ) : (
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-gray-50 border-b border-gray-100">
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-500">Candidate</th>
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-500">Target Role</th>
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-500">Status</th>
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-500">Match Score</th>
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-500">Applied Date</th>
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-500">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-50">
-                            {filteredApplications.map((app) => (
-                                <tr key={app._id} className="hover:bg-slate-50/50 transition-colors group">
-                                    <td className="px-6 py-5">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center text-primary-600 font-black text-xs border border-primary-100">
-                                                {app.student?.name?.charAt(0) || 'U'}
+                    <div className="bg-transparent p-4 md:p-6">
+                        <div className="space-y-5">
+                                <div className={`hidden md:grid ${desktopGridCols} md:items-center md:gap-4 md:px-2`}>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Candidate</p>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Target Role</p>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Status</p>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Match Score</p>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Applied Date</p>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 md:text-right">Action</p>
+                                </div>
+
+                                {filteredApplications.map((app) => (
+                                    <div
+                                        key={app._id}
+                                        onClick={() => openApplication(app._id)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' || e.key === ' ') {
+                                                e.preventDefault();
+                                                openApplication(app._id);
+                                            }
+                                        }}
+                                        tabIndex={0}
+                                        role="link"
+                                        aria-label={`View application for ${app.student?.name || 'Unknown'} and ${decodeHtmlEntities(app.internship?.positionTitle || 'N/A')}`}
+                                        className="group cursor-pointer rounded-3xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 md:p-7"
+                                    >
+                                        <div className={`grid grid-cols-1 gap-5 ${desktopGridCols} md:items-center md:gap-4`}>
+                                            <div>
+                                                <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-slate-500 md:hidden">Candidate</p>
+                                                <div className="flex min-w-0 items-center gap-3 md:whitespace-nowrap">
+                                                    <Avatar
+                                                        src={app.student?.profilePicture}
+                                                        name={app.student?.name || 'Unknown'}
+                                                        size="md"
+                                                        className="shrink-0"
+                                                    />
+                                                    <p className="truncate text-2xl font-black tracking-tight text-slate-900 md:text-xl lg:text-2xl">
+                                                        {app.student?.name || 'Unknown'}
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <span className="font-bold text-gray-900">{app.student?.name || 'Unknown'}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-5 font-bold text-gray-600">{app.internship?.positionTitle || 'N/A'}</td>
-                                    <td className="px-6 py-5">
-                                        <select
-                                            value={app.status}
-                                            onChange={(e) => updateStatus(app._id, e.target.value)}
-                                            className="text-xs font-black uppercase tracking-wider text-gray-700 bg-transparent border-none focus:ring-0 cursor-pointer"
-                                        >
-                                            <option value="Applied">Applied</option>
-                                            <option value="Reviewing">Reviewing</option>
-                                            <option value="Interviewing">Interviewing</option>
-                                            <option value="Selected">Selected</option>
-                                            <option value="Rejected">Rejected</option>
-                                        </select>
-                                    </td>
-                                    <td className="px-6 py-5">
-                                        <div className="flex items-center gap-2">
-                                            <div className="flex-1 h-1.5 bg-gray-100 rounded-full max-w-[60px] overflow-hidden">
-                                                <div className="bg-primary-500 h-full" style={{ width: `${app.matchScore || 0}%` }} />
+
+                                            <div>
+                                                <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-slate-500 md:hidden">Target Role</p>
+                                                <p className="truncate text-2xl font-black tracking-tight text-slate-900 md:whitespace-nowrap">
+                                                    {decodeHtmlEntities(app.internship?.positionTitle || 'N/A')}
+                                                </p>
                                             </div>
-                                            <span className="text-xs font-black text-primary-600">{app.matchScore || 0}%</span>
+
+                                            <div>
+                                                <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-slate-500 md:hidden">Status</p>
+                                                <span className={`inline-flex min-w-[110px] items-center justify-center rounded-full px-3 py-1 text-sm font-black whitespace-nowrap ${getStatusPillClass(app.status)}`}>
+                                                    {app.status || 'Applied'}
+                                                </span>
+                                            </div>
+
+                                            <div>
+                                                <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-slate-500 md:hidden">Match Score</p>
+                                                <div className="flex items-center gap-2 whitespace-nowrap">
+                                                    <div className="h-2 w-20 overflow-hidden rounded-full bg-slate-200">
+                                                        <div className="h-full bg-primary-500" style={{ width: `${app.matchScore || 0}%` }} />
+                                                    </div>
+                                                    <span className="min-w-[42px] text-right text-sm font-black text-primary-600">{app.matchScore || 0}%</span>
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-slate-500 md:hidden">Applied Date</p>
+                                                <p className="text-xl font-black tracking-tight text-slate-900 whitespace-nowrap">
+                                                    {new Date(app.appliedDate).toLocaleDateString()}
+                                                </p>
+                                            </div>
+
+                                            <div className="md:justify-self-end">
+                                                <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-slate-500 md:hidden">Action</p>
+                                                <div className="flex items-center justify-end gap-3 whitespace-nowrap">
+                                                    <Link
+                                                        href={`/employer/applications/${app._id}`}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        className="text-xs font-black uppercase tracking-[0.2em] text-primary-600 hover:text-primary-800 transition-colors"
+                                                    >
+                                                        View
+                                                    </Link>
+                                                    <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-lg transition-all group-hover:translate-x-1 group-hover:bg-primary-700">
+                                                        <ArrowRight size={20} />
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </td>
-                                    <td className="px-6 py-5 text-sm text-gray-400 font-medium">
-                                        {new Date(app.appliedDate).toLocaleDateString()}
-                                    </td>
-                                    <td className="px-6 py-5">
-                                        <Link
-                                            href={`/employer/applications/${app._id}/profile`}
-                                            className="text-xs font-black uppercase tracking-[0.2em] text-primary-600 hover:text-primary-800 transition-colors"
-                                        >
-                                            View Profile
-                                        </Link>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                                    </div>
+                                ))}
+                        </div>
+                    </div>
                 )}
             </Card>
         </div>

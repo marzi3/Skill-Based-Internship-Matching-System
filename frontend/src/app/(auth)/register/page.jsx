@@ -1,73 +1,69 @@
 'use client';
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { registerSchema } from '@/lib/validationSchemas';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { Mail, Lock, User, ArrowRight, AlertCircle, Briefcase, Eye, EyeOff, Check, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Mail, Lock, User, ArrowRight, AlertCircle, Briefcase, Eye, EyeOff, Check } from 'lucide-react';
 
 export default function Register() {
-    const { register } = useAuth();
-    const [role, setRole] = useState('student'); // student or employer
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        password: '',
-        confirmPassword: ''
-    });
-    const [error, setError] = useState(null);
+    const { register: authRegister } = useAuth();
+    const [role, setRole] = useState('student');
+    const [serverError, setServerError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    const [passwordValidation, setPasswordValidation] = useState({
-        length: false,
-        number: false,
-        special: false
+
+    const {
+        register,
+        handleSubmit,
+        watch,
+        setValue,
+        formState: { errors },
+    } = useForm({
+        resolver: zodResolver(registerSchema),
+        mode: 'onBlur',
+        defaultValues: {
+            name: '',
+            email: '',
+            password: '',
+            confirmPassword: '',
+            role: 'student',
+        },
     });
 
-    const validatePassword = (pass) => {
-        setPasswordValidation({
-            length: pass.length >= 8,
-            number: /\d/.test(pass),
-            special: /[!@#$%^&*]/.test(pass)
-        });
+    const passwordValue = watch('password', '');
+    const passwordValidation = {
+        length: passwordValue.length >= 8,
+        number: /\d/.test(passwordValue),
+        special: /[!@#$%^&*]/.test(passwordValue),
     };
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
-        if (name === 'password') {
-            validatePassword(value);
-        }
+    // Keep role in sync with the card selector
+    const handleRoleSelect = (selectedRole) => {
+        setRole(selectedRole);
+        setValue('role', selectedRole, { shouldValidate: true });
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError(null);
-
-        if (formData.password !== formData.confirmPassword) {
-            setError('Passwords do not match');
-            return;
-        }
-
-        if (!passwordValidation.length || !passwordValidation.number || !passwordValidation.special) {
-            setError('Password does not meet security requirements');
-            return;
-        }
-
+    const onSubmit = async (data) => {
+        setServerError(null);
         setIsLoading(true);
-        const result = await register({
-            name: formData.name,
-            email: formData.email,
-            password: formData.password,
-            role: role
+
+        const result = await authRegister({
+            name: data.name,
+            email: data.email,
+            password: data.password,
+            role: data.role,
         });
 
         if (!result.success) {
-            setError(result.error);
+            setServerError(result.error);
             setIsLoading(false);
         }
     };
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+    const API_ORIGIN = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005').replace(/\/$/, '').replace(/\/api\/v1$/, '');
 
     return (
         <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-indigo-50 to-purple-50">
@@ -86,18 +82,18 @@ export default function Register() {
                     </div>
 
                     <div className="relative z-10 my-12 space-y-6">
-                        <div className={`p-4 rounded-xl border transition-all cursor-pointer ${role === 'student' ? 'bg-white/20 border-white/40 shadow-lg' : 'bg-transparent border-transparent opacity-60 hover:opacity-100'}`} onClick={() => setRole('student')}>
+                        <div className={`p-4 rounded-xl border transition-all cursor-pointer ${role === 'student' ? 'bg-white/20 border-white/40 shadow-lg' : 'bg-transparent border-transparent opacity-60 hover:opacity-100'}`} onClick={() => handleRoleSelect('student')}>
                             <div className="flex items-center space-x-3 mb-2">
                                 <div className="p-2 bg-white/20 rounded-lg"><User size={20} /></div>
-                                <h3 className="font-semibold text-lg">I'm a Student</h3>
+                                <h3 className="font-semibold text-lg">I&apos;m a Student</h3>
                             </div>
                             <p className="text-xs text-indigo-100">Looking for internships and skill verification.</p>
                         </div>
 
-                        <div className={`p-4 rounded-xl border transition-all cursor-pointer ${role === 'employer' ? 'bg-white/20 border-white/40 shadow-lg' : 'bg-transparent border-transparent opacity-60 hover:opacity-100'}`} onClick={() => setRole('employer')}>
+                        <div className={`p-4 rounded-xl border transition-all cursor-pointer ${role === 'employer' ? 'bg-white/20 border-white/40 shadow-lg' : 'bg-transparent border-transparent opacity-60 hover:opacity-100'}`} onClick={() => handleRoleSelect('employer')}>
                             <div className="flex items-center space-x-3 mb-2">
                                 <div className="p-2 bg-white/20 rounded-lg"><Briefcase size={20} /></div>
-                                <h3 className="font-semibold text-lg">I'm an Employer</h3>
+                                <h3 className="font-semibold text-lg">I&apos;m an Employer</h3>
                             </div>
                             <p className="text-xs text-indigo-100">Hiring talent and posting internships.</p>
                         </div>
@@ -118,76 +114,122 @@ export default function Register() {
 
                     <h2 className="text-2xl font-bold text-gray-800 mb-6">Create your account</h2>
 
-                    {error && (
-                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="bg-red-50 text-red-600 p-3 rounded-lg text-sm flex items-center mb-6 border border-red-100">
-                            <AlertCircle size={16} className="mr-2 flex-shrink-0" /> {error}
-                        </motion.div>
-                    )}
+                    <AnimatePresence>
+                        {serverError && (
+                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="bg-red-50 text-red-600 p-3 rounded-lg text-sm flex items-center mb-6 border border-red-100">
+                                <AlertCircle size={16} className="mr-2 flex-shrink-0" /> {serverError}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
-                    <form onSubmit={handleSubmit} className="space-y-5">
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                        {/* Name */}
                         <div className="space-y-1">
-                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Full Name</label>
+                            <label htmlFor="name" className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Full Name</label>
                             <div className="relative group">
-                                <User className="absolute left-3 top-3.5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
-                                <input name="name" type="text" required value={formData.name} onChange={handleChange}
-                                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm group-hover:bg-white" placeholder="John Doe" />
+                                <User className="absolute left-3 top-3.5 text-gray-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
+                                <input
+                                    {...register('name')}
+                                    id="name"
+                                    type="text"
+                                    aria-invalid={errors.name ? 'true' : undefined}
+                                    aria-describedby={errors.name ? 'name-error' : undefined}
+                                    className={`w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 transition-all shadow-sm group-hover:bg-white ${errors.name ? 'border-red-500 focus:ring-red-500/50' : 'border-gray-200 focus:ring-indigo-500/50 focus:border-indigo-500'}`}
+                                    placeholder="John Doe"
+                                />
                             </div>
+                            <AnimatePresence>
+                                {errors.name && (
+                                    <motion.p id="name-error" role="alert" initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="text-rose-500 text-xs font-bold mt-1 ml-1">{errors.name.message}</motion.p>
+                                )}
+                            </AnimatePresence>
                         </div>
 
+                        {/* Email */}
                         <div className="space-y-1">
-                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Email Address</label>
+                            <label htmlFor="email" className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Email Address</label>
                             <div className="relative group">
-                                <Mail className="absolute left-3 top-3.5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
-                                <input name="email" type="email" required value={formData.email} onChange={handleChange}
-                                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm group-hover:bg-white" placeholder="you@example.com" />
+                                <Mail className="absolute left-3 top-3.5 text-gray-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
+                                <input
+                                    {...register('email')}
+                                    id="email"
+                                    type="email"
+                                    aria-invalid={errors.email ? 'true' : undefined}
+                                    aria-describedby={errors.email ? 'email-error' : undefined}
+                                    className={`w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 transition-all shadow-sm group-hover:bg-white ${errors.email ? 'border-red-500 focus:ring-red-500/50' : 'border-gray-200 focus:ring-indigo-500/50 focus:border-indigo-500'}`}
+                                    placeholder="you@example.com"
+                                />
                             </div>
+                            <AnimatePresence>
+                                {errors.email && (
+                                    <motion.p id="email-error" role="alert" initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="text-rose-500 text-xs font-bold mt-1 ml-1">{errors.email.message}</motion.p>
+                                )}
+                            </AnimatePresence>
                         </div>
 
+                        {/* Password Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div className="space-y-1">
-                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Password</label>
+                                <label htmlFor="password" className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Password</label>
                                 <div className="relative group">
-                                    <Lock className="absolute left-3 top-3.5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
+                                    <Lock className="absolute left-3 top-3.5 text-gray-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
                                     <input
-                                        name="password"
+                                        {...register('password')}
+                                        id="password"
                                         type={showPassword ? "text" : "password"}
-                                        required
-                                        value={formData.password}
-                                        onChange={handleChange}
-                                        className="w-full pl-10 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm group-hover:bg-white"
+                                        aria-invalid={errors.password ? 'true' : undefined}
+                                        aria-describedby={errors.password ? 'password-error' : undefined}
+                                        className={`w-full pl-10 pr-10 py-3 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 transition-all shadow-sm group-hover:bg-white ${errors.password ? 'border-red-500 focus:ring-red-500/50' : 'border-gray-200 focus:ring-indigo-500/50 focus:border-indigo-500'}`}
                                         placeholder="••••••••"
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3 top-3.5 text-gray-400 hover:text-indigo-600 transition-colors focus:outline-none"
+                                        className="absolute right-3 top-3.5 text-gray-500 hover:text-indigo-600 transition-colors focus:outline-none"
                                     >
                                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                     </button>
                                 </div>
                                 {/* Password Strength Indicators */}
                                 <div className="flex flex-wrap gap-2 mt-2 ml-1">
-                                    <div className={`flex items-center text-[10px] ${passwordValidation.length ? 'text-green-600' : 'text-gray-400'}`}>
+                                    <div className={`flex items-center text-[10px] ${passwordValidation.length ? 'text-green-600' : 'text-gray-500'}`}>
                                         {passwordValidation.length ? <Check size={10} className="mr-1" /> : <div className="w-2.5 h-2.5 rounded-full bg-gray-300 mr-1"></div>}
                                         8+ chars
                                     </div>
-                                    <div className={`flex items-center text-[10px] ${passwordValidation.number ? 'text-green-600' : 'text-gray-400'}`}>
+                                    <div className={`flex items-center text-[10px] ${passwordValidation.number ? 'text-green-600' : 'text-gray-500'}`}>
                                         {passwordValidation.number ? <Check size={10} className="mr-1" /> : <div className="w-2.5 h-2.5 rounded-full bg-gray-300 mr-1"></div>}
                                         Number
                                     </div>
-                                    <div className={`flex items-center text-[10px] ${passwordValidation.special ? 'text-green-600' : 'text-gray-400'}`}>
+                                    <div className={`flex items-center text-[10px] ${passwordValidation.special ? 'text-green-600' : 'text-gray-500'}`}>
                                         {passwordValidation.special ? <Check size={10} className="mr-1" /> : <div className="w-2.5 h-2.5 rounded-full bg-gray-300 mr-1"></div>}
                                         Special (!@#$)
                                     </div>
                                 </div>
+                                <AnimatePresence>
+                                    {errors.password && (
+                                        <motion.p id="password-error" role="alert" initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="text-rose-500 text-xs font-bold mt-1 ml-1">{errors.password.message}</motion.p>
+                                    )}
+                                </AnimatePresence>
                             </div>
                             <div className="space-y-1">
-                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Confirm Password</label>
+                                <label htmlFor="confirmPassword" className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Confirm Password</label>
                                 <div className="relative group">
-                                    <Lock className="absolute left-3 top-3.5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
-                                    <input name="confirmPassword" type="password" required value={formData.confirmPassword} onChange={handleChange}
-                                        className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm group-hover:bg-white" placeholder="••••••••" />
+                                    <Lock className="absolute left-3 top-3.5 text-gray-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
+                                    <input
+                                        {...register('confirmPassword')}
+                                        id="confirmPassword"
+                                        type="password"
+                                        aria-invalid={errors.confirmPassword ? 'true' : undefined}
+                                        aria-describedby={errors.confirmPassword ? 'confirmPassword-error' : undefined}
+                                        className={`w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 transition-all shadow-sm group-hover:bg-white ${errors.confirmPassword ? 'border-red-500 focus:ring-red-500/50' : 'border-gray-200 focus:ring-indigo-500/50 focus:border-indigo-500'}`}
+                                        placeholder="••••••••"
+                                    />
                                 </div>
+                                <AnimatePresence>
+                                    {errors.confirmPassword && (
+                                        <motion.p id="confirmPassword-error" role="alert" initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="text-rose-500 text-xs font-bold mt-1 ml-1">{errors.confirmPassword.message}</motion.p>
+                                    )}
+                                </AnimatePresence>
                             </div>
                         </div>
 
@@ -203,10 +245,10 @@ export default function Register() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        <a href={`${API_URL}/api/auth/google`} className="flex justify-center items-center py-2.5 px-4 border border-gray-200 rounded-xl bg-white hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700">
+                        <a href={`${API_ORIGIN}/api/v1/auth/google?role=${role}`} className="flex justify-center items-center py-2.5 px-4 border border-gray-200 rounded-xl bg-white hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700">
                             <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .533 5.333.533 12S5.867 24 12.48 24c3.44 0 6.013-1.133 8.027-3.24 2.053-2.133 2.64-5.227 2.64-7.84 0-.787-.067-1.547-.2-2.293h-10.467z" fill="currentColor" /></svg> Google
                         </a>
-                        <a href={`${API_URL}/api/auth/linkedin`} className="flex justify-center items-center py-2.5 px-4 border border-gray-200 rounded-xl bg-white hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700">
+                        <a href={`${API_ORIGIN}/api/v1/auth/linkedin?role=${role}`} className="flex justify-center items-center py-2.5 px-4 border border-gray-200 rounded-xl bg-white hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700">
                             <svg className="h-5 w-5 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" /></svg> LinkedIn
                         </a>
                     </div>

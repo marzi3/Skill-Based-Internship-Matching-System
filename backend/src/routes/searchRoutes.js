@@ -1,9 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const { searchInternships } = require('../controllers/searchController');
 
 // Search routes
-router.get('/', (req, res) => {
-  res.json({ message: 'Search internships' });
-});
+router.get('/', searchInternships);
 
 module.exports = router;

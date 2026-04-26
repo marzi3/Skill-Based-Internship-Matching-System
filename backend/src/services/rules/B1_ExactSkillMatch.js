@@ -8,6 +8,8 @@
  * @module B1_ExactSkillMatch
  */
 
+const { normalizeSkill } = require('../../utils/skillUtils');
+
 const rule = {
     name: "B1_ExactSkillMatch",
     priority: 9,
@@ -28,13 +30,8 @@ const rule = {
             return false;
         }
 
-        const studentSkillNames = studentSkills.map(s =>
-            (typeof s === 'string' ? s : s.name).toLowerCase()
-        );
-
-        const requiredSkillNames = requiredSkills.map(s =>
-            (typeof s === 'string' ? s : s.name).toLowerCase()
-        );
+        const studentSkillNames = studentSkills.map(s => normalizeSkill(s));
+        const requiredSkillNames = requiredSkills.map(s => normalizeSkill(s));
 
         return requiredSkillNames.some(skill => studentSkillNames.includes(skill));
     },
@@ -53,17 +50,15 @@ const rule = {
         const requiredSkills = internship?.requiredSkills || [];
         const studentSkills = student?.skills || [];
 
-        const studentSkillNames = studentSkills.map(s =>
-            (typeof s === 'string' ? s : s.name).toLowerCase()
-        );
+        const studentSkillNames = studentSkills.map(s => normalizeSkill(s));
 
         let totalScore = 0;
         const explanations = [];
 
         requiredSkills.forEach(req => {
-            const reqName = typeof req === 'string' ? req : req.name;
-            if (studentSkillNames.includes(reqName.toLowerCase())) {
-                totalScore += 15;
+            const reqName = typeof req === 'string' ? req : req?.name;
+            if (reqName && studentSkillNames.includes(normalizeSkill(reqName))) {
+                totalScore += 20;
                 explanations.push(`Exact skill match: ${reqName}`);
             }
         });

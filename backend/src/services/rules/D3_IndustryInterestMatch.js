@@ -21,11 +21,11 @@ const rule = {
     condition: (facts) => {
         const { student, internship } = facts;
 
-        if (!internship?.industry || !student?.industriesOfInterest || student.industriesOfInterest.length === 0) {
+        if (!internship?.domain || !student?.industriesOfInterest || student.industriesOfInterest.length === 0) {
             return false;
         }
 
-        const industry = String(internship.industry).trim().toLowerCase();
+        const industry = String(internship.domain).trim().toLowerCase();
         const interests = student.industriesOfInterest.map(i => String(i).trim().toLowerCase());
 
         return interests.includes(industry);

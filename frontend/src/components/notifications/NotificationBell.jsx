@@ -1,0 +1,279 @@
+'use client';
+
+import React, { useState, useEffect, useRef } from 'react';
+import { Bell, Check, Trash2, ExternalLink } from 'lucide-react';
+import { useSocket } from '@/context/SocketContext';
+import axios from '@/services/apiClient';
+import Cookies from 'js-cookie';
+import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
+
+export default function NotificationBell() {
+    const [isOpen, setIsOpen] = useState(false);
+    const [notifications, setNotifications] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
+    const { socket } = useSocket();
+    const dropdownRef = useRef(null);
+
+    useEffect(() => {
+        fetchNotifications();
+        
+        if (socket) {
+            socket.on('new_notification', (newNotif) => {
+                setNotifications(prev => [newNotif, ...prev]);
+                setUnreadCount(prev => prev + 1);
+            });
+        }
+
+        return () => {
+            if (socket) {
+                socket.off('new_notification');
+            }
+        };
+    }, [socket]);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const fetchNotifications = async () => {
+        try {
+            const token = Cookies.get('token') || localStorage.getItem('token');
+            if (!token) return;
+
+            const res = await axios.get('/notifications', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (res.data.success) {
+                setNotifications(res.data.data);
+                setUnreadCount(res.data.data.filter(n => !n.isRead).length);
+            }
+        } catch (err) {
+            console.error('Failed to fetch notifications', err);
+        }
+    };
+
+    const markAsRead = async (id) => {
+        if (!id) return;
+        try {
+            const token = Cookies.get('token') || localStorage.getItem('token');
+            if (!token) return;
+
+            await axios.patch(`/notifications/${id}/read`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            // Optimistic upate
+            setNotifications(notifications.map(n => n._id === id ? { ...n, isRead: true } : n));
+            setUnreadCount(prev => Math.max(0, prev - 1));
+        } catch (err) {
+            console.error('Failed to mark as read', err);
+        }
+    };
+
+    const deleteNotification = async (id, e) => {
+        e.stopPropagation();
+        try {
+            const token = Cookies.get('token') || localStorage.getItem('token');
+            await axios.delete(`/notifications/${id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            // Optimistic update
+            const targetNotif = notifications.find(n => n._id === id);
+            if (targetNotif && !targetNotif.isRead) {
+                setUnreadCount(prev => Math.max(0, prev - 1));
+            }
+            setNotifications(notifications.filter(n => n._id !== id));
+        } catch (err) {
+            console.error('Failed to delete', err);
+        }
+    };
+
+    const markAllAsRead = async () => {
+        try {
+            const token = Cookies.get('token') || localStorage.getItem('token');
+            await axios.patch('/notifications/mark-all-read', {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+            setUnreadCount(0);
+        } catch (err) {
+            console.error('Failed to mark all as read', err);
+        }
+    };
+
+    const deleteAllNotifications = async () => {
+        if (!window.confirm('Are you sure you want to delete all notifications?')) return;
+        try {
+            const token = Cookies.get('token') || localStorage.getItem('token');
+            await axios.delete('/notifications/delete-all', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setNotifications([]);
+            setUnreadCount(0);
+        } catch (err) {
+            console.error('Failed to delete all', err);
+        }
+    };
+
+    return (
+        <div className="relative" ref={dropdownRef}>
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="relative p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition duration-300 z-50"
+            >
+                <Bell size={24} />
+                {unreadCount > 0 && (
+                    <motion.span
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="absolute top-1 right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full"
+                    >
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                    </motion.span>
+                )}
+            </button>
+
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.1 } }}
+                        className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] z-[100] border border-gray-100 overflow-hidden flex flex-col max-h-[85vh]"
+                    >
+                        <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                            <div className="flex flex-col">
+                                <h3 className="font-bold text-gray-900 text-lg">Notifications</h3>
+                                {unreadCount > 0 && (
+                                    <span className="text-[10px] text-indigo-600 font-bold uppercase tracking-wider">
+                                        {unreadCount} Unread Messages
+                                    </span>
+                                )}
+                            </div>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={markAllAsRead}
+                                    className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-white rounded-lg transition-colors border border-transparent hover:border-gray-100"
+                                    title="Mark all as read"
+                                    disabled={unreadCount === 0}
+                                >
+                                    <Check size={16} />
+                                </button>
+                                <button
+                                    onClick={deleteAllNotifications}
+                                    className="p-2 text-gray-500 hover:text-rose-600 hover:bg-white rounded-lg transition-colors border border-transparent hover:border-gray-100"
+                                    title="Clear all"
+                                    disabled={notifications.length === 0}
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="overflow-y-auto flex-1 p-2 space-y-1 scrollbar-hide">
+                            {notifications.length === 0 ? (
+                                <div className="p-6 text-center text-gray-500 flex flex-col items-center">
+                                    <Bell size={32} className="mb-3 opacity-20" />
+                                    <p className="font-medium">You're all caught up!</p>
+                                    <p className="text-xs mt-1">No new notifications</p>
+                                </div>
+                            ) : (
+                                notifications.map(notif => (
+                                    <div
+                                        key={notif._id}
+                                        className={`p-4 rounded-xl transition-all group relative border border-transparent
+                      ${notif.isRead ? 'hover:bg-gray-50/80 hover:border-gray-100/50' : 'bg-indigo-50/40 border-indigo-100/50 hover:bg-indigo-50/80'}`}
+                                    >
+                                        <div className="flex gap-3">
+                                            <div className="flex-1 min-w-0 pr-8">
+                                                <p className={`text-sm ${notif.isRead ? 'text-gray-600' : 'text-gray-900 font-bold'}`}>
+                                                    {notif.message}
+                                                </p>
+                                                <p className="text-xs text-gray-500 mt-2 font-medium">
+                                                    {new Date(notif.createdAt).toLocaleDateString()} • {new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </p>
+                                                {notif.metadata && (
+                                                    <div className="mt-4 space-y-2.5 p-4 bg-white rounded-2xl border border-indigo-100/60 shadow-sm relative overflow-hidden group/meta">
+                                                        <div className="absolute top-0 left-0 w-1 h-full bg-indigo-600/20" />
+                                                        <div className="flex items-center justify-between gap-4">
+                                                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5 whitespace-nowrap">
+                                                                <div className="w-1 h-1 rounded-full bg-indigo-400" /> Date
+                                                            </span>
+                                                            <span className="text-xs font-black text-slate-900 truncate">{notif.metadata.date}</span>
+                                                        </div>
+                                                        <div className="flex items-center justify-between gap-4 py-2 border-y border-indigo-50/50">
+                                                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5 whitespace-nowrap">
+                                                                <div className="w-1 h-1 rounded-full bg-indigo-400" /> Time
+                                                            </span>
+                                                            <span className="text-xs font-black text-slate-900 truncate">{notif.metadata.time}</span>
+                                                        </div>
+                                                        <div className="flex items-center justify-between gap-4">
+                                                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5 whitespace-nowrap">
+                                                                <div className="w-1 h-1 rounded-full bg-indigo-400" /> Location
+                                                            </span>
+                                                            <span className="text-[10px] font-black text-indigo-600 truncate max-w-[150px]">{notif.metadata.location}</span>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {notif.link && (
+                                                    <Link 
+                                                        href={notif.link}
+                                                        onClick={() => {
+                                                            setIsOpen(false);
+                                                            if (!notif.isRead) markAsRead(notif._id);
+                                                        }}
+                                                        className="inline-flex items-center gap-2 mt-3 text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-800 transition-colors"
+                                                    >
+                                                        Check Details <ExternalLink size={10} />
+                                                    </Link>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Action buttons (only show on hover via flex reverse order hidden by default on mobile) */}
+                                        <div className="absolute top-4 right-3 flex flex-col gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity opacity-100">
+                                            {!notif.isRead && (
+                                                <button
+                                                    onClick={() => markAsRead(notif._id)}
+                                                    className="p-1.5 text-gray-500 bg-white shadow-sm rounded-lg border border-gray-100 hover:text-green-600 hover:border-green-200 transition-colors"
+                                                    title="Mark as read"
+                                                >
+                                                    <Check size={14} strokeWidth={3} />
+                                                </button>
+                                            )}
+                                            <button
+                                                onClick={(e) => deleteNotification(notif._id, e)}
+                                                className="p-1.5 text-gray-500 bg-white shadow-sm rounded-lg border border-gray-100 hover:text-red-600 hover:border-red-200 transition-colors"
+                                                title="Delete"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+
+                        <div className="p-4 border-t border-gray-100 bg-gray-50/80 text-center backdrop-blur-md">
+                            <Link
+                                href="/notifications"
+                                onClick={() => setIsOpen(false)}
+                                className="text-sm font-black text-indigo-600 hover:text-indigo-800 transition-colors"
+                            >
+                                Go to Notification Center
+                            </Link>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+}

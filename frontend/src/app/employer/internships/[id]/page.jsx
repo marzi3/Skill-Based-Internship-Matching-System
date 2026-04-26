@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import axios from '@/services/apiClient';
 import {
     ArrowLeft,
     MapPin,
@@ -26,7 +26,7 @@ export default function InternshipDetailsPage() {
     useEffect(() => {
         const fetchInternship = async () => {
             try {
-                const res = await axios.get(`/api/internships/${id}`);
+                const res = await axios.get(`/internships/${id}`);
                 setInternship(res.data.data);
                 setLoading(false);
             } catch (err) {
@@ -55,7 +55,7 @@ export default function InternshipDetailsPage() {
     );
 
     return (
-        <div className="p-8 max-w-5xl mx-auto space-y-8">
+        <div className="p-6 max-w-5xl mx-auto space-y-8">
             <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-500 hover:text-gray-900 font-bold transition-all">
                 <ArrowLeft size={20} /> Back to Dashboard
             </button>

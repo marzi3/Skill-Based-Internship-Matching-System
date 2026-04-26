@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight, CheckCircle, Search, Users, Building, ShieldCheck } from 'lucide-react';
+import { ArrowRight, CheckCircle, Search, Users, Building, ShieldCheck, Code, PenTool } from 'lucide-react';
 
 export default function Home() {
   const [mounted, setMounted] = useState(false);
@@ -46,7 +46,32 @@ export default function Home() {
         <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-purple-200/30 rounded-full blur-3xl animate-blob"></div>
         <div className="absolute top-[20%] left-[-10%] w-[40%] h-[40%] bg-indigo-200/30 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        {/* Floating Elements */}
+        <motion.div
+          animate={{ y: [0, -15, 0], x: [0, 10, 0], rotate: [0, 5, 0] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+          className="hidden md:flex absolute top-[15%] left-[10%] items-center justify-center p-4 bg-white shadow-xl shadow-indigo-100/50 rounded-2xl border border-indigo-50 z-0"
+        >
+          <Code className="text-indigo-500 w-8 h-8" />
+        </motion.div>
+
+        <motion.div
+          animate={{ y: [0, -20, 0], x: [0, -10, 0], rotate: [0, -5, 0] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          className="hidden md:flex absolute top-[40%] right-[10%] items-center justify-center p-4 bg-white shadow-xl shadow-purple-100/50 rounded-2xl border border-purple-50 z-20"
+        >
+          <PenTool className="text-purple-500 w-8 h-8" />
+        </motion.div>
+
+        <motion.div
+          animate={{ y: [0, -15, 0], rotate: [0, 45, 0] }}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+          className="hidden md:flex absolute bottom-[25%] left-[20%] items-center justify-center p-4 bg-indigo-50 rounded-xl opacity-70"
+        >
+          <div className="w-5 h-5 rounded-md bg-indigo-400"></div>
+        </motion.div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -77,7 +102,7 @@ export default function Home() {
           {/* Stats/Social Proof */}
           <div className="mt-20 pt-10 border-t border-gray-100 grid grid-cols-2 md:grid-cols-4 gap-8 opacity-70 grayscale hover:grayscale-0 transition-all duration-500">
             {['Google', 'Microsoft', 'Spotify', 'Airbnb'].map((brand) => (
-              <div key={brand} className="flex items-center justify-center text-xl font-bold text-gray-400">{brand}</div>
+              <div key={brand} className="flex items-center justify-center text-xl font-bold text-gray-500">{brand}</div>
             ))}
           </div>
         </div>
@@ -100,7 +125,7 @@ export default function Home() {
               <motion.div
                 whileHover={{ y: -10 }}
                 key={i}
-                className="p-8 rounded-3xl bg-gray-50 border border-gray-100 hover:bg-white hover:shadow-xl transition-all duration-300"
+                className="p-6 rounded-3xl bg-gray-50 border border-gray-100 hover:bg-white hover:shadow-xl transition-all duration-300"
               >
                 <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center mb-6 shadow-lg shadow-indigo-200">
                   <feature.icon size={28} />
@@ -113,6 +138,53 @@ export default function Home() {
         </div>
       </section>
 
+      {/* How It Works Section */}
+      <section className="py-24 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">How InternMatch Works</h2>
+            <p className="text-gray-500 max-w-2xl mx-auto">Get hired for what you know, not who you know. Three simple steps to your next opportunity.</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-12 relative max-w-5xl mx-auto">
+            {/* Desktop connecting line (hidden on mobile) */}
+            <div className="hidden md:block absolute top-12 left-[18%] right-[18%] h-0.5 bg-indigo-100 z-0"></div>
+
+            {[
+              { step: "1", title: "Build Your Profile", desc: "Create an account and verify your identity and educational background via our secure portal." },
+              { step: "2", title: "Complete Assessments", desc: "Take skill-specific tests to prove your proficiency in your chosen domain." },
+              { step: "3", title: "Get Matched", desc: "Employers receive your anonymized, verified skill profile and reach out directly." }
+            ].map((item, i) => (
+              <div key={i} className="relative z-10 flex flex-col items-center text-center">
+                <div className="w-24 h-24 rounded-full bg-white border-4 border-indigo-50 flex items-center justify-center text-3xl font-bold text-indigo-600 shadow-xl mb-6">
+                  {item.step}
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">{item.title}</h3>
+                <p className="text-gray-500">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="py-20 bg-indigo-600">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">Ready to find your perfect fit?</h2>
+          <p className="text-indigo-100 text-lg mb-10 max-w-2xl mx-auto">
+            Join thousands of students and hundreds of companies already using InternMatch to build the future workforce.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Link href="/register" className="px-8 py-4 rounded-full bg-white text-indigo-600 font-bold text-lg hover:bg-gray-50 transition-all shadow-lg text-center">
+              Student Registration
+            </Link>
+            <Link href="/employers" className="px-8 py-4 rounded-full bg-indigo-700 text-white font-bold text-lg hover:bg-indigo-800 transition-all border border-indigo-500 text-center">
+              Post an Internship
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12 border-t border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
@@ -121,12 +193,12 @@ export default function Home() {
               <img src="/images/logo.png" alt="InternMatch Logo" className="h-10 w-auto grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all duration-300" />
               <span className="text-2xl font-bold">InternMatch</span>
             </div>
-            <p className="text-gray-400 text-sm mt-2">© 2026 InternMatch Inc. All rights reserved.</p>
+            <p className="text-gray-500 text-sm mt-2">© 2026 InternMatch Inc. All rights reserved.</p>
           </div>
           <div className="flex space-x-8">
-            <a href="#" className="text-gray-400 hover:text-white transition-colors">Privacy</a>
-            <a href="#" className="text-gray-400 hover:text-white transition-colors">Terms</a>
-            <a href="#" className="text-gray-400 hover:text-white transition-colors">Contact</a>
+            <a href="#" className="text-gray-500 hover:text-white transition-colors">Privacy</a>
+            <a href="#" className="text-gray-500 hover:text-white transition-colors">Terms</a>
+            <a href="#" className="text-gray-500 hover:text-white transition-colors">Contact</a>
           </div>
         </div>
       </footer>

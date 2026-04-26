@@ -1,31 +1,41 @@
 'use client';
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { loginSchema } from '@/lib/validationSchemas';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, AlertCircle, ArrowRight, Eye, EyeOff } from 'lucide-react';
 
 export default function Login() {
     const { login } = useAuth();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState(null);
+    const [serverError, setServerError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setIsLoading(true);
-        setError(null);
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm({
+        resolver: zodResolver(loginSchema),
+        mode: 'onBlur',
+        defaultValues: { email: '', password: '' },
+    });
 
-        const result = await login(email, password);
+    const onSubmit = async (data) => {
+        setIsLoading(true);
+        setServerError(null);
+
+        const result = await login(data.email, data.password);
         if (!result.success) {
-            setError(result.error);
+            setServerError(result.error);
             setIsLoading(false);
         }
     };
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+    const API_ORIGIN = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005').replace(/\/$/, '').replace(/\/api\/v1$/, '');
 
     return (
         <div className="min-h-screen flex items-center justify-center p-4">
@@ -55,7 +65,7 @@ export default function Login() {
 
                     <div className="relative z-10 space-y-6 mt-12 md:mt-0">
                         <div className="glass bg-white/10 p-4 rounded-xl border-white/10">
-                            <p className="text-sm font-medium">"Verified skills get you hired faster. Join thousands of students today."</p>
+                            <p className="text-sm font-medium">&quot;Verified skills get you hired faster. Join thousands of students today.&quot;</p>
                         </div>
                     </div>
                 </div>
@@ -69,55 +79,72 @@ export default function Login() {
                         </Link>
                     </div>
 
-                    {error && (
-                        <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            className="bg-red-50 text-red-600 p-3 rounded-lg text-sm flex items-center mb-6 border border-red-100"
-                        >
-                            <AlertCircle size={16} className="mr-2 flex-shrink-0" />
-                            {error}
-                        </motion.div>
-                    )}
+                    <AnimatePresence>
+                        {serverError && (
+                            <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="bg-red-50 text-red-600 p-3 rounded-lg text-sm flex items-center mb-6 border border-red-100"
+                            >
+                                <AlertCircle size={16} className="mr-2 flex-shrink-0" />
+                                {serverError}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
-                    <form onSubmit={handleSubmit} className="space-y-5">
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                        {/* Email */}
                         <div className="space-y-1">
-                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Email</label>
+                            <label htmlFor="email" className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Email</label>
                             <div className="relative group">
-                                <Mail className="absolute left-3 top-3.5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
+                                <Mail className="absolute left-3 top-3.5 text-gray-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
                                 <input
+                                    {...register('email')}
+                                    id="email"
                                     type="email"
-                                    required
-                                    className="w-full pl-10 pr-4 py-3 bg-white/80 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm group-hover:bg-white"
+                                    aria-invalid={errors.email ? 'true' : undefined}
+                                    aria-describedby={errors.email ? 'email-error' : undefined}
+                                    className={`w-full pl-10 pr-4 py-3 bg-white/80 border rounded-xl focus:outline-none focus:ring-2 transition-all shadow-sm group-hover:bg-white ${errors.email ? 'border-red-500 focus:ring-red-500/50' : 'border-gray-200 focus:ring-indigo-500/50 focus:border-indigo-500'}`}
                                     placeholder="student@university.edu"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
                                 />
                             </div>
+                            <AnimatePresence>
+                                {errors.email && (
+                                    <motion.p id="email-error" role="alert" initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="text-rose-500 text-xs font-bold mt-1 ml-1">{errors.email.message}</motion.p>
+                                )}
+                            </AnimatePresence>
                         </div>
 
+                        {/* Password */}
                         <div className="space-y-1">
-                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Password</label>
+                            <label htmlFor="password" className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Password</label>
                             <div className="relative group">
-                                <Lock className="absolute left-3 top-3.5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
+                                <Lock className="absolute left-3 top-3.5 text-gray-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
                                 <input
+                                    {...register('password')}
+                                    id="password"
                                     type={showPassword ? "text" : "password"}
-                                    required
-                                    className="w-full pl-10 pr-10 py-3 bg-white/80 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm group-hover:bg-white"
+                                    aria-invalid={errors.password ? 'true' : undefined}
+                                    aria-describedby={errors.password ? 'password-error' : undefined}
+                                    className={`w-full pl-10 pr-10 py-3 bg-white/80 border rounded-xl focus:outline-none focus:ring-2 transition-all shadow-sm group-hover:bg-white ${errors.password ? 'border-red-500 focus:ring-red-500/50' : 'border-gray-200 focus:ring-indigo-500/50 focus:border-indigo-500'}`}
                                     placeholder="••••••••"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-3.5 text-gray-400 hover:text-indigo-600 transition-colors focus:outline-none"
+                                    className="absolute right-3 top-3.5 text-gray-500 hover:text-indigo-600 transition-colors focus:outline-none"
                                 >
                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
                             </div>
-                            <div className="flex justify-end">
-                                <Link href="/forgot-password" className="text-xs text-gray-500 hover:text-indigo-600 font-medium">Forgot password?</Link>
+                            <div className="flex justify-between items-center">
+                                <AnimatePresence>
+                                    {errors.password && (
+                                        <motion.p id="password-error" role="alert" initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="text-rose-500 text-xs font-bold mt-1 ml-1">{errors.password.message}</motion.p>
+                                    )}
+                                </AnimatePresence>
+                                <Link href="/forgot-password" className="text-xs text-gray-500 hover:text-indigo-600 font-medium ml-auto">Forgot password?</Link>
                             </div>
                         </div>
 
@@ -147,11 +174,11 @@ export default function Login() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        <a href={`${API_URL}/api/auth/google`} className="flex justify-center items-center py-2.5 px-4 border border-gray-200 rounded-xl bg-white hover:bg-gray-50 transition-colors shadow-sm hover:shadow text-sm font-medium text-gray-700">
+                        <a href={`${API_ORIGIN}/api/v1/auth/google`} className="flex justify-center items-center py-2.5 px-4 border border-gray-200 rounded-xl bg-white hover:bg-gray-50 transition-colors shadow-sm hover:shadow text-sm font-medium text-gray-700">
                             <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .533 5.333.533 12S5.867 24 12.48 24c3.44 0 6.013-1.133 8.027-3.24 2.053-2.133 2.64-5.227 2.64-7.84 0-.787-.067-1.547-.2-2.293h-10.467z" fill="currentColor" /></svg>
                             Google
                         </a>
-                        <a href={`${API_URL}/api/auth/linkedin`} className="flex justify-center items-center py-2.5 px-4 border border-gray-200 rounded-xl bg-white hover:bg-gray-50 transition-colors shadow-sm hover:shadow text-sm font-medium text-gray-700">
+                        <a href={`${API_ORIGIN}/api/v1/auth/linkedin`} className="flex justify-center items-center py-2.5 px-4 border border-gray-200 rounded-xl bg-white hover:bg-gray-50 transition-colors shadow-sm hover:shadow text-sm font-medium text-gray-700">
                             <svg className="h-5 w-5 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" /></svg>
                             LinkedIn
                         </a>

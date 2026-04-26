@@ -1,11 +1,15 @@
 /**
  * Rule A2: FieldOfStudyMismatch
- * Priority: 10 (Hard Disqualification)
- * 
- * IF internship.requiredDegreeField is specified
- * AND student.degreeField does NOT match any accepted field
- * THEN disqualify
- * 
+ * Priority: 10 (Soft Penalty — previously Hard Disqualification)
+ *
+ * DESIGN DECISION (updated):
+ * Changed from hard disqualify (-Infinity) to a -25 soft penalty.
+ * WHY? Hard disqualifying students with no education data (empty array)
+ * silently produced ZERO matches for all partially-completed profiles.
+ * Students with mismatched-but-not-empty fields still get penalized heavily,
+ * but remain discoverable. Students with NO education data are simply
+ * not filtered here — the C3_ProfileCompleteness rule already penalizes them.
+ *
  * @module A2_FieldOfStudyMismatch
  */
 
@@ -14,51 +18,55 @@ const rule = {
     priority: 10,
 
     /**
-     * Evaluates if the student's field of study does not match the internship's requirement.
+     * Fires only when the student has EXPLICITLY provided a degree field
+     * AND it does NOT match any of the internship's accepted degree fields.
      * 
      * @param {Object} facts - The facts base containing student and internship data.
-     * @param {Object} facts.student - The student profile object.
-     * @param {Object} facts.internship - The internship listing object.
-     * @returns {boolean} True if there is a mismatch, false otherwise.
+     * @returns {boolean} True if there is an explicit mismatch.
      */
     condition: (facts) => {
         const { student, internship } = facts;
 
-        // If the internship doesn't require a specific degree field, this rule doesn't fire
-        if (!internship?.requiredDegreeField) {
-            return false;
+        // If the internship has no field requirement, rule doesn't fire.
+        const reqFields = Array.isArray(internship?.requiredDegreeField)
+            ? internship.requiredDegreeField
+            : [internship?.requiredDegreeField].filter(Boolean);
+
+        if (reqFields.length === 0) return false;
+
+        // Collect the student's stated degree fields.
+        const studentFields = [];
+        if (Array.isArray(student?.education)) {
+            student.education.forEach(edu => {
+                if (edu.field) studentFields.push(String(edu.field).trim().toLowerCase());
+            });
+        }
+        if (student?.degreeField) {
+            studentFields.push(String(student.degreeField).trim().toLowerCase());
         }
 
-        // If a field is required but the student hasn't provided one
-        if (!student?.degreeField) {
-            return true; // Mismatch
-        }
+        // No education data at all → skip this rule (C3 penalty covers incomplete profile).
+        if (studentFields.length === 0) return false;
 
-        // Case-insensitive comparison
-        const requiredField = String(internship.requiredDegreeField).trim().toLowerCase();
-        const studentField = String(student.degreeField).trim().toLowerCase();
-
-        // We can also handle arrays if the DB allows multiple acceptable fields
-        if (Array.isArray(internship.requiredDegreeField)) {
-            return !internship.requiredDegreeField.some(f =>
-                String(f).trim().toLowerCase() === studentField
-            );
-        }
-
-        return requiredField !== studentField;
+        // Fire only if NO student field matches ANY required field.
+        return !reqFields.some(req => {
+            const reqName = typeof req === 'string' ? req : (req.name || String(req));
+            const reqLower = reqName.trim().toLowerCase();
+            return studentFields.some(sf => sf.includes(reqLower) || reqLower.includes(sf));
+        });
     },
 
     /**
-     * Action to perform when the condition is met.
+     * Soft penalty: visible in results but ranked low.
+     * A student with a mismatched-but-strong skill profile may still be
+     * a viable candidate — let the employer decide.
      * 
-     * @returns {Object} The score adjustment and explanation.
+     * @returns {Object} Score adjustment and explanation.
      */
-    action: () => {
-        return {
-            scoreAdjustment: -Infinity,
-            explanation: "Degree field mismatch"
-        };
-    }
+    action: () => ({
+        scoreAdjustment: -25,
+        explanation: "Degree field does not match any accepted field for this internship"
+    })
 };
 
 module.exports = rule;

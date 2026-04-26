@@ -2,37 +2,31 @@ const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../middleware/auth');
 const {
-  submitApplication,
-  applyToInternship,
-  getMyApplications,
-  getApplicationById,
-  getApplicationStudentProfile,
-  withdrawApplication,
-  addApplicationMessage,
-  getEmployerApplications,
-  updateApplicationStatus,
-  scheduleInterview,
-  getStudentStats
+    applyToInternship,
+    getEmployerApplications,
+    updateApplicationStatus,
+    getStudentStats,
+    getStudentApplications,
+    getApplicationDetails,
+    withdrawApplication,
+    checkApplicationStatus
 } = require('../controllers/applicationController');
 
 // All application routes are protected
 router.use(protect);
 
 // Student routes
+router.get('/student', authorize('student'), getStudentApplications);
 router.get('/student/stats', authorize('student'), getStudentStats);
-router.post('/', authorize('student'), submitApplication);
-router.get('/me', authorize('student'), getMyApplications);
+router.get('/check/:internshipId', authorize('student'), checkApplicationStatus);
 router.post('/apply/:id', authorize('student'), applyToInternship);
+router.delete('/:id/withdraw', authorize('student'), withdrawApplication);
 
 // Employer routes
 router.get('/employer', authorize('employer', 'admin'), getEmployerApplications);
-
-// Shared application routes
-router.get('/:id/student-profile', getApplicationStudentProfile);
-router.get('/:id', getApplicationById);
-router.patch('/:id/withdraw', authorize('student'), withdrawApplication);
-router.post('/:id/messages', addApplicationMessage);
 router.patch('/:id/status', authorize('employer', 'admin'), updateApplicationStatus);
-router.post('/:id/interview', authorize('employer', 'admin'), scheduleInterview);
+
+// Shared routes (placed at bottom to prevent shadowing)
+router.get('/:id', getApplicationDetails);
 
 module.exports = router;

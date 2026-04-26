@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }) => {
 
     const checkUserLoggedIn = async () => {
         try {
-            const { data } = await axios.get('/api/auth/me');
+            const { data } = await axios.get('/api/v1/auth/me');
             setUser(data);
             syncUserToStorage(data);
         } catch (error) {
@@ -70,9 +70,9 @@ export const AuthProvider = ({ children }) => {
         console.log('🚀 AUTHCONTEXT LOGIN: Function called!', { email, hasPassword: !!password });
         
         try {
-            console.log('🔐 LOGIN: Calling API at', axios.defaults.baseURL + '/api/auth/login');
+            console.log('🔐 LOGIN: Calling API at', axios.defaults.baseURL + '/api/v1/auth/login');
             
-            const { data } = await axios.post('/api/auth/login', { email, password });
+            const { data } = await axios.post('/api/v1/auth/login', { email, password });
             
             console.log('✅ LOGIN: Got response:', data);
             console.log('✅ LOGIN: Token in response:', !!data.token);
@@ -105,7 +105,7 @@ export const AuthProvider = ({ children }) => {
 
     const register = async (userData) => {
         try {
-            const { data } = await axios.post('/api/auth/register', userData);
+            const { data } = await axios.post('/api/v1/auth/register', userData);
             setUser(data);
             syncUserToStorage(data);
             router.push(getRoleDashboard(data.role));
@@ -117,7 +117,7 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         try {
-            await axios.post('/api/auth/logout');
+            await axios.post('/api/v1/auth/logout');
         } catch (error) {
             console.error('Logout API error:', error);
         } finally {
@@ -129,7 +129,7 @@ export const AuthProvider = ({ children }) => {
 
     const forgotPassword = async (email) => {
         try {
-            const { data } = await axios.post('/api/auth/forgotpassword', { email });
+            const { data } = await axios.post('/api/v1/auth/forgotpassword', { email });
             return { success: true, data };
         } catch (error) {
             return { success: false, error: error.response?.data?.message || 'Email could not be sent' };
@@ -138,7 +138,7 @@ export const AuthProvider = ({ children }) => {
 
     const resetPassword = async (token, password) => {
         try {
-            const { data } = await axios.put(`/api/auth/resetpassword/${token}`, { password });
+            const { data } = await axios.put(`/api/v1/auth/resetpassword/${token}`, { password });
             return { success: true, data };
         } catch (error) {
             return { success: false, error: error.response?.data?.message || 'Password reset failed' };

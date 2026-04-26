@@ -9,6 +9,8 @@
  * @module B2_ProficiencyLevelBonus
  */
 
+const { isSkillMatch } = require('../../utils/skillUtils');
+
 const rule = {
     name: "B2_ProficiencyLevelBonus",
     priority: 8,
@@ -24,23 +26,21 @@ const rule = {
         const requiredSkills = internship?.requiredSkills || [];
         const studentSkills = student?.skills || [];
 
-        // Find required skills that actually prefer senior candidates
-        const seniorRequiredSkills = requiredSkills.filter(req => req.prefersSenior);
-
-        if (seniorRequiredSkills.length === 0 || studentSkills.length === 0) {
+        // All required skills are eligible for the proficiency bonus
+        if (requiredSkills.length === 0 || studentSkills.length === 0) {
             return [];
         }
 
         const qualifyingSkills = [];
 
-        seniorRequiredSkills.forEach(reqSkill => {
+        requiredSkills.forEach(reqSkill => {
             const reqName = typeof reqSkill === 'string' ? reqSkill : reqSkill.name;
 
             const match = studentSkills.find(studentSkill => {
                 // If studentSkill is just a string, it has no proficiency recorded natively
                 if (typeof studentSkill === 'string') return false;
 
-                const isNameMatch = studentSkill.name.toLowerCase() === reqName.toLowerCase();
+                const isNameMatch = isSkillMatch(studentSkill, reqName);
                 const hasHighProficiency = ['ADVANCED', 'EXPERT'].includes(studentSkill.proficiency?.toUpperCase());
 
                 return isNameMatch && hasHighProficiency;
@@ -56,7 +56,6 @@ const rule = {
 
     /**
      * Evaluates if there are matched skills where student is ADVANCED/EXPERT 
-     * and internship prefers senior candidates.
      * 
      * @param {Object} facts - The facts base containing student and internship data.
      * @returns {boolean} True if condition met.

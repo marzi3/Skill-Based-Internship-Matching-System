@@ -111,7 +111,7 @@ const Sidebar = ({
                       : 'bg-blue-900 text-blue-200'
                     : variant === 'light'
                     ? 'text-gray-700 hover:bg-gray-100'
-                    : 'text-gray-300 hover:bg-gray-800'
+                    : 'text-gray-500 hover:bg-gray-800'
                   }
                 `}
               >
@@ -140,7 +140,7 @@ const Sidebar = ({
                         : 'bg-blue-900 text-blue-200'
                       : variant === 'light'
                         ? 'text-gray-700 hover:bg-gray-100'
-                        : 'text-gray-300 hover:bg-gray-800'
+                        : 'text-gray-500 hover:bg-gray-800'
                     }
                   `}
                 >
@@ -183,7 +183,7 @@ const Sidebar = ({
                               : 'bg-blue-900 text-blue-200 font-medium'
                             : variant === 'light'
                               ? 'text-gray-600 hover:bg-gray-50'
-                              : 'text-gray-400 hover:bg-gray-800'
+                              : 'text-gray-500 hover:bg-gray-800'
                           }
                         `}
                       >
@@ -211,7 +211,7 @@ const Sidebar = ({
                       : 'bg-blue-900 text-blue-200'
                     : variant === 'light'
                       ? 'text-gray-700 hover:bg-gray-100'
-                      : 'text-gray-300 hover:bg-gray-800'
+                      : 'text-gray-500 hover:bg-gray-800'
                   }
                 `}
               >
@@ -254,7 +254,7 @@ const Sidebar = ({
                 transition duration-300
                 ${variant === 'light'
                   ? 'text-gray-600 hover:bg-gray-100'
-                  : 'text-gray-400 hover:bg-gray-800'
+                  : 'text-gray-500 hover:bg-gray-800'
                 }
               `}
             >
@@ -385,7 +385,7 @@ export const SidebarWithSections = ({
             {!collapsed && section.title && (
               <h3 className={`
                 text-xs font-bold uppercase tracking-wider mb-3
-                ${variant === 'light' ? 'text-gray-500' : 'text-gray-400'}
+                ${variant === 'light' ? 'text-gray-500' : 'text-gray-500'}
               `}>
                 {section.title}
               </h3>
@@ -405,7 +405,7 @@ export const SidebarWithSections = ({
                         : 'bg-blue-900 text-blue-200'
                       : variant === 'light'
                         ? 'text-gray-700 hover:bg-gray-100'
-                        : 'text-gray-300 hover:bg-gray-800'
+                        : 'text-gray-500 hover:bg-gray-800'
                     }
                   `}
                 >

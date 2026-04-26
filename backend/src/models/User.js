@@ -36,6 +36,11 @@ const userSchema = new mongoose.Schema({
     enum: ['student', 'employer', 'admin'],
     default: 'student',
   },
+  status: {
+    type: String,
+    enum: ['pending', 'approved', 'suspended'],
+    default: 'pending',
+  },
   oauthProvider: {
     type: String,
     enum: ['google', 'linkedin', null],
@@ -49,6 +54,15 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: '',
   },
+  coverImage: {
+    type: String,
+    default: '',
+  },
+  phone: {
+    type: String,
+    trim: true,
+    default: '',
+  },
 
   // Verification Status
   isVerified: {
@@ -57,8 +71,12 @@ const userSchema = new mongoose.Schema({
   },
   verificationStatus: {
     type: String,
-    enum: ['none', 'pending', 'approved', 'rejected'],
-    default: 'none',
+    enum: ['unverified', 'pending', 'approved', 'rejected'],
+    default: 'unverified',
+  },
+  verificationFeedback: {
+    type: String,
+    trim: true,
   },
 
   // Student Specific
@@ -98,8 +116,38 @@ const userSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
+  location: {
+    type: String,
+    trim: true,
+  },
+  industry: {
+    type: String,
+    trim: true,
+  },
+  companySize: {
+    type: String,
+    enum: ['1-10', '11-50', '51-200', '201-500', '500+', ''],
+    default: '',
+  },
+  foundedYear: {
+    type: Number,
+    min: [1800, 'Founding year must be after 1800'],
+    max: [new Date().getFullYear(), 'Founding year cannot be in the future']
+  },
   resetPasswordToken: String,
   resetPasswordExpire: Date,
+
+  // Email Verification
+  emailVerificationToken: String,
+  emailVerificationExpire: Date,
+  hasSeenTutorial: {
+    type: Boolean,
+    default: false,
+  },
+  blockedUsers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
 }, {
   timestamps: true,
   toJSON: { virtuals: true },
@@ -142,10 +190,27 @@ userSchema.methods.getResetPasswordToken = function () {
     .update(resetToken)
     .digest('hex');
 
-  // Set expire time (10 minutes)
-  this.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+  // Set expire time (60 minutes)
+  this.resetPasswordExpire = Date.now() + 60 * 60 * 1000;
 
   return resetToken;
+};
+
+// Generate and hash email verification token
+userSchema.methods.getEmailVerificationToken = function () {
+  // Generate token
+  const verificationToken = crypto.randomBytes(20).toString('hex');
+
+  // Hash token and set to emailVerificationToken field
+  this.emailVerificationToken = crypto
+    .createHash('sha256')
+    .update(verificationToken)
+    .digest('hex');
+
+  // Set expire time (24 hours)
+  this.emailVerificationExpire = Date.now() + 24 * 60 * 60 * 1000;
+
+  return verificationToken;
 };
 
 const User = mongoose.model('User', userSchema);

@@ -121,7 +121,7 @@ export default function EmployersPage() {
                                     </div>
                                     <div>
                                         <p className="text-sm font-bold text-gray-900">Skill Verified</p>
-                                        <p className="text-[11px] text-gray-400 font-medium">React & Node.js</p>
+                                        <p className="text-[11px] text-gray-500 font-medium">React & Node.js</p>
                                     </div>
                                 </div>
 
@@ -244,7 +244,7 @@ export default function EmployersPage() {
                                         <item.icon className="w-6 h-6 text-white" />
                                     </div>
                                     <h3 className="text-xl font-extrabold text-white mb-3">{item.title}</h3>
-                                    <p className="text-gray-400 leading-relaxed">{item.desc}</p>
+                                    <p className="text-gray-500 leading-relaxed">{item.desc}</p>
                                 </div>
                             </div>
                         ))}

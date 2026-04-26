@@ -1,5 +1,8 @@
+const logger = require('../utils/logger');
 const Internship = require('../models/Internship');
 const User = require('../models/User');
+const Student = require('../models/Student');
+const mongoose = require('mongoose');
 
 // @desc    Get all hiring internships (for students)
 // @route   GET /api/internships
@@ -15,19 +18,30 @@ exports.getInternships = async (req, res) => {
         let query = { 
             status: { $in: ['Hiring', 'Active'] },
             isDeleted: { $ne: true },
-            expiryDate: { $gte: new Date() }
+            expiryDate: { $gte: new Date() } // VALIDATION: Ensure only non-expired internships are retrieved
         };
 
+        const andConditions = [];
 
-        
         if (q) {
-            query.$text = { $search: q };
+            const searchRegex = new RegExp(q, 'i');
+            andConditions.push({
+                $or: [
+                    { positionTitle: searchRegex },
+                    { company: searchRegex },
+                    { description: searchRegex },
+                    { domain: searchRegex },
+                    { location: searchRegex },
+                    { requiredSkills: searchRegex },
+                    { 'requiredSkills.name': searchRegex }
+                ]
+            });
         }
 
         // Handle comma-separated domains/industries
         const industries = industry || domain;
         if (industries) {
-            const industryArray = industries.split(',').map(i => new RegExp(`^${i.trim()}$`, 'i'));
+            const industryArray = industries.split(',').map(i => new RegExp(i.trim(), 'i'));
             query.domain = { $in: industryArray };
         }
 
@@ -43,20 +57,31 @@ exports.getInternships = async (req, res) => {
 
         // Handle free-text location search
         if (location) {
-            // Search in Location OR workEnvironment if it matches Remote/On-site/Hybrid
-            query.$or = query.$or || [];
-            query.$or.push({ location: new RegExp(location, 'i') });
-            query.$or.push({ workEnvironment: new RegExp(location, 'i') });
+            const locRegex = new RegExp(location, 'i');
+            andConditions.push({
+                $or: [
+                    { location: locRegex },
+                    { workEnvironment: locRegex }
+                ]
+            });
         }
 
         if (skill) {
-            query.$or = query.$or || [];
-            query.$or.push({ requiredSkills: new RegExp(skill, 'i') });
-            query.$or.push({ 'requiredSkills.name': new RegExp(skill, 'i') });
+            const skillRegex = new RegExp(skill, 'i');
+            andConditions.push({
+                $or: [
+                    { requiredSkills: skillRegex },
+                    { 'requiredSkills.name': skillRegex }
+                ]
+            });
         }
 
         if (duration) {
             query.duration = duration;
+        }
+
+        if (andConditions.length > 0) {
+            query.$and = andConditions;
         }
 
         // Handle sorting options: newest (createdAt), deadline (expiryDate), etc.
@@ -72,16 +97,14 @@ exports.getInternships = async (req, res) => {
             } else if (sort === 'Salary') {
                 sortOption = { 'stipend.amount': -1 };
             } else if (sort === 'Best Matches' && q) {
-                sortOption = { score: { $meta: "textScore" } };
+                // $text search was removed to support partial matching, so fallback to Newest for "Best Matches"
+                sortOption = { createdAt: -1 };
             }
         }
 
         let projection = {};
-        if (sort === 'Best Matches' && q) {
-            projection = { score: { $meta: "textScore" } };
-        }
 
-        const internships = await Internship.find(query, projection).sort(sortOption).populate('employer', 'name email companyName');
+        const internships = await Internship.find(query, projection).sort(sortOption).populate('employer', 'name email companyName profilePicture companyDescription');
         
         res.status(200).json({
             success: true,
@@ -138,13 +161,23 @@ exports.updateInternshipStatus = async (req, res) => {
 // @access  Public
 exports.getInternship = async (req, res) => {
     try {
-        const internship = await Internship.findById(req.params.id).populate('employer', 'name email companyName');
+        const internship = await Internship.findById(req.params.id)
+            .populate('employer', 'name email companyName profilePicture companyDescription website companyDescription');
         if (!internship) {
             return res.status(404).json({
                 success: false,
                 message: 'Internship not found'
             });
         }
+
+        // Increment views if not an employer viewing their own posting
+        // Or if it's a public/student view
+        const isOwner = req.user && internship.employer.toString() === req.user.id;
+        if (!isOwner) {
+            internship.views = (internship.views || 0) + 1;
+            await internship.save({ validateBeforeSave: false });
+        }
+
         res.status(200).json({
             success: true,
             data: internship
@@ -167,21 +200,22 @@ exports.createInternship = async (req, res) => {
         if (user.role !== 'employer') {
             return res.status(403).json({
                 success: false,
-                message: 'Only registered employers can post internships'
+                message: 'Only registered employers can post internships' // VALIDATION: Role-based access control
             });
         }
 
         // Add employer to req.body
         req.body.employer = req.user.id;
-        req.body.company = user.companyName || 'Incubator Labs';
+        req.body.company = user.companyName || 'My Company';
 
         // Rule: Only APPROVED employers can publish. PENDING can only DRAFT.
         const activeStatuses = ['Active', 'Hiring', 'Reviewing'];
         if (activeStatuses.includes(req.body.status) || !req.body.status) {
             if (user.verificationStatus !== 'approved') {
+                // VALIDATION: Force 'Draft' status for unverified employers to prevent public visibility
                 req.body.status = 'Draft';
             } else if (!req.body.status) {
-                req.body.status = 'Hiring'; // Default active status
+                req.body.status = 'Hiring'; // DEFAULT: Active status for verified employers
             }
         }
 
@@ -303,7 +337,7 @@ exports.getMyInternships = async (req, res) => {
             data: internships
         });
     } catch (error) {
-        console.error('CRITICAL: getMyInternships Failure:', error);
+        logger.error('CRITICAL: getMyInternships Failure:', error);
         res.status(500).json({
             success: false,
             message: `Internal Query Failure: ${error.message}`
@@ -317,7 +351,7 @@ exports.getMyInternships = async (req, res) => {
 exports.getSkillDemands = async (req, res) => {
     try {
         const skillDemands = await Internship.aggregate([
-            { $match: { requiredSkills: { $exists: true, $not: { $size: 0 } } } },
+            { $match: { employer: new mongoose.Types.ObjectId(req.user.id), requiredSkills: { $exists: true, $not: { $size: 0 } } } },
             { $unwind: '$requiredSkills' },
             {
                 $project: {
@@ -347,8 +381,7 @@ exports.getSkillDemands = async (req, res) => {
 
             // Find available students that have this skill (case-insensitive fuzzy match)
             // The student.skills array might contain strings or objects with a 'name' field
-            const available = await User.countDocuments({
-                role: 'student',
+            const available = await Student.countDocuments({
                 $or: [
                     { skills: new RegExp(skillName, 'i') },
                     { 'skills.name': new RegExp(skillName, 'i') }
@@ -371,7 +404,7 @@ exports.getSkillDemands = async (req, res) => {
             data: result
         });
     } catch (error) {
-        console.error('CRITICAL: getSkillDemands Failure:', error);
+        logger.error('CRITICAL: getSkillDemands Failure:', error);
         res.status(500).json({
             success: false,
             message: `Aggregation Failure: ${error.message}`

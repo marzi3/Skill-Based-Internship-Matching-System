@@ -112,7 +112,7 @@ const Pagination = ({
             ${sizeClasses[size]}
             rounded-lg transition duration-300
             ${currentPage === 1
-              ? 'opacity-50 cursor-not-allowed bg-gray-100 text-gray-400'
+              ? 'opacity-50 cursor-not-allowed bg-gray-100 text-gray-500'
               : `${variantClasses.default} hover:shadow-md active:scale-95`
             }
           `}
@@ -158,7 +158,7 @@ const Pagination = ({
             ${sizeClasses[size]}
             rounded-lg transition duration-300
             ${currentPage === totalPages
-              ? 'opacity-50 cursor-not-allowed bg-gray-100 text-gray-400'
+              ? 'opacity-50 cursor-not-allowed bg-gray-100 text-gray-500'
               : `${variantClasses.default} hover:shadow-md active:scale-95`
             }
           `}

@@ -19,7 +19,7 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-gray-900 text-gray-300 mt-16">
+    <footer className="bg-gray-900 text-gray-500 mt-16">
       {/* Newsletter Section */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 py-12 px-4">
         <div className="max-w-4xl mx-auto text-center">
@@ -65,7 +65,7 @@ const Footer = () => {
               </div>
               <h4 className="text-xl font-bold text-white">InternMatch</h4>
             </div>
-            <p className="text-gray-400 text-sm mb-6">
+            <p className="text-gray-500 text-sm mb-6">
               Connecting talented students with great internship opportunities through AI-powered matching.
             </p>
             <div className="flex space-x-4">
@@ -73,7 +73,7 @@ const Footer = () => {
                 href="https://facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-400 hover:text-blue-500 transition duration-300"
+                className="text-gray-500 hover:text-blue-500 transition duration-300"
               >
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.39v-1.2h-2.5v8.5h2.5v-4.34c0-.55.49-1.03 1.04-1.04.58 0 1.05.5 1.05 1.04v4.34h2.5M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.68-1.68-1.68-.93 0-1.68.75-1.68 1.68s.75 1.68 1.68 1.68m1.39 9.94v-8.5H5.5v8.5h2.77z" />
@@ -83,7 +83,7 @@ const Footer = () => {
                 href="https://twitter.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-400 hover:text-blue-400 transition duration-300"
+                className="text-gray-500 hover:text-blue-400 transition duration-300"
               >
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2s9 5 20 5a9.5 9.5 0 00-9-5.5c4.75 2.25 7-0.44 7-2v-1a4.44 4.44 0 00-1-3.48 4.37 4.37 0 00-.5-1.52z" />
@@ -93,7 +93,7 @@ const Footer = () => {
                 href="https://linkedin.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-400 hover:text-blue-600 transition duration-300"
+                className="text-gray-500 hover:text-blue-600 transition duration-300"
               >
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                   <circle cx="12" cy="12" r="1" />
@@ -104,7 +104,7 @@ const Footer = () => {
                 href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-400 hover:text-pink-500 transition duration-300"
+                className="text-gray-500 hover:text-pink-500 transition duration-300"
               >
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                   <rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="none" stroke="currentColor" strokeWidth="2" />
@@ -120,27 +120,27 @@ const Footer = () => {
             <h5 className="text-lg font-bold text-white mb-4">For Students</h5>
             <ul className="space-y-3">
               <li>
-                <Link href="/browse" className="text-gray-400 hover:text-blue-400 transition duration-300">
+                <Link href="/browse" className="text-gray-500 hover:text-blue-400 transition duration-300">
                   Browse Internships
                 </Link>
               </li>
               <li>
-                <Link href="/profile" className="text-gray-400 hover:text-blue-400 transition duration-300">
+                <Link href="/profile" className="text-gray-500 hover:text-blue-400 transition duration-300">
                   My Applications
                 </Link>
               </li>
               <li>
-                <Link href="/career-advice" className="text-gray-400 hover:text-blue-400 transition duration-300">
+                <Link href="/career-advice" className="text-gray-500 hover:text-blue-400 transition duration-300">
                   Career Advice
                 </Link>
               </li>
               <li>
-                <Link href="/resources" className="text-gray-400 hover:text-blue-400 transition duration-300">
+                <Link href="/resources" className="text-gray-500 hover:text-blue-400 transition duration-300">
                   Resources
                 </Link>
               </li>
               <li>
-                <Link href="/blog" className="text-gray-400 hover:text-blue-400 transition duration-300">
+                <Link href="/blog" className="text-gray-500 hover:text-blue-400 transition duration-300">
                   Blog
                 </Link>
               </li>
@@ -152,27 +152,27 @@ const Footer = () => {
             <h5 className="text-lg font-bold text-white mb-4">For Employers</h5>
             <ul className="space-y-3">
               <li>
-                <Link href="/post-internship" className="text-gray-400 hover:text-blue-400 transition duration-300">
+                <Link href="/post-internship" className="text-gray-500 hover:text-blue-400 transition duration-300">
                   Post an Internship
                 </Link>
               </li>
               <li>
-                <Link href="/find-talent" className="text-gray-400 hover:text-blue-400 transition duration-300">
+                <Link href="/find-talent" className="text-gray-500 hover:text-blue-400 transition duration-300">
                   Find Talent
                 </Link>
               </li>
               <li>
-                <Link href="/pricing" className="text-gray-400 hover:text-blue-400 transition duration-300">
+                <Link href="/pricing" className="text-gray-500 hover:text-blue-400 transition duration-300">
                   Pricing
                 </Link>
               </li>
               <li>
-                <Link href="/employer-guide" className="text-gray-400 hover:text-blue-400 transition duration-300">
+                <Link href="/employer-guide" className="text-gray-500 hover:text-blue-400 transition duration-300">
                   Employer Guide
                 </Link>
               </li>
               <li>
-                <Link href="/company" className="text-gray-400 hover:text-blue-400 transition duration-300">
+                <Link href="/company" className="text-gray-500 hover:text-blue-400 transition duration-300">
                   Company Profile
                 </Link>
               </li>
@@ -184,27 +184,27 @@ const Footer = () => {
             <h5 className="text-lg font-bold text-white mb-4">Support & Legal</h5>
             <ul className="space-y-3">
               <li>
-                <Link href="/contact" className="text-gray-400 hover:text-blue-400 transition duration-300">
+                <Link href="/contact" className="text-gray-500 hover:text-blue-400 transition duration-300">
                   Contact Us
                 </Link>
               </li>
               <li>
-                <Link href="/faq" className="text-gray-400 hover:text-blue-400 transition duration-300">
+                <Link href="/faq" className="text-gray-500 hover:text-blue-400 transition duration-300">
                   FAQ
                 </Link>
               </li>
               <li>
-                <Link href="/privacy" className="text-gray-400 hover:text-blue-400 transition duration-300">
+                <Link href="/privacy" className="text-gray-500 hover:text-blue-400 transition duration-300">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link href="/terms" className="text-gray-400 hover:text-blue-400 transition duration-300">
+                <Link href="/terms" className="text-gray-500 hover:text-blue-400 transition duration-300">
                   Terms of Service
                 </Link>
               </li>
               <li>
-                <Link href="/accessibility" className="text-gray-400 hover:text-blue-400 transition duration-300">
+                <Link href="/accessibility" className="text-gray-500 hover:text-blue-400 transition duration-300">
                   Accessibility
                 </Link>
               </li>
@@ -223,13 +223,13 @@ const Footer = () => {
             &copy; {currentYear} InternMatch. All rights reserved. | Made with ❤️
           </p>
           <div className="flex space-x-6 text-sm">
-            <Link href="/sitemap" className="text-gray-500 hover:text-gray-300 transition duration-300">
+            <Link href="/sitemap" className="text-gray-500 hover:text-gray-500 transition duration-300">
               Sitemap
             </Link>
-            <Link href="/status" className="text-gray-500 hover:text-gray-300 transition duration-300">
+            <Link href="/status" className="text-gray-500 hover:text-gray-500 transition duration-300">
               System Status
             </Link>
-            <Link href="/contact" className="text-gray-500 hover:text-gray-300 transition duration-300">
+            <Link href="/contact" className="text-gray-500 hover:text-gray-500 transition duration-300">
               Report Issues
             </Link>
           </div>

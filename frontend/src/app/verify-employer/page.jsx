@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '@/services/apiClient';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import { motion } from 'framer-motion';
@@ -31,8 +31,9 @@ export default function VerifyEmployer() {
         data.append('businessDocument', file);
 
         try {
-            await axios.post('/api/verification/employer', data, {
-                headers: { 'Content-Type': 'multipart/form-data' },
+            const token = localStorage.getItem('token');
+            await axios.post('/verification/employer', data, {
+                headers: { Authorization: `Bearer ${token}` },
             });
             window.location.reload();
         } catch (error) {
@@ -84,7 +85,7 @@ export default function VerifyEmployer() {
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold text-gray-700 ml-1">Company Name</label>
                                 <div className="relative">
-                                    <Briefcase className="absolute left-4 top-3.5 text-gray-400" size={18} />
+                                    <Briefcase className="absolute left-4 top-3.5 text-gray-500" size={18} />
                                     <input name="companyName" type="text" required onChange={handleChange}
                                         className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all shadow-sm" placeholder="Acme Corp" />
                                 </div>
@@ -92,7 +93,7 @@ export default function VerifyEmployer() {
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold text-gray-700 ml-1">Registration Number</label>
                                 <div className="relative">
-                                    <FileCheck className="absolute left-4 top-3.5 text-gray-400" size={18} />
+                                    <FileCheck className="absolute left-4 top-3.5 text-gray-500" size={18} />
                                     <input name="businessRegistrationNumber" type="text" required onChange={handleChange}
                                         className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all shadow-sm" placeholder="BR-123456" />
                                 </div>
@@ -102,7 +103,7 @@ export default function VerifyEmployer() {
                         <div className="space-y-2">
                             <label className="text-sm font-semibold text-gray-700 ml-1">Company Website</label>
                             <div className="relative">
-                                <Globe className="absolute left-4 top-3.5 text-gray-400" size={18} />
+                                <Globe className="absolute left-4 top-3.5 text-gray-500" size={18} />
                                 <input name="website" type="url" onChange={handleChange}
                                     className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all shadow-sm" placeholder="https://acme.com" />
                             </div>
@@ -112,9 +113,9 @@ export default function VerifyEmployer() {
                             <label className="text-sm font-semibold text-gray-700 ml-1">Upload Business Document (PDF)</label>
                             <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:bg-green-50 hover:border-green-300 transition-all bg-white/50 group">
                                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                    <Upload className="w-10 h-10 mb-3 text-gray-400 group-hover:text-green-500 transition-colors" />
+                                    <Upload className="w-10 h-10 mb-3 text-gray-500 group-hover:text-green-500 transition-colors" />
                                     <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Upload Certificate</span> or drag and drop</p>
-                                    <p className="text-xs text-gray-400">PDF Only (MAX. 5MB)</p>
+                                    <p className="text-xs text-gray-500">PDF Only (MAX. 5MB)</p>
                                 </div>
                                 <input type="file" accept=".pdf" className="hidden" onChange={(e) => setFile(e.target.files[0])} />
                             </label>

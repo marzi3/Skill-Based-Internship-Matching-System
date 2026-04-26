@@ -1,4 +1,8 @@
+const logger = require('../utils/logger');
 const mongoose = require('mongoose');
+const dns = require('dns');
+
+// dns.setServers(['8.8.8.8', '8.8.4.4']);
 
 const connectDB = async () => {
   try {
@@ -6,11 +10,13 @@ const connectDB = async () => {
       throw new Error('MONGODB_URI is not defined in environment variables');
     }
 
-    const conn = await mongoose.connect(process.env.MONGODB_URI);
+    const conn = await mongoose.connect(process.env.MONGODB_URI, {
+      serverSelectionTimeoutMS: 5000, // Fail fast (5s) to identify whitelist issues
+    });
     
     return conn;
   } catch (error) {
-    console.error(`✗ Error connecting to MongoDB: ${error.message}`);
+    logger.error(`✗ Error connecting to MongoDB: ${error.message}`);
     process.exit(1);
   }
 };
@@ -28,7 +34,7 @@ const initializeDatabase = async () => {
       await db.createCollection('users');
     }
   } catch (error) {
-    console.error('✗ Error initializing database:', error.message);
+    logger.error('✗ Error initializing database:', error.message);
     throw error;
   }
 };
