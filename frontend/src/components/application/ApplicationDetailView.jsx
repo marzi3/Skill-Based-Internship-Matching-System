@@ -38,17 +38,34 @@ export default function ApplicationDetailView({ application, role, onStatusUpdat
         interviewDetails
     } = application;
 
-    const timelineSteps = [
+    const baseTimelineSteps = [
         { id: 'Applied', label: 'Submitted', description: 'Application submitted' },
         { id: 'Reviewing', label: 'Under Review', description: 'Employer evaluation in progress' },
         { id: 'Shortlisted', label: 'Shortlisted', description: 'Candidate moved to next round' },
         { id: 'Interviewing', label: 'Interview', description: 'Meeting scheduled with candidate' },
-        { id: 'Offered', label: 'Offered', description: 'Official internship offer sent' },
-        { id: 'Accepted', label: 'Accepted', description: 'Candidate accepted the position' }
+        { id: 'Offered', label: 'Offered', description: 'Official internship offer sent' }
     ];
 
+    const terminalStep =
+        status === 'Rejected'
+            ? { id: 'Rejected', label: 'Rejected', description: 'Application was rejected' }
+            : status === 'Withdrawn'
+                ? { id: 'Withdrawn', label: 'Withdrawn', description: 'Application was withdrawn' }
+                : { id: 'Accepted', label: 'Accepted', description: 'Candidate accepted the position' };
+
+    const timelineSteps = [...baseTimelineSteps, terminalStep];
+
     const currentStepIndex = timelineSteps.findIndex((step) => step.id === status);
-    const normalizedStepIndex = currentStepIndex < 0 ? 0 : currentStepIndex;
+    const orderedStatusHistory = [...(statusHistory || [])].sort((a, b) => new Date(a.updatedAt) - new Date(b.updatedAt));
+    const crossedStageIds = new Set(
+        orderedStatusHistory
+            .map((log) => log.status)
+            .filter((statusValue) => timelineSteps.some((step) => step.id === statusValue))
+    );
+    crossedStageIds.add('Applied');
+    if (timelineSteps.some((step) => step.id === status)) {
+        crossedStageIds.add(status);
+    }
     const score = Math.max(0, Math.min(100, Number(matchAnalysis?.score || application.matchScore || 0)));
     const radius = 30;
     const circumference = 2 * Math.PI * radius;
@@ -171,14 +188,20 @@ export default function ApplicationDetailView({ application, role, onStatusUpdat
                                         <div className="min-w-[720px]">
                                             <div className="flex items-start">
                                         {timelineSteps.map((step, index) => {
-                                            const isCompleted = index <= currentStepIndex;
-                                            const isCurrent = index === currentStepIndex;
+                                            const isCurrent = step.id === status;
+                                            const isCompleted = crossedStageIds.has(step.id) && !isCurrent;
+                                            const isVisited = crossedStageIds.has(step.id) || isCurrent;
+                                            const nextStep = timelineSteps[index + 1];
+                                            const isConnectorFilled =
+                                                !!nextStep &&
+                                                crossedStageIds.has(step.id) &&
+                                                crossedStageIds.has(nextStep.id);
 
                                             return (
                                                 <div key={step.id} className="relative flex-1 px-1 text-center">
                                                     {index < timelineSteps.length - 1 && (
                                                         <div
-                                                            className={`absolute left-1/2 top-5 h-[3px] w-full ${index < normalizedStepIndex ? 'bg-emerald-500' : 'bg-slate-200'}`}
+                                                            className={`absolute left-1/2 top-5 h-[3px] w-full ${isConnectorFilled ? 'bg-emerald-500' : 'bg-slate-200'}`}
                                                         />
                                                     )}
                                                     <div
@@ -198,7 +221,7 @@ export default function ApplicationDetailView({ application, role, onStatusUpdat
                                                             <span className="text-xs font-black">{index + 1}</span>
                                                         )}
                                                     </div>
-                                                    <p className={`mt-2 text-xs font-black uppercase tracking-widest ${isCompleted ? 'text-slate-900' : 'text-slate-500'}`}>
+                                                    <p className={`mt-2 text-xs font-black uppercase tracking-widest ${isVisited ? 'text-slate-900' : 'text-slate-500'}`}>
                                                         {step.label}
                                                     </p>
                                                     {isCurrent && (

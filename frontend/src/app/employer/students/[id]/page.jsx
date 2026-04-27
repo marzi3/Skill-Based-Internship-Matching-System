@@ -220,6 +220,34 @@ export default function EmployerStudentProfilePage({ params }) {
         const lastSegment = cleanPath.split('/').filter(Boolean).pop();
         return lastSegment || 'resume.pdf';
     })();
+
+    const downloadResume = async () => {
+        if (!resumeUrl) return;
+
+        try {
+            const response = await fetch(resumeUrl);
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch resume: ${response.status}`);
+            }
+
+            const blob = await response.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+
+            link.href = blobUrl;
+            link.download = resumeDisplayName || 'resume.pdf';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(blobUrl);
+        } catch (downloadError) {
+            console.error('Resume download failed:', downloadError);
+
+            // Fallback: open the file directly if blob download cannot be created.
+            window.open(resumeUrl, '_blank', 'noopener,noreferrer');
+        }
+    };
     const currentViewerImage = viewerState.images[viewerState.index] || null;
 
     if (loading) {
@@ -618,15 +646,13 @@ export default function EmployerStudentProfilePage({ params }) {
                                         >
                                             <Eye size={18} /> Preview Resume
                                         </a>
-                                        <a
-                                            href={resumeUrl}
-                                            download={profile?.resume?.fileName || 'resume'}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
+                                        <button
+                                            type="button"
+                                            onClick={downloadResume}
                                             className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#22b688] to-[#19b57a] px-4 py-3 text-base font-black text-white transition-opacity hover:opacity-95"
                                         >
                                             <Download size={18} /> Download
-                                        </a>
+                                        </button>
                                     </div>
                                 </div>
                             ) : (
