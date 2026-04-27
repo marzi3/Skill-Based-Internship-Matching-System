@@ -19,6 +19,17 @@ const getMailtoHref = (email = '') => {
 
 const getWordCount = (value = '') => String(value).trim().split(/\s+/).filter(Boolean).length;
 
+/** Resolve image source for both Cloudinary (full URL) and local uploads (relative path). */
+const resolveImageUrl = (source) => {
+    if (!source) return '';
+    if (source.startsWith('http') || source.startsWith('data:')) return source;
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005';
+    let baseUrl = apiUrl;
+    try { baseUrl = new URL(apiUrl).origin; } catch { baseUrl = apiUrl.replace(/\/api\/v1\/?$/, ''); }
+    const clean = source.startsWith('/') ? source.substring(1) : source;
+    return `${baseUrl}/${clean}`;
+};
+
 const ProfilePage = () => {
     const MAX_DESCRIPTION_WORDS = 200;
     const router = useRouter();
@@ -30,8 +41,8 @@ const ProfilePage = () => {
     const [previewCoverImage, setPreviewCoverImage] = useState(null);
     const companyEmail = user?.email || '';
     const companyEmailHref = getMailtoHref(companyEmail);
-    const companyProfileImage = previewImage || user?.profilePicture || '';
-    const companyCoverImage = previewCoverImage || user?.coverImage || '';
+    const companyProfileImage = previewImage || resolveImageUrl(user?.profilePicture) || '';
+    const companyCoverImage = previewCoverImage || resolveImageUrl(user?.coverImage) || '';
     
     const [formData, setFormData] = useState({
         name: user?.name || '',

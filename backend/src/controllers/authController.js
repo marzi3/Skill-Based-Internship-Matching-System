@@ -391,6 +391,18 @@ const resetPassword = async (req, res) => {
             return res.status(400).json({ message: 'Invalid token' });
         }
 
+        // Validate new password strength
+        const newPwd = req.body.password;
+        if (!newPwd || newPwd.length < 8) {
+            return res.status(400).json({ message: 'Password must be at least 8 characters long' });
+        }
+        if (!/[0-9]/.test(newPwd)) {
+            return res.status(400).json({ message: 'Password must contain at least one number' });
+        }
+        if (!/[!@#$%^&*]/.test(newPwd)) {
+            return res.status(400).json({ message: 'Password must contain at least one special character (!@#$%^&*)' });
+        }
+
         // Set new password
         user.password = req.body.password;
         user.resetPasswordToken = undefined;
@@ -608,6 +620,18 @@ const updatePassword = async (req, res) => {
 
         if (!(await user.comparePassword(req.body.currentPassword))) {
             return res.status(401).json({ message: 'Incorrect current password' });
+        }
+
+        // Validate new password strength
+        const newPwd = req.body.newPassword;
+        if (!newPwd || newPwd.length < 8) {
+            return res.status(400).json({ message: 'New password must be at least 8 characters long' });
+        }
+        if (!/[0-9]/.test(newPwd)) {
+            return res.status(400).json({ message: 'New password must contain at least one number' });
+        }
+        if (!/[!@#$%^&*]/.test(newPwd)) {
+            return res.status(400).json({ message: 'New password must contain at least one special character (!@#$%^&*)' });
         }
 
         user.password = req.body.newPassword;

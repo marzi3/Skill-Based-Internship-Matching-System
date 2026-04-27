@@ -22,7 +22,9 @@ app.use(Sentry.Handlers.tracingHandler());
 
 // Middleware
 app.use((req, res, next) => {
-  console.log(`[REQUEST] ${req.method} ${req.url}`);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`[REQUEST] ${req.method} ${req.url}`);
+  }
   next();
 });
 

@@ -8,6 +8,8 @@ import { z } from 'zod';
 import { internshipStep1Schema, internshipStep2Schema, internshipStep3Schema } from '@/lib/validationSchemas';
 import Link from 'next/link';
 import axios from '@/services/apiClient';
+import skillsData from '@/data/skills.json';
+import degreesData from '@/data/degrees.json';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft,
@@ -121,6 +123,10 @@ const CreateInternshipPage = () => {
   const [degreeInput, setDegreeInput] = useState('');
   const [perkInput, setPerkInput] = useState('');
 
+  const [skillSuggestions, setSkillSuggestions] = useState([]);
+  const [prefSkillSuggestions, setPrefSkillSuggestions] = useState([]);
+  const [degreeSuggestions, setDegreeSuggestions] = useState([]);
+
   const steps = [
     { id: 1, title: 'Basics' },
     { id: 2, title: 'Requirements' },
@@ -150,14 +156,23 @@ const CreateInternshipPage = () => {
   }, [formValues.position, formValues.category, formValues.location, formValues.duration, formValues.deadline, formValues.description]);
 
   // ─── Tag Handlers ──────────────────────────────────────────────────────────
-  const handleAddSkill = (e) => {
+  const handleAddSkill = (e, skillNameOverride) => {
     if (e) e.preventDefault();
-    const newSkill = skillInput.trim();
+    const newSkill = (skillNameOverride || skillInput).trim();
     if (newSkill && !requiredSkills.some(s => s.name === newSkill)) {
       setRequiredSkills(prev => [...prev, { name: newSkill, mandatory: true, prefersSenior: false }]);
       setSkillInput('');
+      setSkillSuggestions([]);
       clearErrors('requiredSkills');
     }
+  };
+
+  const handleSkillInputChange = (value) => {
+    setSkillInput(value);
+    const filtered = skillsData.filter(s => 
+      s.toLowerCase().includes(value.toLowerCase())
+    ).slice(0, 5);
+    setSkillSuggestions(value ? filtered : []);
   };
 
   const handleToggleSkillConfig = (skillName, field) => {
@@ -170,27 +185,46 @@ const CreateInternshipPage = () => {
     setRequiredSkills(prev => prev.filter(s => s.name !== skillToRemove));
   };
 
-  const handleAddPrefSkill = (e) => {
+  const handleAddPrefSkill = (e, skillNameOverride) => {
     if (e) e.preventDefault();
-    const newSkill = prefSkillInput.trim();
+    const newSkill = (skillNameOverride || prefSkillInput).trim();
     if (newSkill && !preferredSkills.includes(newSkill)) {
       setPreferredSkills(prev => [...prev, newSkill]);
       setPrefSkillInput('');
+      setPrefSkillSuggestions([]);
     }
+  };
+
+  const handlePrefSkillInputChange = (value) => {
+    setPrefSkillInput(value);
+    const filtered = skillsData.filter(s => 
+      s.toLowerCase().includes(value.toLowerCase())
+    ).slice(0, 5);
+    setPrefSkillSuggestions(value ? filtered : []);
   };
 
   const handleRemovePrefSkill = (skillToRemove) => {
     setPreferredSkills(prev => prev.filter(s => s !== skillToRemove));
   };
 
-  const handleAddDegree = (e) => {
+  const handleAddDegree = (e, degreeNameOverride) => {
     if (e) e.preventDefault();
-    const newDegree = degreeInput.trim();
+    const newDegree = (degreeNameOverride || degreeInput).trim();
     if (newDegree && !requiredDegreeField.includes(newDegree)) {
       setRequiredDegreeField(prev => [...prev, newDegree]);
       setDegreeInput('');
+      setDegreeSuggestions([]);
       clearErrors('requiredDegreeField');
     }
+  };
+
+  const handleDegreeInputChange = (value) => {
+    setDegreeInput(value);
+    if (errors.requiredDegreeField) clearErrors('requiredDegreeField');
+    const filtered = degreesData.filter(d => 
+      d.toLowerCase().includes(value.toLowerCase())
+    ).slice(0, 5);
+    setDegreeSuggestions(value ? filtered : []);
   };
 
   const handleRemoveDegree = (degreeToRemove) => {
@@ -454,16 +488,31 @@ const CreateInternshipPage = () => {
                           <label className={`block text-xs font-black uppercase tracking-widest ml-1 mb-2.5 ${errors.requiredSkills ? 'text-rose-500' : 'text-slate-900'}`}>
                             Prerequisite Skills <span className="text-rose-500 ml-1 font-bold text-sm">*</span>
                           </label>
-                          <div className="flex gap-4">
-                            <input
-                              type="text"
-                              value={skillInput}
-                              onChange={(e) => setSkillInput(e.target.value)}
-                              onKeyDown={(e) => e.key === 'Enter' && handleAddSkill(e)}
-                              placeholder="Type a skill..."
-                              aria-invalid={errors.requiredSkills ? 'true' : undefined}
-                              className={`flex-1 bg-slate-50 border rounded-2xl py-4 px-6 text-slate-900 font-bold focus:outline-none transition-all placeholder:text-slate-500 shadow-sm ${errors.requiredSkills ? 'border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-500/50' : 'border-slate-200 focus:border-[#6366F1]/50'}`}
-                            />
+                          <div className="flex gap-4 relative">
+                            <div className="flex-1 relative">
+                              <input
+                                type="text"
+                                value={skillInput}
+                                onChange={(e) => handleSkillInputChange(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleAddSkill(e)}
+                                placeholder="Type a skill..."
+                                aria-invalid={errors.requiredSkills ? 'true' : undefined}
+                                className={`w-full bg-slate-50 border rounded-2xl py-4 px-6 text-slate-900 font-bold focus:outline-none transition-all placeholder:text-slate-500 shadow-sm ${errors.requiredSkills ? 'border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-500/50' : 'border-slate-200 focus:border-[#6366F1]/50'}`}
+                              />
+                              {skillSuggestions.length > 0 && (
+                                <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200">
+                                  {skillSuggestions.map((skill, idx) => (
+                                    <button
+                                      key={idx}
+                                      className="w-full text-left px-4 py-2 text-sm hover:bg-indigo-50 transition-colors font-medium text-slate-700"
+                                      onClick={(e) => handleAddSkill(e, skill)}
+                                    >
+                                      {skill}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                             <button
                               onClick={handleAddSkill}
                               className="px-10 bg-[#6366F1] hover:bg-[#4F46E5] text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl shadow-indigo-600/20 active:scale-95 transition-all outline-none"
@@ -516,15 +565,30 @@ const CreateInternshipPage = () => {
                         {/* Preferred Skills */}
                         <div className="space-y-4">
                           <label className="block text-xs font-black uppercase tracking-widest ml-1 mb-2.5 text-slate-900">Preferred / Bonus Skills</label>
-                          <div className="flex gap-4">
-                            <input
-                              type="text"
-                              value={prefSkillInput}
-                              onChange={(e) => setPrefSkillInput(e.target.value)}
-                              onKeyDown={(e) => e.key === 'Enter' && handleAddPrefSkill(e)}
-                              placeholder="Type a bonus skill..."
-                              className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl py-4 px-6 text-slate-900 font-bold focus:outline-none focus:border-[#6366F1]/50 transition-all placeholder:text-slate-500 shadow-sm"
-                            />
+                          <div className="flex gap-4 relative">
+                            <div className="flex-1 relative">
+                              <input
+                                type="text"
+                                value={prefSkillInput}
+                                onChange={(e) => handlePrefSkillInputChange(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleAddPrefSkill(e)}
+                                placeholder="Type a bonus skill..."
+                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-6 text-slate-900 font-bold focus:outline-none focus:border-[#6366F1]/50 transition-all placeholder:text-slate-500 shadow-sm"
+                              />
+                              {prefSkillSuggestions.length > 0 && (
+                                <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200">
+                                  {prefSkillSuggestions.map((skill, idx) => (
+                                    <button
+                                      key={idx}
+                                      className="w-full text-left px-4 py-2 text-sm hover:bg-indigo-50 transition-colors font-medium text-slate-700"
+                                      onClick={(e) => handleAddPrefSkill(e, skill)}
+                                    >
+                                      {skill}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                             <button
                               onClick={handleAddPrefSkill}
                               className="px-10 bg-white border border-slate-200 hover:border-[#6366F1] hover:text-[#6366F1] text-slate-500 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-sm active:scale-95 transition-all outline-none"
@@ -549,16 +613,31 @@ const CreateInternshipPage = () => {
                           <label className={`block text-xs font-black uppercase tracking-widest ml-1 mb-2.5 ${errors.requiredDegreeField ? 'text-rose-500' : 'text-slate-900'}`}>
                             Accepted Degree Fields <span className="text-rose-500 ml-1 font-bold text-sm">*</span>
                           </label>
-                          <div className="flex gap-4">
-                            <input
-                              type="text"
-                              value={degreeInput}
-                              onChange={(e) => { setDegreeInput(e.target.value); if (errors.requiredDegreeField) clearErrors('requiredDegreeField'); }}
-                              onKeyDown={(e) => e.key === 'Enter' && handleAddDegree(e)}
-                              placeholder="e.g. Computer Science, IT, Software Engineering..."
-                              aria-invalid={errors.requiredDegreeField ? 'true' : undefined}
-                              className={`flex-1 bg-slate-50 border rounded-2xl py-4 px-6 text-slate-900 font-bold focus:outline-none transition-all placeholder:text-slate-500 shadow-sm ${errors.requiredDegreeField ? 'border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-500/50' : 'border-slate-200 focus:border-[#6366F1]/50'}`}
-                            />
+                          <div className="flex gap-4 relative">
+                            <div className="flex-1 relative">
+                              <input
+                                type="text"
+                                value={degreeInput}
+                                onChange={(e) => handleDegreeInputChange(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleAddDegree(e)}
+                                placeholder="e.g. Computer Science, IT, Software Engineering..."
+                                aria-invalid={errors.requiredDegreeField ? 'true' : undefined}
+                                className={`w-full bg-slate-50 border rounded-2xl py-4 px-6 text-slate-900 font-bold focus:outline-none transition-all placeholder:text-slate-500 shadow-sm ${errors.requiredDegreeField ? 'border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-500/50' : 'border-slate-200 focus:border-[#6366F1]/50'}`}
+                              />
+                              {degreeSuggestions.length > 0 && (
+                                <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200">
+                                  {degreeSuggestions.map((degree, idx) => (
+                                    <button
+                                      key={idx}
+                                      className="w-full text-left px-4 py-2 text-sm hover:bg-indigo-50 transition-colors font-medium text-slate-700"
+                                      onClick={(e) => handleAddDegree(e, degree)}
+                                    >
+                                      {degree}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                             <button
                               onClick={handleAddDegree}
                               className="px-10 bg-white border border-slate-200 hover:border-[#6366F1] hover:text-[#6366F1] text-slate-500 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-sm active:scale-95 transition-all outline-none"
@@ -644,12 +723,23 @@ const CreateInternshipPage = () => {
                               </div>
                             )}
                           </div>
-                          <CustomInput
-                             label="Academic Standard"
-                             icon={GraduationCap}
-                             placeholder="e.g. Master's in Design"
-                             {...register('educationRequirements')}
-                           />
+                          <div>
+                            <CustomInput
+                               label="Academic Standard"
+                               icon={GraduationCap}
+                               placeholder="e.g. Master's in Design"
+                               list="academic-standards"
+                               {...register('educationRequirements')}
+                             />
+                             <datalist id="academic-standards">
+                               <option value="High School Diploma" />
+                               <option value="Certificate" />
+                               <option value="Associate's Degree" />
+                               <option value="Bachelor's Degree" />
+                               <option value="Master's Degree" />
+                               <option value="Doctorate / PhD" />
+                             </datalist>
+                          </div>
                         </div>
                       </div>
                     )}

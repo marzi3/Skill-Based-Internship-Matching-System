@@ -15,6 +15,14 @@ exports.applyToInternship = async (req, res) => {
         const { id } = req.params;
         const { coverLetter } = req.body;
 
+        // Validate cover letter
+        if (!coverLetter || typeof coverLetter !== 'string' || coverLetter.trim().length < 20) {
+            return res.status(400).json({
+                success: false,
+                message: 'Cover letter is required and must be at least 20 characters long.'
+            });
+        }
+
         // 1. Check if already applied (ignore withdrawn applications)
         const existingApplication = await Application.findOne({ 
             student: req.user.id, 
@@ -492,6 +500,35 @@ exports.checkApplicationStatus = async (req, res) => {
             applied: !!application && application.status !== 'Withdrawn',
             applicationId: application?._id || null,
             applicationStatus: application?.status || null
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Toggle application pin status
+// @route   PATCH /api/applications/:id/pin
+// @access  Private (Employer)
+exports.togglePinApplication = async (req, res) => {
+    try {
+        const application = await Application.findById(req.params.id);
+
+        if (!application) {
+            return res.status(404).json({ success: false, message: 'Application not found' });
+        }
+
+        // Auth check
+        if (application.employer.toString() !== req.user.id && req.user.role !== 'admin') {
+            return res.status(401).json({ success: false, message: 'Unauthorized' });
+        }
+
+        application.isPinnedByEmployer = !application.isPinnedByEmployer;
+        await application.save();
+
+        res.status(200).json({
+            success: true,
+            isPinned: application.isPinnedByEmployer,
+            message: application.isPinnedByEmployer ? 'Application pinned' : 'Application unpinned'
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });

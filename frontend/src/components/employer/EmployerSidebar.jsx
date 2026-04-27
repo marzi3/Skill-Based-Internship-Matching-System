@@ -21,13 +21,13 @@ export default function EmployerSidebar({ closeMobileMenu }) {
 
     const navItems = [
         { label: 'Dashboard', path: '/employer/dashboard', icon: LayoutDashboard },
-        { label: 'My Postings', path: '/employer/internships', icon: Briefcase },
         { label: 'Post Internship', path: '/employer/internships/create', icon: Plus, id: 'nav-create' },
-        { label: 'Search Candidates', path: '/employer/candidates', icon: Search, id: 'nav-candidates' },
+        { label: 'My Postings', path: '/employer/internships', icon: Briefcase },
         { label: 'Applications', path: '/employer/applications', icon: FileText },
+        { label: 'Search Candidates', path: '/employer/candidates', icon: Search, id: 'nav-candidates' },
         { label: 'Messages', path: '/employer/messages', icon: MessageSquare },
-        { label: 'Company Profile', path: '/employer/profile', icon: Building },
         { label: 'Notifications', path: '/employer/notifications', icon: Bell },
+        { label: 'Company Profile', path: '/employer/profile', icon: Building },
     ];
 
     return (
@@ -72,7 +72,9 @@ export default function EmployerSidebar({ closeMobileMenu }) {
             <nav className="flex-1 space-y-2">
                 {navItems.map((item) => {
                     const Icon = item.icon;
-                    const isActive = pathname === item.path || (item.path !== '/employer/dashboard' && pathname?.startsWith(item.path));
+                    const isActive = item.path === '/employer/internships'
+                        ? (pathname === item.path || (pathname?.startsWith(item.path) && !pathname?.startsWith('/employer/internships/create')))
+                        : (pathname === item.path || (item.path !== '/employer/dashboard' && pathname?.startsWith(item.path)));
 
                     return (
                         <Link key={item.path} href={item.path} id={item.id} onClick={closeMobileMenu}>

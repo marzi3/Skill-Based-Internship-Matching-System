@@ -26,7 +26,7 @@ function FindInternshipsContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
-    const { user, logout } = useAuth();
+    const { user, loading: authLoading, logout, getRoleDashboard } = useAuth();
     const [internships, setInternships] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
@@ -42,13 +42,10 @@ function FindInternshipsContent() {
     const fetchInternships = async (query = searchQuery, location = locationQuery) => {
         try {
             setLoading(true);
-            const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
-            const user = userStr ? JSON.parse(userStr) : null;
 
             if (sort === 'Best Matches' && user && user.role === 'student' && !query) {
-                // Use GET request with authentication header for personalized matches
-                const token = localStorage.getItem('token');
-                if (token) {
+                // Use authenticated apiClient for personalized matches
+                try {
                     const res = await axios.get(`/matching/best-matches`);
                     if (res.data.success && res.data.data) {
                         const matchedInternships = res.data.data.map(m => ({
@@ -59,6 +56,8 @@ function FindInternshipsContent() {
                         setLoading(false);
                         return;
                     }
+                } catch {
+                    // Fall through to generic fetch if auth fails
                 }
             }
 
@@ -139,7 +138,9 @@ function FindInternshipsContent() {
                         </span>
                     </Link>
                     <div className="flex items-center gap-4 sm:gap-6">
-                        {user ? (
+                        {authLoading ? (
+                            <div className="w-8 h-8 rounded-xl bg-gray-100 animate-pulse" />
+                        ) : user ? (
                             <div className="flex items-center gap-4">
                                 <div className="hidden sm:flex flex-col items-end">
                                     <span className="text-sm font-bold text-gray-900">{user.name}</span>
@@ -177,11 +178,11 @@ function FindInternshipsContent() {
             <div className="bg-white border-b border-gray-100">
                 <div className="max-w-7xl mx-auto px-6 lg:px-8 py-4">
                     <button
-                        onClick={() => router.push('/student-dashboard')}
+                        onClick={() => router.push(user ? getRoleDashboard(user.role) : '/')}
                         className="flex items-center gap-2 text-gray-600 hover:text-indigo-600 transition-colors group"
                     >
                         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                        <span className="text-sm font-medium">Back to Dashboard</span>
+                        <span className="text-sm font-medium">{user ? 'Back to Dashboard' : 'Back to Home'}</span>
                     </button>
                 </div>
             </div>

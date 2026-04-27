@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Search, MapPin, Star, SlidersHorizontal, Zap, Loader2, ArrowLeft, X, ChevronDown, GraduationCap, Users } from 'lucide-react';
 import axios from '@/services/apiClient';
 import Cookies from 'js-cookie';
@@ -41,6 +41,14 @@ const CandidateSearchPage = () => {
         fetchStudents();
         fetchMyInternships();
     }, []);
+
+    /** Auto-trigger Rapid Match when arriving from dashboard View All link. */
+    const searchParams = useSearchParams();
+    useEffect(() => {
+        if (searchParams.get('rapidMatch') === 'true' && internships.length > 0 && !rapidMatchResults) {
+            handleRapidMatch();
+        }
+    }, [searchParams, internships]);
 
     const fetchStudents = async () => {
         try {

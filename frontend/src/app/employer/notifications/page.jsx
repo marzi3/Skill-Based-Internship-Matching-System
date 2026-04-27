@@ -141,6 +141,12 @@ const NotificationsPage = () => {
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2 mt-3">
+                                            {notif.link && (
+                                                <button onClick={() => { markAsRead(notif._id); router.push(notif.link); }}
+                                                    className="flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors">
+                                                    <Info size={12} /> View Details
+                                                </button>
+                                            )}
                                             {!notif.isRead && (
                                                 <button onClick={() => markAsRead(notif._id)}
                                                     className="flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors">

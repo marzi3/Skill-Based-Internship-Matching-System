@@ -82,10 +82,11 @@ if (hasCloudinaryCredentials) {
         folder = 'internmatch/verification';
       }
 
+      const ext = path.extname(file.originalname).toLowerCase();
       return {
         folder: folder,
         resource_type: 'auto',
-        public_id: `${file.fieldname}-${Date.now()}-${Math.round(Math.random() * 1e9)}`,
+        public_id: `${file.fieldname}-${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`,
       };
     },
   });
@@ -101,11 +102,13 @@ function checkFileType(file, cb) {
     'image/png',
     'image/gif',
     'image/webp',
-    'application/pdf'
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
   ];
 
   // Allowed extensions
-  const filetypes = /jpeg|jpg|png|gif|webp|pdf/i;
+  const filetypes = /jpeg|jpg|png|gif|webp|pdf|doc|docx/i;
 
   // Check ext
   const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
@@ -116,7 +119,7 @@ function checkFileType(file, cb) {
   if (mimetype && extname) {
     return cb(null, true);
   } else {
-    cb(new Error('Invalid file type! Only strict images (JPEG, PNG, GIF) and PDFs are allowed.'));
+    cb(new Error('Invalid file type! Only images (JPEG, PNG, GIF, WEBP), PDFs, and Word documents (DOC, DOCX) are allowed.'));
   }
 }
 

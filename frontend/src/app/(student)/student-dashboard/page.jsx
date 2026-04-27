@@ -184,7 +184,7 @@ export default function StudentDashboard() {
                         <p className="text-xs md:text-sm text-gray-500 font-medium">Welcome back, {user?.name}</p>
                     </div>
                     <div className="flex items-center gap-2 md:gap-4">
-                        {!localStorage.getItem('hasSeenStudentTour') && (
+                        {typeof window !== 'undefined' && !localStorage.getItem('hasSeenStudentTour') && (
                             <button
                                 onClick={() => setShowTour(true)}
                                 className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors"

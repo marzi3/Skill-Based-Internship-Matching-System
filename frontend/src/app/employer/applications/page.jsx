@@ -25,6 +25,7 @@ const ApplicationsPage = () => {
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('All');
 
     const openApplication = (applicationId) => {
         router.push(`/employer/applications/${applicationId}`);
@@ -47,10 +48,12 @@ const ApplicationsPage = () => {
         fetchApplications();
     }, []);
 
-    const filteredApplications = applications.filter(app =>
-        app.student?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        decodeHtmlEntities(app.internship?.positionTitle || '').toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredApplications = applications.filter(app => {
+        const matchesSearch = app.student?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            decodeHtmlEntities(app.internship?.positionTitle || '').toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = statusFilter === 'All' || (app.status || 'Applied').toLowerCase() === statusFilter.toLowerCase();
+        return matchesSearch && matchesStatus;
+    });
 
     const getStatusPillClass = (status) => {
         switch ((status || '').toLowerCase()) {
@@ -82,7 +85,7 @@ const ApplicationsPage = () => {
                         <p className="text-gray-600">Track and manage candidate submissions through the matching funnel</p>
                     </div>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex gap-3">
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4" />
                         <input
@@ -93,6 +96,19 @@ const ApplicationsPage = () => {
                             className="pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all text-sm"
                         />
                     </div>
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="appearance-none px-4 py-2 border border-gray-200 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white cursor-pointer"
+                    >
+                        <option value="All">All Statuses</option>
+                        <option value="Applied">Applied</option>
+                        <option value="Shortlisted">Shortlisted</option>
+                        <option value="Accepted">Accepted</option>
+                        <option value="Selected">Selected</option>
+                        <option value="Rejected">Rejected</option>
+                        <option value="Withdrawn">Withdrawn</option>
+                    </select>
                 </div>
             </div>
 

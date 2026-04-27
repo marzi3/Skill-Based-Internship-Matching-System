@@ -137,8 +137,14 @@ exports.updateInternshipStatus = async (req, res) => {
             return res.status(401).json({ success: false, message: 'Unauthorized' });
         }
 
-        // Toggle logic
-        const newStatus = internship.status === 'Hiring' ? 'Closed' : 'Hiring';
+        // Toggle logic or explicit status setting
+        const validStatuses = ['Hiring', 'Reviewing', 'Closed'];
+        let newStatus;
+        if (req.body && req.body.status && validStatuses.includes(req.body.status)) {
+            newStatus = req.body.status;
+        } else {
+            newStatus = internship.status === 'Hiring' ? 'Closed' : 'Hiring';
+        }
 
         internship = await Internship.findByIdAndUpdate(
             req.params.id,

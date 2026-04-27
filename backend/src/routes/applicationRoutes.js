@@ -25,6 +25,7 @@ router.delete('/:id/withdraw', authorize('student'), withdrawApplication);
 // Employer routes
 router.get('/employer', authorize('employer', 'admin'), getEmployerApplications);
 router.patch('/:id/status', authorize('employer', 'admin'), updateApplicationStatus);
+router.patch('/:id/pin', authorize('employer', 'admin'), require('../controllers/applicationController').togglePinApplication);
 
 // Shared routes (placed at bottom to prevent shadowing)
 router.get('/:id', getApplicationDetails);

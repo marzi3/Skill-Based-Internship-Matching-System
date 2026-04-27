@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from '@/services/apiClient';
 import Cookies from 'js-cookie';
-import { ArrowLeft, MessageSquare, Send, Loader2, Check, CheckCheck, ShieldAlert, Flag } from 'lucide-react';
+import { ArrowLeft, MessageSquare, Send, Loader2, Check, CheckCheck, ShieldAlert, Flag, Pin, PinOff } from 'lucide-react';
 import Avatar from '@/components/common/Avatar';
 import { useAuth } from '@/context/AuthContext';
 import { useSocket } from '@/context/SocketContext';
@@ -77,7 +77,18 @@ const EmployerMessagesPage = () => {
             const res = await axios.get('/applications/employer', {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            const apps = res.data.data || res.data.applications || [];
+            let apps = res.data.data || res.data.applications || [];
+            
+            // Filter out rejected/accepted students from messaging as requested
+            apps = apps.filter(app => !['Rejected', 'Accepted'].includes(app.status));
+            
+            // Sort: pinned first, then by earliest received (meaning latest message date first in the sidebar)
+            apps.sort((a, b) => {
+                if (a.isPinnedByEmployer && !b.isPinnedByEmployer) return -1;
+                if (!a.isPinnedByEmployer && b.isPinnedByEmployer) return 1;
+                return new Date(b.lastMessageAt) - new Date(a.lastMessageAt);
+            });
+            
             setApplications(apps);
         } catch (err) {
             console.error('Failed to fetch applications:', err);
@@ -138,6 +149,32 @@ const EmployerMessagesPage = () => {
         }
     };
 
+    const togglePin = async () => {
+        if (!selectedApp) return;
+        try {
+            const token = Cookies.get('token') || localStorage.getItem('token');
+            const res = await axios.patch(`/applications/${selectedApp._id}/pin`, {}, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const isPinned = res.data.isPinned;
+            
+            // Update selected app state
+            setSelectedApp(prev => ({ ...prev, isPinnedByEmployer: isPinned }));
+            
+            // Update sidebar sorting
+            setApplications(prev => {
+                const updated = prev.map(a => a._id === selectedApp._id ? { ...a, isPinnedByEmployer: isPinned } : a);
+                return updated.sort((a, b) => {
+                    if (a.isPinnedByEmployer && !b.isPinnedByEmployer) return -1;
+                    if (!a.isPinnedByEmployer && b.isPinnedByEmployer) return 1;
+                    return new Date(b.lastMessageAt) - new Date(a.lastMessageAt);
+                });
+            });
+        } catch (err) {
+            console.error('Failed to toggle pin:', err);
+        }
+    };
+
     return (
         <div className="h-[calc(100vh-4rem)] flex flex-col">
             {/* Header */}
@@ -188,8 +225,11 @@ const EmployerMessagesPage = () => {
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex justify-between items-baseline gap-2">
                                                         <p className="font-bold text-gray-900 text-sm truncate">{studentName}</p>
+                                                        {app.isPinnedByEmployer && (
+                                                            <Pin size={12} className="text-indigo-500 fill-indigo-500 shrink-0" />
+                                                        )}
                                                         {app.lastMessageAt && (
-                                                            <span className="text-[10px] text-gray-500 whitespace-nowrap">
+                                                            <span className="text-[10px] text-gray-500 whitespace-nowrap ml-1">
                                                                 {new Date(app.lastMessageAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}
                                                             </span>
                                                         )}
@@ -228,13 +268,22 @@ const EmployerMessagesPage = () => {
                                         <p className="text-xs text-gray-500">Re: {selectedApp.internship?.positionTitle || 'Internship'}</p>
                                     </div>
                                 </div>
-                                <button 
-                                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                                    title="Report Student"
-                                    onClick={() => alert('Report feature: Flag inappropriate behavior to system admins.')}
-                                >
-                                    <Flag size={18} />
-                                </button>
+                                <div className="flex items-center gap-1">
+                                    <button 
+                                        onClick={togglePin}
+                                        className={`p-2 rounded-lg transition-all ${selectedApp.isPinnedByEmployer ? 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100' : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'}`}
+                                        title={selectedApp.isPinnedByEmployer ? "Unpin conversation" : "Pin conversation"}
+                                    >
+                                        {selectedApp.isPinnedByEmployer ? <PinOff size={18} /> : <Pin size={18} />}
+                                    </button>
+                                    <button 
+                                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                        title="Report Student"
+                                        onClick={() => alert('Report feature: Flag inappropriate behavior to system admins.')}
+                                    >
+                                        <Flag size={18} />
+                                    </button>
+                                </div>
                             </div>
 
                             {/* Messages List - Reversed for bottom-up flow */}

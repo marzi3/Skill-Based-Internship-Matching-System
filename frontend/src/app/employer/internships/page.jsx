@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import axios from '@/services/apiClient';
 import {
     Search, Edit3, Trash2, Eye, Users, Calendar,
@@ -45,9 +46,19 @@ export default function MyPostingsPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [statusFilter, setStatusFilter] = useState('All');
     const [deleteModal, setDeleteModal] = useState({ isOpen: false, id: null, title: '' });
     const [deleteLoading, setDeleteLoading] = useState(false);
     const [toast, setToast] = useState(null);
+    const searchParams = useSearchParams();
+
+    /** Read status filter from URL on mount (e.g. from dashboard View More). */
+    useEffect(() => {
+        const urlStatus = searchParams.get('status');
+        if (urlStatus && ['Hiring', 'Closed', 'Reviewing'].includes(urlStatus)) {
+            setStatusFilter(urlStatus);
+        }
+    }, [searchParams]);
 
     const showToast = (type, title, message) => {
         setToast({ type, title, message });
@@ -93,10 +104,12 @@ export default function MyPostingsPage() {
         } finally { setDeleteLoading(false); }
     };
 
-    const filtered = internships.filter(i =>
-        decodeHtmlEntities(i?.positionTitle || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-        decodeHtmlEntities(i?.domain || '').toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filtered = internships.filter(i => {
+        const matchSearch = decodeHtmlEntities(i?.positionTitle || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+            decodeHtmlEntities(i?.domain || '').toLowerCase().includes(searchQuery.toLowerCase());
+        const matchStatus = statusFilter === 'All' || i.status === statusFilter;
+        return matchSearch && matchStatus;
+    });
 
     const stats = [
         {
@@ -217,6 +230,15 @@ export default function MyPostingsPage() {
                         <div className="flex items-center gap-3">
                             <div className="px-6 py-3 rounded-2xl bg-primary-50 border border-primary-100 text-primary-600 text-[10px] font-black uppercase tracking-widest shadow-sm">
                                 {filtered.length} total records
+                            </div>
+                            <div className="relative">
+                                <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
+                                    className="appearance-none pl-4 pr-8 py-3 border border-gray-200 rounded-2xl text-sm font-bold focus:outline-none focus:ring-4 focus:ring-primary-500/10 bg-white cursor-pointer shadow-sm">
+                                    <option value="All">All Statuses</option>
+                                    <option value="Hiring">Hiring</option>
+                                    <option value="Reviewing">Reviewing</option>
+                                    <option value="Closed">Closed</option>
+                                </select>
                             </div>
                         </div>
                     </div>

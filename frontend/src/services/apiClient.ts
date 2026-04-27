@@ -11,7 +11,7 @@ const apiClient = axios.create({
     withCredentials: true,
 });
 
-console.log('API Client Initialized with baseURL:', apiClient.defaults.baseURL);
+
 
 // Request Interceptor: Attach Token
 apiClient.interceptors.request.use(

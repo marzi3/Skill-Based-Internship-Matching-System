@@ -8,6 +8,8 @@ import { z } from 'zod';
 import { internshipStep1Schema, internshipStep2Schema, internshipStep3Schema } from '@/lib/validationSchemas';
 import Link from 'next/link';
 import axios from '@/services/apiClient';
+import skillsData from '@/data/skills.json';
+import degreesData from '@/data/degrees.json';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft,
@@ -118,6 +120,9 @@ const EditInternshipPage = () => {
   const [skillInput, setSkillInput] = useState('');
   const [degreeInput, setDegreeInput] = useState('');
   const [perkInput, setPerkInput] = useState('');
+  
+  const [skillSuggestions, setSkillSuggestions] = useState([]);
+  const [degreeSuggestions, setDegreeSuggestions] = useState([]);
 
   const steps = [
     { id: 1, title: 'Basics' },
@@ -180,28 +185,47 @@ const EditInternshipPage = () => {
   }, [id, reset]);
 
   // ─── Tag Handlers ──────────────────────────────────────────────────────────
-  const handleAddSkill = (e) => {
+  const handleAddSkill = (e, skillNameOverride) => {
     if (e) e.preventDefault();
-    const newSkill = skillInput.trim();
+    const newSkill = (skillNameOverride || skillInput).trim();
     if (newSkill && !requiredSkills.some(s => (typeof s === 'string' ? s : s.name) === newSkill)) {
       setRequiredSkills(prev => [...prev, { name: newSkill, mandatory: true, prefersSenior: false }]);
       setSkillInput('');
+      setSkillSuggestions([]);
       clearErrors('requiredSkills');
     }
+  };
+
+  const handleSkillInputChange = (value) => {
+    setSkillInput(value);
+    const filtered = skillsData.filter(s => 
+      s.toLowerCase().includes(value.toLowerCase())
+    ).slice(0, 5);
+    setSkillSuggestions(value ? filtered : []);
   };
 
   const handleRemoveSkill = (skillName) => {
     setRequiredSkills(prev => prev.filter(s => (typeof s === 'string' ? s : s.name) !== skillName));
   };
 
-  const handleAddDegree = (e) => {
+  const handleAddDegree = (e, degreeNameOverride) => {
     if (e) e.preventDefault();
-    const newDegree = degreeInput.trim();
+    const newDegree = (degreeNameOverride || degreeInput).trim();
     if (newDegree && !requiredDegreeField.includes(newDegree)) {
       setRequiredDegreeField(prev => [...prev, newDegree]);
       setDegreeInput('');
+      setDegreeSuggestions([]);
       clearErrors('requiredDegreeField');
     }
+  };
+
+  const handleDegreeInputChange = (value) => {
+    setDegreeInput(value);
+    if (errors.requiredDegreeField) clearErrors('requiredDegreeField');
+    const filtered = degreesData.filter(d => 
+      d.toLowerCase().includes(value.toLowerCase())
+    ).slice(0, 5);
+    setDegreeSuggestions(value ? filtered : []);
   };
 
   const handleRemoveDegree = (degreeToRemove) => {
@@ -459,15 +483,30 @@ const EditInternshipPage = () => {
                           <label className={`block text-xs font-black uppercase tracking-widest text-slate-900 mb-2.5 ml-1 ${errors.requiredSkills ? 'text-rose-500' : ''}`}>
                             Skills Assessment <span className="text-rose-500 ml-1 font-bold text-sm">*</span>
                           </label>
-                          <div className="flex gap-4">
-                            <input
-                              type="text"
-                              value={skillInput}
-                              onChange={(e) => setSkillInput(e.target.value)}
-                              onKeyDown={(e) => e.key === 'Enter' && handleAddSkill(e)}
-                              placeholder="Add specific skill..."
-                              className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl py-4 px-6 text-slate-900 font-bold focus:outline-none focus:border-indigo-500"
-                            />
+                          <div className="flex gap-4 relative">
+                            <div className="flex-1 relative">
+                              <input
+                                type="text"
+                                value={skillInput}
+                                onChange={(e) => handleSkillInputChange(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleAddSkill(e)}
+                                placeholder="Add specific skill..."
+                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-6 text-slate-900 font-bold focus:outline-none focus:border-indigo-500"
+                              />
+                              {skillSuggestions.length > 0 && (
+                                <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200">
+                                  {skillSuggestions.map((skill, idx) => (
+                                    <button
+                                      key={idx}
+                                      className="w-full text-left px-4 py-2 text-sm hover:bg-indigo-50 transition-colors font-medium text-slate-700"
+                                      onClick={(e) => handleAddSkill(e, skill)}
+                                    >
+                                      {skill}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                             <button onClick={handleAddSkill} className="px-10 bg-indigo-600 text-white rounded-2xl font-black text-[10px] uppercase">Add</button>
                           </div>
                           {errors.requiredSkills && <p className="text-rose-500 text-xs font-bold ml-1">{errors.requiredSkills.message}</p>}
@@ -488,15 +527,30 @@ const EditInternshipPage = () => {
                           <label className={`block text-xs font-black uppercase tracking-widest ml-1 mb-2.5 ${errors.requiredDegreeField ? 'text-rose-500' : 'text-slate-900'}`}>
                             Accepted Degree Fields <span className="text-rose-500 ml-1 font-bold text-sm">*</span>
                           </label>
-                          <div className="flex gap-4">
-                            <input
-                              type="text"
-                              value={degreeInput}
-                              onChange={(e) => setDegreeInput(e.target.value)}
-                              onKeyDown={(e) => e.key === 'Enter' && handleAddDegree(e)}
-                              placeholder="e.g. Computer Science, IT, Software Engineering..."
-                              className={`flex-1 bg-slate-50 border rounded-2xl py-4 px-6 text-slate-900 font-bold focus:outline-none transition-all placeholder:text-slate-500 shadow-sm ${errors.requiredDegreeField ? 'border-rose-500/50 focus:border-rose-500' : 'border-slate-200 focus:border-[#6366F1]/50'}`}
-                            />
+                          <div className="flex gap-4 relative">
+                            <div className="flex-1 relative">
+                              <input
+                                type="text"
+                                value={degreeInput}
+                                onChange={(e) => handleDegreeInputChange(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleAddDegree(e)}
+                                placeholder="e.g. Computer Science, IT, Software Engineering..."
+                                className={`w-full bg-slate-50 border rounded-2xl py-4 px-6 text-slate-900 font-bold focus:outline-none transition-all placeholder:text-slate-500 shadow-sm ${errors.requiredDegreeField ? 'border-rose-500/50 focus:border-rose-500' : 'border-slate-200 focus:border-[#6366F1]/50'}`}
+                              />
+                              {degreeSuggestions.length > 0 && (
+                                <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200">
+                                  {degreeSuggestions.map((degree, idx) => (
+                                    <button
+                                      key={idx}
+                                      className="w-full text-left px-4 py-2 text-sm hover:bg-indigo-50 transition-colors font-medium text-slate-700"
+                                      onClick={(e) => handleAddDegree(e, degree)}
+                                    >
+                                      {degree}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                             <button onClick={handleAddDegree} className="px-10 bg-white border border-slate-200 hover:border-[#6366F1] hover:text-[#6366F1] text-slate-500 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-sm outline-none transition-all">
                               Add Degree
                             </button>
@@ -564,11 +618,23 @@ const EditInternshipPage = () => {
                               </div>
                             )}
                           </div>
-                          <CustomInput
-                            label="Academic Standard"
-                            icon={GraduationCap}
-                            {...register('educationRequirements')}
-                          />
+                          <div>
+                            <CustomInput
+                              label="Academic Standard"
+                              icon={GraduationCap}
+                              placeholder="e.g. Master's in Design"
+                              list="academic-standards"
+                              {...register('educationRequirements')}
+                            />
+                            <datalist id="academic-standards">
+                              <option value="High School Diploma" />
+                              <option value="Certificate" />
+                              <option value="Associate's Degree" />
+                              <option value="Bachelor's Degree" />
+                              <option value="Master's Degree" />
+                              <option value="Doctorate / PhD" />
+                            </datalist>
+                          </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-10">

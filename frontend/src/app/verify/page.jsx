@@ -124,7 +124,7 @@ export default function VerificationPage() {
                                 <Lock className="w-3 h-3 text-indigo-600" />
                                 <span className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em]">Secure Onboarding</span>
                             </div>
-                            <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Verify Your Identiy</h1>
+                            <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Verify Your Identity</h1>
                             <p className="text-slate-500 font-medium">To keep InternMatch safe, we require all {user.role}s to verify their information.</p>
                         </header>
 

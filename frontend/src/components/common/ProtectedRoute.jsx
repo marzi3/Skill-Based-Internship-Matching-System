@@ -17,22 +17,38 @@ export const ProtectedRoute = ({
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const checkAuth = () => {
+    const checkAuth = async () => {
       try {
-        // Check localStorage (synced by AuthContext)
+        // Check localStorage first for fast rejection
         const storedUser = localStorage.getItem('user');
+        const token = localStorage.getItem('token') || localStorage.getItem('authToken');
 
-        if (!storedUser) {
+        if (!storedUser || !token) {
           setIsAuthenticated(false);
           setIsLoading(false);
           router.push(redirectTo);
           return;
         }
 
-        const userData = JSON.parse(storedUser);
+        // Validate token against the backend to prevent stale sessions
+        const apiClient = (await import('@/services/apiClient')).default;
+        let validatedUser;
+        try {
+          const { data } = await apiClient.get('/auth/me');
+          validatedUser = data;
+        } catch {
+          // Token is expired/invalid — clear stale data and redirect
+          localStorage.removeItem('user');
+          localStorage.removeItem('token');
+          localStorage.removeItem('authToken');
+          setIsAuthenticated(false);
+          setIsLoading(false);
+          router.push(redirectTo);
+          return;
+        }
 
         // Check if user has required role
-        if (requiredRole && userData?.role !== requiredRole) {
+        if (requiredRole && validatedUser?.role !== requiredRole) {
           setIsAuthenticated(false);
           setIsLoading(false);
 
@@ -46,7 +62,7 @@ export const ProtectedRoute = ({
             }
           };
 
-          router.push(getRoleDashboard(userData?.role));
+          router.push(getRoleDashboard(validatedUser?.role));
           return;
         }
 
@@ -54,6 +70,9 @@ export const ProtectedRoute = ({
         setIsLoading(false);
       } catch (error) {
         console.error('Auth check failed:', error);
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        localStorage.removeItem('authToken');
         setIsAuthenticated(false);
         setIsLoading(false);
         router.push(redirectTo);

@@ -14,7 +14,10 @@ const validateRequest = (req, res, next) => {
 const validateRegister = [
     check('name', 'Name is required').not().isEmpty().trim().escape(),
     check('email', 'Please include a valid email').isEmail().normalizeEmail(),
-    check('password', 'Please enter a password with 6 or more characters').isLength({ min: 6 }),
+    check('password', 'Password must be at least 8 characters long')
+        .isLength({ min: 8 })
+        .matches(/[0-9]/, 'i').withMessage('Password must contain at least one number')
+        .matches(/[!@#$%^&*]/).withMessage('Password must contain at least one special character (!@#$%^&*)'),
     validateRequest
 ];
 

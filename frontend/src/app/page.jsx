@@ -3,9 +3,11 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRight, CheckCircle, Search, Users, Building, ShieldCheck, Code, PenTool } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Home() {
   const [mounted, setMounted] = useState(false);
+  const { user, loading: authLoading, getRoleDashboard } = useAuth();
 
   useEffect(() => {
     setMounted(true);
@@ -31,10 +33,20 @@ export default function Home() {
             <div className="hidden md:flex items-center space-x-8">
               <Link href="/find-internships" className="text-gray-600 hover:text-indigo-600 transition-colors">Find Internships</Link>
               <Link href="/employers" className="text-gray-600 hover:text-indigo-600 transition-colors">For Employers</Link>
-              <Link href="/login" className="text-gray-900 font-medium hover:text-indigo-600 transition-colors">Sign In</Link>
-              <Link href="/register" className="px-5 py-2.5 rounded-full bg-gray-900 text-white font-medium hover:bg-black transition-all shadow-lg shadow-gray-200">
-                Get Started
-              </Link>
+              {authLoading ? (
+                <div className="w-20 h-10 rounded-full bg-gray-100 animate-pulse" />
+              ) : user ? (
+                <Link href={getRoleDashboard(user.role)} className="px-5 py-2.5 rounded-full bg-gray-900 text-white font-medium hover:bg-black transition-all shadow-lg shadow-gray-200">
+                  Go to Dashboard
+                </Link>
+              ) : (
+                <>
+                  <Link href="/login" className="text-gray-900 font-medium hover:text-indigo-600 transition-colors">Sign In</Link>
+                  <Link href="/register" className="px-5 py-2.5 rounded-full bg-gray-900 text-white font-medium hover:bg-black transition-all shadow-lg shadow-gray-200">
+                    Get Started
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

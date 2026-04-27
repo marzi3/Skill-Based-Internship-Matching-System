@@ -64,6 +64,11 @@ const applicationSchema = new mongoose.Schema({
         time: String,
         location: String,
         notes: String
+    },
+    /** Whether the employer has pinned this application's conversation. */
+    isPinnedByEmployer: {
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: true
