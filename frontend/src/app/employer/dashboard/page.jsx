@@ -54,6 +54,11 @@ const EmployerDashboard = () => {
   const [statusFilter, setStatusFilter] = useState('All');
   const [userDropdown, setUserDropdown] = useState(false);
   const [showTour, setShowTour] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   useEffect(() => {
     const hasSeen = localStorage.getItem('hasSeenEmployerTour');
@@ -194,7 +199,7 @@ const EmployerDashboard = () => {
     { label: 'Interviews Scheduled', value: stats.interviews, icon: Calendar, gradient: 'from-sky-400 to-blue-500', trend: '-2%', trendLabel: 'this week', isPositive: false },
   ];
 
-  if (loading) {
+  if (loading || !hasMounted) {
     return (
       <div className="space-y-8 animate-pulse p-4">
         {/* Header Skeleton */}
