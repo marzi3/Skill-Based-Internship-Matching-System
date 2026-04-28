@@ -30,7 +30,7 @@ const ApplicationsPage = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
-    const [viewMode, setViewMode] = useState('kanban');
+    const [viewMode, setViewMode] = useState('list');
 
     const openApplication = (applicationId) => {
         router.push(`/employer/applications/${applicationId}`);
@@ -87,7 +87,7 @@ const ApplicationsPage = () => {
                         <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
                     </button>
                     <div>
-                        <h1 className="text-3xl font-black text-gray-900 tracking-tight">Pipeline</h1>
+                        <h1 className="text-3xl font-black text-gray-900 tracking-tight">Applications</h1>
                         <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mt-1">Track candidate submissions</p>
                     </div>
                 </div>
@@ -102,16 +102,6 @@ const ApplicationsPage = () => {
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all text-sm font-bold shadow-sm"
                         />
-                    </div>
-
-                    {/* View Toggle */}
-                    <div className="flex items-center bg-gray-100/80 p-1.5 rounded-2xl border border-gray-200 shadow-inner">
-                        <button onClick={() => setViewMode('list')} className={`p-2.5 rounded-xl transition-all flex items-center gap-2 ${viewMode === 'list' ? 'bg-white shadow-sm text-primary-600 font-bold' : 'text-gray-500 hover:text-gray-900'}`} title="List View">
-                            <List size={16}/>
-                        </button>
-                        <button onClick={() => setViewMode('kanban')} className={`p-2.5 rounded-xl transition-all flex items-center gap-2 ${viewMode === 'kanban' ? 'bg-white shadow-sm text-primary-600 font-bold' : 'text-gray-500 hover:text-gray-900'}`} title="Kanban View">
-                            <LayoutGrid size={16}/>
-                        </button>
                     </div>
                 </div>
             </div>
@@ -152,76 +142,7 @@ const ApplicationsPage = () => {
                         <FileText size={32} className="text-gray-300" />
                     </div>
                     <h3 className="text-xl font-black text-gray-900 tracking-tight mb-2">No Candidates Found</h3>
-                    <p className="text-gray-500 font-medium max-w-sm mx-auto">Your pipeline is empty. Post a new internship or adjust your search filters.</p>
-                </div>
-            ) : viewMode === 'kanban' ? (
-                /* Kanban View */
-                <div className="flex gap-6 overflow-x-auto pb-8 pt-4 snap-x">
-                    {KANBAN_COLUMNS.map((col, idx) => {
-                        const colApps = filteredApplications.filter(app => {
-                            const stat = app.status || 'Applied';
-                            if (col === 'Accepted') return stat === 'Selected' || stat === 'Accepted';
-                            return stat === col;
-                        });
-                        
-                        return (
-                            <motion.div 
-                                key={col} 
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: idx * 0.1 }}
-                                className="min-w-[340px] w-[340px] shrink-0 flex flex-col bg-gray-50/50 rounded-[2rem] border border-gray-200 p-5 snap-center shadow-sm"
-                            >
-                                <div className="flex items-center justify-between mb-5 px-2">
-                                    <h3 className="text-xs font-black uppercase tracking-[0.2em] text-gray-800">{col}</h3>
-                                    <span className="bg-white border border-gray-200 text-gray-500 text-[10px] font-black px-2.5 py-1 rounded-lg shadow-sm">{colApps.length}</span>
-                                </div>
-                                
-                                <div className="flex flex-col gap-4">
-                                    {colApps.map(app => (
-                                        <div 
-                                            key={app._id} 
-                                            onClick={() => openApplication(app._id)} 
-                                            className="bg-white p-5 rounded-3xl border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer group"
-                                        >
-                                            <div className="flex items-start justify-between mb-4">
-                                                <div className="flex items-center gap-3">
-                                                    <Avatar src={app.student?.profilePicture} name={app.student?.name} size="md" className="shadow-sm" />
-                                                    <div>
-                                                        <p className="text-base font-black text-gray-900 leading-tight group-hover:text-primary-600 transition-colors">{app.student?.name}</p>
-                                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{new Date(app.appliedDate).toLocaleDateString()}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            <div className="mb-4">
-                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Target Role</p>
-                                                <p className="text-xs font-bold text-gray-800 truncate">{decodeHtmlEntities(app.internship?.positionTitle)}</p>
-                                            </div>
-                                            
-                                            <div className="flex items-center justify-between pt-4 border-t border-gray-50">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="h-1.5 w-16 bg-gray-100 rounded-full overflow-hidden shadow-inner">
-                                                        <div className="h-full bg-primary-500 rounded-full" style={{width: `${app.matchScore || 0}%`}}/>
-                                                    </div>
-                                                    <span className="text-[10px] font-black text-primary-600">{app.matchScore || 0}%</span>
-                                                </div>
-                                                <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-primary-50 transition-colors">
-                                                    <ArrowRight size={14} className="text-gray-400 group-hover:text-primary-500 transition-colors group-hover:translate-x-0.5" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                    
-                                    {colApps.length === 0 && (
-                                        <div className="text-center py-10 bg-transparent border-2 border-dashed border-gray-200 rounded-3xl mt-2">
-                                            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Empty</p>
-                                        </div>
-                                    )}
-                                </div>
-                            </motion.div>
-                        )
-                    })}
+                    <p className="text-gray-500 font-medium max-w-sm mx-auto">Your applications list is empty. Post a new internship or adjust your search filters.</p>
                 </div>
             ) : (
                 /* List View */
@@ -248,7 +169,7 @@ const ApplicationsPage = () => {
                                             <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-slate-500 md:hidden">Candidate</p>
                                             <div className="flex min-w-0 items-center gap-4 md:whitespace-nowrap">
                                                 <Avatar src={app.student?.profilePicture} name={app.student?.name || 'Unknown'} size="lg" className="shrink-0 shadow-sm" />
-                                                <p className="truncate text-lg font-black tracking-tight text-slate-900 group-hover:text-primary-600 transition-colors">
+                                                <p className="text-lg font-black tracking-tight text-slate-900 group-hover:text-primary-600 transition-colors">
                                                     {app.student?.name || 'Unknown'}
                                                 </p>
                                             </div>
@@ -256,7 +177,7 @@ const ApplicationsPage = () => {
 
                                         <div>
                                             <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-slate-500 md:hidden">Target Role</p>
-                                            <p className="truncate text-sm font-bold text-slate-700 md:whitespace-nowrap">
+                                            <p className="text-sm font-bold text-slate-700 md:whitespace-nowrap">
                                                 {decodeHtmlEntities(app.internship?.positionTitle || 'N/A')}
                                             </p>
                                         </div>
