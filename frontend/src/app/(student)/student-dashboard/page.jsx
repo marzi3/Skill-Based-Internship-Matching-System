@@ -1,9 +1,8 @@
-
 'use client';
 
 // Student dashboard Page
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from '@/services/apiClient';
 import {
     Zap,
@@ -26,7 +25,14 @@ import {
     MessageSquare,
     Menu,
     ChevronLeft,
-    Sparkles
+    Sparkles,
+    ArrowRight,
+    Rocket,
+    ShieldCheck,
+    Target,
+    Sun,
+    Moon,
+    Sunrise
 } from 'lucide-react';
 import Card from '@/components/common/Card';
 import Badge from '@/components/common/Badge';
@@ -38,6 +44,117 @@ import NotificationBell from '@/components/notifications/NotificationBell';
 import RecommendedInternships from '@/components/matching/RecommendedInternships';
 import OnboardingTour from '@/components/OnboardingTour';
 import UpcomingInterviewCard from '@/components/student/UpcomingInterviewCard';
+import { motion, AnimatePresence } from 'framer-motion';
+
+/**
+ * Returns a time-aware greeting with icon and color, matching the employer dashboard style.
+ * @returns {{ text: string, icon: import('lucide-react').LucideIcon, color: string }}
+ */
+const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return { text: 'Good morning', icon: Sunrise, color: 'text-amber-500' };
+    if (hour < 18) return { text: 'Good afternoon', icon: Sun, color: 'text-orange-500' };
+    return { text: 'Good evening', icon: Moon, color: 'text-indigo-400' };
+};
+
+/**
+ * Animated counter hook. Counts from 0 to `end` over `duration` ms.
+ * Uses requestAnimationFrame for smooth, non-blocking animation.
+ */
+const useAnimatedCounter = (end, duration = 1200) => {
+    const [count, setCount] = useState(0);
+    const prevEnd = useRef(end);
+
+    useEffect(() => {
+        prevEnd.current = end;
+        if (end === 0) { setCount(0); return; }
+
+        let startTime = null;
+        let frameId;
+        const animate = (timestamp) => {
+            if (!startTime) startTime = timestamp;
+            const progress = Math.min((timestamp - startTime) / duration, 1);
+            // Ease-out cubic for a satisfying deceleration
+            const eased = 1 - Math.pow(1 - progress, 3);
+            setCount(Math.round(eased * end));
+            if (progress < 1) {
+                frameId = requestAnimationFrame(animate);
+            }
+        };
+        frameId = requestAnimationFrame(animate);
+        return () => cancelAnimationFrame(frameId);
+    }, [end, duration]);
+
+    return count;
+};
+
+/**
+ * SVG circular progress ring for the "Profile Strength" widget.
+ * Draws an animated arc from 0% to `percentage`.
+ */
+const ProfileStrengthRing = ({ percentage = 0 }) => {
+    const radius = 54;
+    const stroke = 8;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - (percentage / 100) * circumference;
+
+    const getColor = (pct) => {
+        if (pct >= 80) return { stroke: '#10b981', glow: 'rgba(16,185,129,0.35)', label: 'Excellent' };
+        if (pct >= 50) return { stroke: '#6366f1', glow: 'rgba(99,102,241,0.35)', label: 'Good' };
+        return { stroke: '#f59e0b', glow: 'rgba(245,158,11,0.35)', label: 'Needs work' };
+    };
+
+    const { stroke: ringColor, glow, label } = getColor(percentage);
+
+    return (
+        <div className="relative flex items-center justify-center w-[140px] h-[140px]">
+            <svg width="140" height="140" viewBox="0 0 140 140" className="-rotate-90">
+                {/* Background ring */}
+                <circle
+                    cx="70" cy="70" r={radius}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={stroke}
+                    className="text-gray-100"
+                />
+                {/* Progress ring */}
+                <motion.circle
+                    cx="70" cy="70" r={radius}
+                    fill="none"
+                    stroke={ringColor}
+                    strokeWidth={stroke}
+                    strokeLinecap="round"
+                    strokeDasharray={circumference}
+                    initial={{ strokeDashoffset: circumference }}
+                    animate={{ strokeDashoffset: offset }}
+                    transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
+                    style={{ filter: `drop-shadow(0 0 6px ${glow})` }}
+                />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-3xl font-black text-gray-900">{percentage}%</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mt-0.5">{label}</span>
+            </div>
+        </div>
+    );
+};
+
+/**
+ * Framer Motion stagger container and item variants.
+ * Why: Creates a cascading "reveal" effect for sections and list items.
+ */
+const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: { staggerChildren: 0.1, delayChildren: 0.15 }
+    }
+};
+
+const staggerItem = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 260, damping: 20 } }
+};
 
 export default function StudentDashboard() {
     const { user, logout } = useAuth();
@@ -53,6 +170,16 @@ export default function StudentDashboard() {
     const [loading, setLoading] = useState(true);
     const [showTour, setShowTour] = useState(false);
     const [nowTick, setNowTick] = useState(Date.now());
+
+    const animatedApps = useAnimatedCounter(stats.applicationsCount);
+    const animatedMatches = useAnimatedCounter(stats.skillMatches);
+    const animatedVerifications = useAnimatedCounter(stats.verificationPoints);
+
+    /**
+     * Profile strength is derived from verification points.
+     * Capped at 100 to prevent overflow in the ring widget.
+     */
+    const profileStrength = Math.min(100, stats.verificationPoints);
 
     const sortedApplications = [...applications].sort((a, b) => {
         const leftDate = new Date(b.createdAt || b.appliedDate || 0);
@@ -174,92 +301,150 @@ export default function StudentDashboard() {
         return () => window.clearInterval(timer);
     }, []);
 
+    /** Smart subtitle based on live data */
+    const getSmartSubtitle = () => {
+        if (loading) return 'Loading your workspace...';
+        const highMatches = matches.filter(m => m.score >= 80).length;
+        if (highMatches > 0) return `You have ${highMatches} match${highMatches > 1 ? 'es' : ''} above 80%. Let's secure that interview!`;
+        if (stats.applicationsCount > 0) return `${stats.applicationsCount} active application${stats.applicationsCount > 1 ? 's' : ''} in progress. Keep going!`;
+        return 'Complete your profile and start discovering opportunities.';
+    };
+
     return (
         <>
             {showTour && <OnboardingTour role="student" onComplete={handleTourComplete} />}
 
-                <header className="bg-white border-b border-gray-100 px-4 md:px-8 py-4 md:py-6 flex items-center justify-between sticky top-0 z-50 transition-all shadow-sm">
-                    <div>
-                        <h1 className="text-xl md:text-2xl font-bold text-gray-900">Dashboard</h1>
-                        <p className="text-xs md:text-sm text-gray-500 font-medium">Welcome back, {user?.name}</p>
-                    </div>
-                    <div className="flex items-center gap-2 md:gap-4">
-                        {typeof window !== 'undefined' && !localStorage.getItem('hasSeenStudentTour') && (
-                            <button
-                                onClick={() => setShowTour(true)}
-                                className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors"
-                            >
-                                <Sparkles size={14} /> Start Tour
-                            </button>
-                        )}
-                        <NotificationBell />
-                        <Avatar name={user?.name} src={user?.profilePicture} size="md" />
-                    </div>
-                </header>
+                {/* Header with time-aware greeting — matches employer dashboard style */}
+                {(() => {
+                    const greeting = getGreeting();
+                    const GreetingIcon = greeting.icon;
+                    return (
+                        <header className="bg-white border-b border-gray-100 px-4 md:px-8 py-4 md:py-6 flex items-center justify-between sticky top-0 z-50 transition-all shadow-sm">
+                            <div>
+                                <div className="flex items-center gap-3 mb-1">
+                                    <GreetingIcon className={`w-7 h-7 md:w-8 md:h-8 ${greeting.color}`} strokeWidth={2.5} />
+                                    <h1 className="text-2xl md:text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 tracking-tight">
+                                        {greeting.text}, {user?.name?.split(' ')[0] || 'Student'}
+                                    </h1>
+                                </div>
+                                <p className="text-gray-500 font-medium text-xs md:text-sm">{getSmartSubtitle()}</p>
+                            </div>
+                            <div className="flex items-center gap-2 md:gap-4">
+                                {typeof window !== 'undefined' && !localStorage.getItem('hasSeenStudentTour') && (
+                                    <button
+                                        onClick={() => setShowTour(true)}
+                                        className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors"
+                                    >
+                                        <Sparkles size={14} /> Start Tour
+                                    </button>
+                                )}
+                                <NotificationBell />
+                                <Avatar name={user?.name} src={user?.profilePicture} size="md" />
+                            </div>
+                        </header>
+                    );
+                })()}
 
                 <div className="relative z-0 p-4 md:p-8 space-y-6 md:space-y-8">
-                    {/* Stats Grid */}
-                    <div className="grid grid-cols-3 gap-3 md:gap-6">
-                        <Card className="bg-gradient-to-br from-indigo-500 to-indigo-600 text-white p-4 md:p-6 relative overflow-hidden group">
-                            <div className="relative z-10 space-y-2 md:space-y-4">
-                                <div className="p-2 md:p-3 bg-white/20 rounded-xl w-fit"><Briefcase className="w-5 h-5 md:w-6 md:h-6" /></div>
-                                <div>
-                                    <h3 className="text-indigo-100 font-bold uppercase text-[9px] md:text-[10px] tracking-wider md:tracking-widest line-clamp-1">Active Apps</h3>
-                                    <p className="text-2xl md:text-4xl font-black">{stats.applicationsCount}</p>
+                    {/* Stats Grid + Profile Strength */}
+                    <motion.div
+                        variants={staggerContainer}
+                        initial="hidden"
+                        animate="visible"
+                        className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6"
+                    >
+                        {/* Active Applications Card */}
+                        <motion.div variants={staggerItem}>
+                            <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 text-white p-5 md:p-6 rounded-2xl relative overflow-hidden group shadow-lg shadow-indigo-500/20 h-full">
+                                <div className="relative z-10 space-y-3 md:space-y-4">
+                                    <div className="p-2.5 bg-white/20 backdrop-blur-sm rounded-xl w-fit"><Briefcase className="w-5 h-5 md:w-6 md:h-6" /></div>
+                                    <div>
+                                        <h3 className="text-indigo-100 font-bold uppercase text-[9px] md:text-[10px] tracking-wider md:tracking-widest">Active Apps</h3>
+                                        <p className="text-3xl md:text-4xl font-black tabular-nums">{animatedApps}</p>
+                                    </div>
+                                </div>
+                                <div className="absolute top-0 right-0 p-4 md:p-6 opacity-10 group-hover:scale-110 group-hover:opacity-15 transition-all duration-500">
+                                    <Briefcase className="w-20 h-20 md:w-[100px] md:h-[100px]" />
                                 </div>
                             </div>
-                            <div className="absolute top-0 right-0 p-4 md:p-8 opacity-10 group-hover:scale-110 transition-transform">
-                                <Briefcase className="w-20 h-20 md:w-[120px] md:h-[120px]" />
-                            </div>
-                        </Card>
+                        </motion.div>
 
-                        <Card className="p-4 md:p-6 border border-gray-100 space-y-2 md:space-y-4">
-                            <div className="p-2 md:p-3 bg-emerald-50 text-emerald-600 rounded-xl w-fit"><Zap className="w-5 h-5 md:w-6 md:h-6" /></div>
-                            <div>
-                                <h3 className="text-gray-500 font-bold uppercase text-[9px] md:text-[10px] tracking-wider md:tracking-widest line-clamp-1">A.I. Matches</h3>
-                                <p className="text-2xl md:text-4xl font-black text-gray-900 items-baseline flex flex-wrap gap-1 md:gap-2">
-                                    {stats.skillMatches} <span className="text-[10px] md:text-sm text-emerald-500 font-bold flex items-center md:mt-2"><TrendingUp size={12} className="md:w-3.5 md:h-3.5 mr-0.5" /> +0</span>
-                                </p>
+                        {/* AI Matches Card */}
+                        <motion.div variants={staggerItem}>
+                            <div className="bg-white p-5 md:p-6 rounded-2xl border border-gray-200 shadow-sm space-y-3 md:space-y-4 hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-300 h-full">
+                                <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl w-fit"><Zap className="w-5 h-5 md:w-6 md:h-6" /></div>
+                                <div>
+                                    <h3 className="text-gray-500 font-bold uppercase text-[9px] md:text-[10px] tracking-wider md:tracking-widest">A.I. Matches</h3>
+                                    <p className="text-3xl md:text-4xl font-black text-gray-900 items-baseline flex flex-wrap gap-1 md:gap-2 tabular-nums">
+                                        {animatedMatches}
+                                    </p>
+                                </div>
                             </div>
-                        </Card>
+                        </motion.div>
 
-                        <Card className="p-4 md:p-6 border border-gray-100 space-y-2 md:space-y-4">
-                            <div className="p-2 md:p-3 bg-amber-50 text-amber-600 rounded-xl w-fit"><Star className="w-5 h-5 md:w-6 md:h-6" /></div>
-                            <div>
-                                <h3 className="text-gray-500 font-bold uppercase text-[9px] md:text-[10px] tracking-wider md:tracking-widest line-clamp-1">Verifications</h3>
-                                <p className="text-2xl md:text-4xl font-black text-gray-900">{stats.verificationPoints}</p>
+                        {/* Verifications Card */}
+                        <motion.div variants={staggerItem}>
+                            <div className="bg-white p-5 md:p-6 rounded-2xl border border-gray-200 shadow-sm space-y-3 md:space-y-4 hover:shadow-lg hover:shadow-amber-500/10 transition-all duration-300 h-full">
+                                <div className="p-2.5 bg-amber-50 text-amber-600 rounded-xl w-fit"><Star className="w-5 h-5 md:w-6 md:h-6" /></div>
+                                <div>
+                                    <h3 className="text-gray-500 font-bold uppercase text-[9px] md:text-[10px] tracking-wider md:tracking-widest">Verifications</h3>
+                                    <p className="text-3xl md:text-4xl font-black text-gray-900 tabular-nums">{animatedVerifications}</p>
+                                </div>
                             </div>
-                        </Card>
-                    </div>
+                        </motion.div>
+
+                        {/* Profile Strength Ring Card */}
+                        <motion.div variants={staggerItem}>
+                            <div className="bg-white p-5 md:p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col items-center justify-center hover:shadow-lg transition-all duration-300 h-full">
+                                <ProfileStrengthRing percentage={profileStrength} />
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mt-3">Match Readiness</p>
+                                {profileStrength < 80 && (
+                                    <Link
+                                        href="/student-profile"
+                                        className="mt-2 text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline flex items-center gap-1"
+                                    >
+                                        Boost Profile <ArrowRight size={10} />
+                                    </Link>
+                                )}
+                            </div>
+                        </motion.div>
+                    </motion.div>
 
                     {/* Upcoming Interviews Protocol (if any) */}
-                    {upcomingInterviews.length > 0 && (
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between gap-4">
-                                <div>
-                                    <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 italic">
-                                        <Clock className="text-emerald-600" size={20} /> Upcoming Interview
-                                    </h2>
+                    <AnimatePresence>
+                        {upcomingInterviews.length > 0 && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.3 }}
+                                className="space-y-4"
+                            >
+                                <div className="flex items-center justify-between gap-4">
+                                    <div>
+                                        <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 italic">
+                                            <Clock className="text-emerald-600" size={20} /> Upcoming Interview
+                                        </h2>
+                                    </div>
+                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-500">
+                                        {upcomingInterviews.length} scheduled
+                                    </span>
                                 </div>
-                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-500">
-                                    {upcomingInterviews.length} scheduled
-                                </span>
-                            </div>
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                                {upcomingInterviews.map((app) => (
-                                    <UpcomingInterviewCard
-                                        key={app._id}
-                                        app={app}
-                                        statusLabel="Scheduled"
-                                        countdownLabel={getCountdownLabel(app)}
-                                        formatDate={formatDate}
-                                        getLocationText={getLocationText}
-                                        onViewApplication={() => router.push(`/applications/${app._id}`)}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-                    )}
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                    {upcomingInterviews.map((app) => (
+                                        <UpcomingInterviewCard
+                                            key={app._id}
+                                            app={app}
+                                            statusLabel="Scheduled"
+                                            countdownLabel={getCountdownLabel(app)}
+                                            formatDate={formatDate}
+                                            getLocationText={getLocationText}
+                                            onViewApplication={() => router.push(`/applications/${app._id}`)}
+                                        />
+                                    ))}
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
                     {/* Recent Applications Section */}
                     <div className="space-y-6">
@@ -272,9 +457,16 @@ export default function StudentDashboard() {
                         <div className="space-y-4">
                             {loading ? (
                                 <div className="py-10 text-center"><Loader size={32} className="animate-spin mx-auto text-primary-600" /></div>
-                            ) : recentApplications.length > 0 ? (
-                                recentApplications.map((app) => (
-                                    <div key={app._id} onClick={() => router.push(`/applications/${app._id}`)} className="cursor-pointer">
+                            ) : sortedApplications.length > 0 ? (
+                                sortedApplications.slice(0, 5).map((app, idx) => (
+                                    <motion.div
+                                        key={app._id}
+                                        initial={{ opacity: 0, y: 15 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.15 + idx * 0.08, type: 'spring', stiffness: 260, damping: 20 }}
+                                        onClick={() => router.push(`/applications/${app._id}`)}
+                                        className="cursor-pointer"
+                                    >
                                         <Card className="p-6 border-slate-100 bg-white relative overflow-hidden group hover:shadow-xl transition-all border-l-4 border-l-indigo-600 hover:border-indigo-100">
                                             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
                                                 <div className="flex items-center gap-6 flex-1">
@@ -319,18 +511,34 @@ export default function StudentDashboard() {
                                                 </div>
                                             </div>
                                         </Card>
-                                    </div>
+                                    </motion.div>
                                 ))
                             ) : (
-                                <div className="py-10 bg-white rounded-2xl border border-dashed border-gray-200 text-center">
-                                    <p className="text-gray-500 font-bold">No applications submitted yet.</p>
+                                /* Premium empty state */
+                                <div className="py-16 bg-white rounded-3xl border border-dashed border-gray-200 text-center shadow-sm">
+                                    <div className="w-20 h-20 bg-indigo-50 rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-inner border border-indigo-100/50">
+                                        <Rocket size={32} className="text-indigo-400" />
+                                    </div>
+                                    <h3 className="text-lg font-black text-gray-900 tracking-tight mb-2">No applications yet</h3>
+                                    <p className="text-sm text-gray-500 font-medium max-w-sm mx-auto mb-6">Start your journey by exploring internships matched to your skills.</p>
+                                    <Link
+                                        href="/matches"
+                                        className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-2xl font-bold text-sm hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/20 group"
+                                    >
+                                        Explore Matches <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                                    </Link>
                                 </div>
                             )}
                         </div>
                     </div>
 
                     {/* Matches Section */}
-                    <div className="space-y-6">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5 }}
+                        className="space-y-6"
+                    >
                         <div className="flex items-center justify-between">
                             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                                 <Zap className="text-primary-600" size={20} fill="currentColor" /> Recommended for You
@@ -339,7 +547,7 @@ export default function StudentDashboard() {
                         </div>
 
                         <RecommendedInternships matches={matches} />
-                    </div>
+                    </motion.div>
                 </div>
         </>
     );
