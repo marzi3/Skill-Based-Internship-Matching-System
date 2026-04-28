@@ -156,6 +156,73 @@ const staggerItem = {
     visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 260, damping: 20 } }
 };
 
+const SkillGapWidget = ({ matches = [] }) => {
+    const allRequiredSkills = matches.flatMap(m => m.internship?.requiredSkills || []);
+    
+    const skillFrequency = {};
+    allRequiredSkills.forEach(skill => {
+        if (!skill) return;
+        skillFrequency[skill] = (skillFrequency[skill] || 0) + 1;
+    });
+
+    const sortedDemandedSkills = Object.entries(skillFrequency)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 6);
+
+    if (sortedDemandedSkills.length === 0) return null;
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="backdrop-blur-md bg-white/80 border border-slate-200/60 rounded-3xl p-6 shadow-xl shadow-slate-200/40 space-y-6 relative overflow-hidden"
+        >
+            <div className="absolute -top-10 -right-10 w-40 h-40 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+            
+            <div className="flex items-center justify-between relative z-10">
+                <div className="flex items-center gap-2">
+                    <Target className="text-indigo-600 w-6 h-6 animate-pulse" />
+                    <h2 className="text-xl font-black text-slate-900 uppercase tracking-wider">Interactive Skill Analysis</h2>
+                </div>
+                <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-2.5 py-1 rounded-full">Live Demand</span>
+            </div>
+
+            <p className="text-xs font-medium text-slate-500 max-w-xl relative z-10">
+                Analysis of top internship opportunities indicates heavy concentration around these specific tech capabilities. Master them to maximize your optimization tiers.
+            </p>
+
+            <div className="grid gap-4 relative z-10 sm:grid-cols-2 lg:grid-cols-3">
+                {sortedDemandedSkills.map(([skill, count], index) => {
+                    const demandPercent = Math.min(100, Math.max(30, count * 20 + (5 - index) * 10));
+                    
+                    return (
+                        <motion.div 
+                            key={skill}
+                            whileHover={{ scale: 1.02, y: -2 }}
+                            className="bg-slate-50/80 border border-slate-100 rounded-2xl p-4 relative group transition-all hover:shadow-md hover:bg-white"
+                        >
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="font-black text-slate-800 uppercase tracking-widest text-xs">{skill}</span>
+                                <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">High Alignment</span>
+                            </div>
+                            
+                            <div className="w-full bg-slate-200/60 rounded-full h-2 relative overflow-hidden mt-3">
+                                <motion.div 
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${demandPercent}%` }}
+                                    transition={{ duration: 1, ease: "easeOut", delay: 0.5 + index * 0.1 }}
+                                    className="bg-gradient-to-r from-indigo-500 to-purple-500 h-full rounded-full group-hover:from-indigo-600 group-hover:to-purple-600"
+                                />
+                            </div>
+                        </motion.div>
+                    );
+                })}
+            </div>
+        </motion.div>
+    );
+};
+
 export default function StudentDashboard() {
     const { user, logout } = useAuth();
     const router = useRouter();
@@ -273,7 +340,7 @@ export default function StudentDashboard() {
                 ]);
 
                 if (matchesRes.data.success) {
-                    setMatches(matchesRes.data.data?.slice(0, 10) || []);
+                    setMatches(matchesRes.data.data?.slice(0, 6) || []);
                 }
                 if (statsRes.data.success) {
                     setStats(statsRes.data.data);
@@ -548,6 +615,9 @@ export default function StudentDashboard() {
 
                         <RecommendedInternships matches={matches} />
                     </motion.div>
+
+                    {/* Interactive Skill Gap Analysis Widget */}
+                    <SkillGapWidget matches={matches} />
                 </div>
         </>
     );
