@@ -7,7 +7,14 @@
     "start": "node --no-deprecation server.js",
     "dev": "nodemon --no-deprecation server.js",
     "test": "cross-env NODE_ENV=test jest --runInBand --detectOpenHandles",
-    "test:watch": "cross-env NODE_ENV=test jest --watch"
+    "test:watch": "cross-env NODE_ENV=test jest --watch",
+    "test:profile": "npm test -- tests/integration/studentProfile.test.js",
+    "test:personal": "npm test -- tests/integration/studentPersonalInfo.test.js",
+    "test:education": "npm test -- tests/integration/studentEducation.test.js",
+    "test:skills": "npm test -- tests/integration/studentSkills.test.js",
+    "test:projects": "npm test -- tests/integration/studentProjects.test.js",
+    "test:documents": "npm test -- tests/integration/studentDocuments.test.js",
+    "test:all": "npm test -- tests/integration/student*.test.js"
   },
   "dependencies": {
     "@sentry/node": "^10.42.0",
