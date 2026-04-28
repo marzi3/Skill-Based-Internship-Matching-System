@@ -14,13 +14,15 @@ const Notification = require('./src/models/Notification');
 const Match = require('./src/models/Match');
 const MatchingEngine = require('./src/services/matchingEngine');
 
-mongoose.connect(process.env.MONGODB_URI);
-
 const BCRYPT_SALT_ROUNDS = parseInt(process.env.BCRYPT_SALT_ROUNDS, 10) || 10;
 const TEST_PASSWORD = 'Password123!';
 
 const seedData = async () => {
     try {
+        console.log('Connecting to MongoDB...');
+        await mongoose.connect(process.env.MONGODB_URI);
+        console.log('Connected to MongoDB!');
+
         console.log('Clearing entire test database...');
         await User.deleteMany({ role: { $in: ['student', 'employer'] } });
         await Student.deleteMany();
@@ -108,6 +110,7 @@ const seedData = async () => {
                 workEnvironment: 'On-site', location: 'Mumbai', duration: '3 Months',
                 expiryDate: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000),
                 requiredSkills: ['Figma', 'UI Design', 'Wireframing', 'Prototyping'],
+                requiredDegreeField: ['Design', 'Information Technology'],
                 description: 'Redesign our core mobile applications.', company: emp2.companyName,
                 status: 'Hiring', numberOfOpenings: 2, experienceLevel: 'Entry Level',
                 stipend: { amount: 15000, currency: 'INR' }, perks: ['Free Food', 'MacBook Provided']
@@ -231,7 +234,7 @@ const seedData = async () => {
         // Priya (AI) applies to AI/ML Intern
         await Application.create({
             student: createdStudents[2].user._id, internship: internships[2]._id, employer: emp2._id,
-            status: 'Selected', matchScore: 98,
+            status: 'Offered', matchScore: 98,
             answers: [{ question: 'Why apply?', answer: 'Trained models on AWS.' }],
             resume: 'https://example.com/priya-resume.pdf'
         });
