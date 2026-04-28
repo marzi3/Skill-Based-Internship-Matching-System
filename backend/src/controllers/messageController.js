@@ -177,3 +177,16 @@ module.exports = {
     markMessageAsRead,
     markThreadAsRead
 };
+
+// @desc    Get unread messages count
+// @route   GET /api/messages/unread-count
+// @access  Private
+const getUnreadMessageCount = asyncHandler(async (req, res) => {
+    const unreadCount = await Message.countDocuments({
+        receiverId: req.user._id,
+        isRead: false
+    });
+    res.status(200).json({ success: true, count: unreadCount });
+});
+
+module.exports.getUnreadMessageCount = getUnreadMessageCount;

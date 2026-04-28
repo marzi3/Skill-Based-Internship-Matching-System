@@ -26,33 +26,6 @@ export default function StudentPublicProfile() {
                 setLoading(false);
             }
         };
-
-
-                    {/* Social Links */}
-                    <div className="flex gap-3 pt-4 border-t border-slate-100">
-                        {profile?.socialLinks?.github && (
-                            <a
-                                href={profile.socialLinks.github.startsWith('http') ? profile.socialLinks.github : `https://github.com/${profile.socialLinks.github}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors text-sm font-semibold"
-                            >
-                                <Github size={16} />
-                                GitHub
-                            </a>
-                        )}
-                        {profile?.socialLinks?.linkedin && (
-                            <a
-                                href={profile.socialLinks.linkedin.startsWith('http') ? profile.socialLinks.linkedin : `https://linkedin.com/in/${profile.socialLinks.linkedin}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2 px-4 py-2 bg-[#0A66C2] text-white rounded-lg hover:bg-[#084592] transition-colors text-sm font-semibold"
-                            >
-                                <Linkedin size={16} />
-                                LinkedIn
-                            </a>
-                        )}
-                    </div>
         if (params.id) fetchProfile();
     }, [params.id]);
 
@@ -181,6 +154,32 @@ export default function StudentPublicProfile() {
                                         Portfolio
                                     </a>
                                 </div>
+                            )}
+                        </div>
+
+                        {/* Social Links */}
+                        <div className="flex gap-3 pt-4">
+                            {profile?.socialLinks?.github && (
+                                <a
+                                    href={profile.socialLinks.github.startsWith('http') ? profile.socialLinks.github : `https://github.com/${profile.socialLinks.github}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors text-sm font-semibold shadow-sm"
+                                >
+                                    <Github size={16} />
+                                    GitHub
+                                </a>
+                            )}
+                            {profile?.socialLinks?.linkedin && (
+                                <a
+                                    href={profile.socialLinks.linkedin.startsWith('http') ? profile.socialLinks.linkedin : `https://linkedin.com/in/${profile.socialLinks.linkedin}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 px-4 py-2 bg-[#0A66C2] text-white rounded-lg hover:bg-[#084592] transition-colors text-sm font-semibold shadow-sm"
+                                >
+                                    <Linkedin size={16} />
+                                    LinkedIn
+                                </a>
                             )}
                         </div>
                     </div>

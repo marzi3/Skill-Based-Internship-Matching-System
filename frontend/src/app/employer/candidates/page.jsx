@@ -213,30 +213,32 @@ const CandidateSearchPage = () => {
                 <AnimatePresence>
                     {showFilters && (
                         <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
+                            initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                            animate={{ height: 'auto', opacity: 1, marginTop: '1rem' }}
+                            exit={{ height: 0, opacity: 0, marginTop: 0 }}
                             className="overflow-hidden"
                         >
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-100">
-                                <div>
-                                    <label className="block text-xs font-black text-gray-900 uppercase tracking-[0.2em] mb-2">Field of Study</label>
-                                    <input type="text" value={fieldFilter} onChange={e => setFieldFilter(e.target.value)}
-                                        placeholder="e.g. Computer Science"
-                                        className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
+                            <div className="bg-gray-50/50 rounded-2xl border border-gray-100 p-5 shadow-inner">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div>
+                                        <label className="block text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-2">Field of Study</label>
+                                        <input type="text" value={fieldFilter} onChange={e => setFieldFilter(e.target.value)}
+                                            placeholder="e.g. Computer Science"
+                                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-bold shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-2">Location</label>
+                                        <input type="text" value={locationFilter} onChange={e => setLocationFilter(e.target.value)}
+                                            placeholder="e.g. San Francisco"
+                                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-bold shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all" />
+                                    </div>
                                 </div>
-                                <div>
-                                    <label className="block text-xs font-black text-gray-900 uppercase tracking-[0.2em] mb-2">Location</label>
-                                    <input type="text" value={locationFilter} onChange={e => setLocationFilter(e.target.value)}
-                                        placeholder="e.g. San Francisco"
-                                        className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
+                                <div className="flex justify-end mt-4">
+                                    <button onClick={() => { setFieldFilter(''); setLocationFilter(''); }}
+                                        className="text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-800 transition-colors bg-indigo-50 px-4 py-2 rounded-lg">
+                                        Clear Filters
+                                    </button>
                                 </div>
-                            </div>
-                            <div className="flex justify-end mt-3">
-                                <button onClick={() => { setFieldFilter(''); setLocationFilter(''); }}
-                                    className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors">
-                                    Clear All Filters
-                                </button>
                             </div>
                         </motion.div>
                     )}
@@ -244,11 +246,24 @@ const CandidateSearchPage = () => {
             </div>
 
             {/* Results */}
-            {loading ? (
-                <div className="flex items-center justify-center py-20">
-                    <Loader2 className="animate-spin text-indigo-600" size={32} />
+            {loading || isSearching ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {[1, 2, 3, 4, 5, 6].map(i => (
+                        <div key={i} className="bg-white rounded-3xl border border-gray-100 p-6 h-64 animate-pulse">
+                            <div className="flex justify-between items-start mb-6">
+                                <div className="w-16 h-16 rounded-2xl bg-gray-200"></div>
+                                <div className="w-12 h-6 bg-gray-200 rounded-full"></div>
+                            </div>
+                            <div className="w-3/4 h-6 bg-gray-200 rounded-md mb-3"></div>
+                            <div className="w-1/2 h-4 bg-gray-100 rounded-md mb-6"></div>
+                            <div className="flex gap-2 mb-6">
+                                <div className="w-16 h-6 bg-gray-100 rounded-md"></div>
+                                <div className="w-16 h-6 bg-gray-100 rounded-md"></div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
-            ) : !loading && displayCandidates.length === 0 ? (
+            ) : !loading && !isSearching && displayCandidates.length === 0 ? (
                 <div className="py-24 text-center bg-white rounded-[3rem] border border-gray-100 shadow-sm animate-in fade-in zoom-in duration-500">
                     <div className="w-20 h-20 bg-indigo-50 rounded-3xl flex items-center justify-center mx-auto mb-6">
                         <Users className="w-10 h-10 text-indigo-300" />
@@ -296,12 +311,36 @@ const CandidateSearchPage = () => {
                                                     <Flag size={14} />
                                                 </button>
                                                 {isMatchResult && (
-                                                    <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-black border ${getScoreColor(score)}`}>
-                                                        <Star size={14} fill="currentColor" /> {score}%
-                                                    </span>
+                                                    <div className="relative group/score">
+                                                        <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-black border cursor-help ${getScoreColor(score)}`}>
+                                                            <Star size={14} fill="currentColor" /> {score}%
+                                                        </span>
+                                                        
+                                                        {/* Deep Match Insights Popover */}
+                                                        <div className="absolute right-0 bottom-full mb-3 w-64 bg-gray-900/95 backdrop-blur-md text-white rounded-2xl shadow-xl p-4 opacity-0 invisible group-hover/score:opacity-100 group-hover/score:visible transition-all z-50 pointer-events-none scale-95 group-hover/score:scale-100 origin-bottom-right border border-gray-700">
+                                                            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 mb-3 border-b border-gray-700 pb-2">Match Insights</p>
+                                                            <div className="space-y-3">
+                                                                <div>
+                                                                    <p className="text-[10px] font-bold text-emerald-400 mb-1 flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-emerald-400"/> Matched Skills</p>
+                                                                    <div className="flex flex-wrap gap-1">
+                                                                        {skills.length > 0 ? skills.map(s => <span key={s} className="text-[10px] bg-white/10 px-1.5 py-0.5 rounded">{s}</span>) : <span className="text-[10px] text-gray-500">None</span>}
+                                                                    </div>
+                                                                </div>
+                                                                {candidate.missingSkills && candidate.missingSkills.length > 0 && (
+                                                                    <div>
+                                                                        <p className="text-[10px] font-bold text-rose-400 mb-1 flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-rose-400"/> Missing Skills</p>
+                                                                        <div className="flex flex-wrap gap-1">
+                                                                            {candidate.missingSkills.map(s => <span key={s} className="text-[10px] bg-white/5 text-gray-400 px-1.5 py-0.5 rounded">{s}</span>)}
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <div className="absolute -bottom-1.5 right-4 w-3 h-3 bg-gray-900/95 border-b border-r border-gray-700 rotate-45"></div>
+                                                        </div>
+                                                    </div>
                                                 )}
                                                 {isMatchResult && candidate.tier && (
-                                                    <span className="text-[10px] font-bold text-gray-500 uppercase">{candidate.tier}</span>
+                                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{candidate.tier}</span>
                                                 )}
                                             </div>
                                         </div>

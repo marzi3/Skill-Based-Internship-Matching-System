@@ -25,20 +25,7 @@ const decodeHtmlEntities = (value = '') => {
         .replace(/&#39;/g, "'");
 };
 
-/* ── Status badge ── */
-const StatusBadge = ({ status }) => {
-    const cfg = {
-        Hiring: { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-100', dot: 'bg-emerald-500', icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
-        Closed: { bg: 'bg-rose-50', text: 'text-rose-600', border: 'border-rose-100', dot: 'bg-rose-500', icon: <XCircle className="w-3.5 h-3.5" /> },
-        Reviewing: { bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-100', dot: 'bg-amber-500', icon: <Power className="w-3.5 h-3.5" /> },
-    };
-    const s = cfg[status] || cfg.Reviewing;
-    return (
-        <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border shadow-sm ${s.bg} ${s.text} ${s.border}`}>
-            {s.icon} {status}
-        </span>
-    );
-};
+/* ── Removed static StatusBadge in favor of interactive select ── */
 
 /* ── Main page ── */
 export default function MyPostingsPage() {
@@ -77,9 +64,9 @@ export default function MyPostingsPage() {
 
     useEffect(() => { fetchMyInternships(); }, []);
 
-    const toggleStatus = async (id) => {
+    const updateStatus = async (id, newStatus) => {
         try {
-            const res = await axios.patch(`/internships/${id}/status`);
+            const res = await axios.patch(`/internships/${id}/status`, { status: newStatus });
             if (res.data.success) {
                 setInternships(p => p.map(i => i._id === id ? { ...i, status: res.data.data.status } : i));
                 showToast('success', 'Status Updated', `Posting is now ${res.data.data.status}.`);
@@ -331,24 +318,21 @@ export default function MyPostingsPage() {
 
                                         {/* Status */}
                                         <td className="px-8 py-6">
-                                            <StatusBadge status={internship.status} />
+                                            <select
+                                              value={internship.status}
+                                              onChange={(e) => updateStatus(internship._id, e.target.value)}
+                                              className={`px-4 py-2 text-[10px] uppercase tracking-widest font-black rounded-xl border cursor-pointer outline-none transition-all appearance-none pr-8 shadow-sm ${internship.status === 'Hiring' ? 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100' : internship.status === 'Closed' ? 'bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100' : 'bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100'}`}
+                                              style={{ backgroundImage: `url('data:image/svg+xml;utf8,<svg stroke="%236b7280" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>')`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.6rem center', backgroundSize: '12px' }}
+                                            >
+                                              <option value="Hiring">Hiring</option>
+                                              <option value="Reviewing">Reviewing</option>
+                                              <option value="Closed">Closed</option>
+                                            </select>
                                         </td>
 
                                         {/* Actions */}
                                         <td className="px-8 py-6">
                                             <div className="flex items-center justify-end gap-3 animate-in fade-in duration-500">
-
-                                                {/* Toggle */}
-                                                <button
-                                                    onClick={() => toggleStatus(internship._id)}
-                                                    title={internship.status === 'Hiring' ? 'Deactivate Role' : 'Activate Role'}
-                                                    className={`w-10 h-10 flex items-center justify-center rounded-xl border-2 font-black transition-all duration-300 ${internship.status === 'Hiring'
-                                                        ? 'bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-500 hover:text-white hover:border-emerald-500'
-                                                        : 'bg-amber-50 border-amber-100 text-amber-600 hover:bg-amber-500 hover:text-white hover:border-amber-500'
-                                                        }`}
-                                                >
-                                                    <Power className="w-5 h-5" />
-                                                </button>
 
                                                 {/* Edit */}
                                                 <Link href={`/employer/internships/${internship._id}/edit`}>

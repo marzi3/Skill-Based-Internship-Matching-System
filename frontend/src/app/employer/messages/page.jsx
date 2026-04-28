@@ -45,8 +45,13 @@ const EmployerMessagesPage = () => {
                 
                 // If the message is from the other party and the chat is open, mark as read
                 if (msg.senderId?._id !== user?._id && msg.senderId !== user?._id) {
-                    axios.patch(`/messages/${msg._id}/read`).catch(() => {});
+                    axios.patch(`/messages/${msg._id}/read`).then(() => {
+                        window.dispatchEvent(new CustomEvent('refresh-badges'));
+                    }).catch(() => {});
                 }
+            } else if (msg.senderId?._id !== user?._id && msg.senderId !== user?._id) {
+                // Not open, but received a new message
+                window.dispatchEvent(new CustomEvent('refresh-badges'));
             }
         };
 
@@ -110,6 +115,9 @@ const EmployerMessagesPage = () => {
             await axios.patch(`/messages/${app._id}/read-all`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             }).catch(() => {});
+            
+            // Refresh sidebar badges
+            window.dispatchEvent(new CustomEvent('refresh-badges'));
         } catch (err) {
             console.error('Failed to fetch messages:', err);
             setMessages([]);

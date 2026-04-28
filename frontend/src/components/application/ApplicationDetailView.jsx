@@ -15,8 +15,25 @@ import {
     Pencil,
     Phone,
     User,
+    Sparkles,
+    Activity,
+    History
 } from 'lucide-react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
+
+const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: { staggerChildren: 0.1, delayChildren: 0.1 }
+    }
+};
+
+const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
+};
 
 /**
  * ApplicationDetailView
@@ -108,10 +125,15 @@ export default function ApplicationDetailView({ application, role, onStatusUpdat
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-[#d8e5f2] via-[#e8edf4] to-[#eef2f7] p-4 sm:p-6 lg:p-10">
-            <div className="mx-auto max-w-6xl space-y-4">
-                <div className="rounded-[1.8rem] border border-slate-200 bg-white shadow-[0_24px_50px_rgba(15,23,42,0.12)]">
-                    <div className="border-b border-slate-200 px-5 py-5 sm:px-8">
+        <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="min-h-screen bg-gradient-to-b from-[#f8fafc] via-[#f1f5f9] to-[#e2e8f0] p-4 sm:p-6 lg:p-10"
+        >
+            <div className="mx-auto max-w-6xl space-y-6">
+                <motion.div variants={itemVariants} className="rounded-[2rem] border border-white/50 bg-white/70 backdrop-blur-xl shadow-xl shadow-indigo-900/5">
+                    <div className="border-b border-slate-100 px-5 py-6 sm:px-8">
                         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                             <div className="space-y-3">
                                 <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
@@ -174,10 +196,12 @@ export default function ApplicationDetailView({ application, role, onStatusUpdat
                         </div>
                     </div>
 
-                    <div className="space-y-6 px-5 py-5 sm:px-8 sm:py-6">
-                                <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4">
+                    <div className="space-y-8 px-5 py-8 sm:px-8 sm:py-10">
+                                <motion.section variants={itemVariants} className="space-y-5 rounded-3xl border border-white bg-gradient-to-br from-slate-50 to-white p-6 shadow-sm">
                                     <div className="flex flex-wrap items-center justify-between gap-2">
-                                        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-700">Protocol Pipeline Progress</h3>
+                                        <h3 className="flex items-center gap-2 text-[12px] font-black uppercase tracking-[0.2em] text-indigo-900">
+                                            <Activity size={16} className="text-indigo-500" /> Protocol Pipeline
+                                        </h3>
                                         <p className="text-[11px] font-bold text-slate-600">
                                             Current: {currentStepLabel} - last update:{' '}
                                             {latestStatusLog ? new Date(latestStatusLog.updatedAt).toLocaleDateString() : 'N/A'}
@@ -233,13 +257,16 @@ export default function ApplicationDetailView({ application, role, onStatusUpdat
                                             </div>
                                         </div>
                                     </div>
-                                </section>
+                                </motion.section>
 
-                        <section className="space-y-3 rounded-2xl border border-emerald-200 bg-[#ecf8ef] p-4">
-                            <h3 className="text-sm font-black uppercase tracking-[0.2em] text-slate-700">Technical Overlap Summary</h3>
-                            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                        <motion.section variants={itemVariants} className="space-y-5 rounded-3xl border border-emerald-100 bg-gradient-to-br from-emerald-50/50 to-white p-6 shadow-sm relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-200/20 rounded-full blur-3xl -mr-20 -mt-20"></div>
+                            <h3 className="flex items-center gap-2 text-[12px] font-black uppercase tracking-[0.2em] text-emerald-900 relative z-10">
+                                <Sparkles size={16} className="text-emerald-500" /> Match Intelligence Profile
+                            </h3>
+                            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 relative z-10">
                                 {positiveSignals.slice(0, 4).map((signal, index) => (
-                                    <div key={`${signal.detail}-${index}`} className="rounded-xl border border-emerald-200 bg-white px-3 py-2 text-base font-bold text-slate-700">
+                                    <div key={`${signal.detail}-${index}`} className="rounded-2xl border border-emerald-100 bg-white/80 backdrop-blur-md px-4 py-3 text-sm font-bold text-slate-700 shadow-sm shadow-emerald-900/5 transition-all hover:scale-[1.02]">
                                         {signal.detail}
                                     </div>
                                 ))}
@@ -267,10 +294,10 @@ export default function ApplicationDetailView({ application, role, onStatusUpdat
                                     </div>
                                 </div>
                             </div>
-                        </section>
+                        </motion.section>
 
                         {status === 'Interviewing' && interviewDetails && (
-                            <section className="space-y-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+                            <motion.section variants={itemVariants} className="space-y-4 rounded-3xl border border-indigo-100 bg-gradient-to-br from-indigo-50/50 to-white p-6 shadow-sm">
                                 <div className="flex items-center gap-2">
                                     <Clock size={16} className="text-emerald-700" />
                                     <h3 className="text-sm font-black uppercase tracking-[0.2em] text-emerald-700">Interview Details</h3>
@@ -293,11 +320,13 @@ export default function ApplicationDetailView({ application, role, onStatusUpdat
                                 {interviewDetails.notes && (
                                     <p className="text-base italic text-slate-700">"{interviewDetails.notes}"</p>
                                 )}
-                            </section>
+                            </motion.section>
                         )}
 
-                        <section className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4">
-                            <h3 className="text-sm font-black uppercase tracking-[0.2em] text-slate-700">Status History (Immutable Log)</h3>
+                        <motion.section variants={itemVariants} className="space-y-5 rounded-3xl border border-slate-100 bg-white/50 backdrop-blur-lg p-6 shadow-sm">
+                            <h3 className="flex items-center gap-2 text-[12px] font-black uppercase tracking-[0.2em] text-slate-900">
+                                <History size={16} className="text-slate-500" /> Status Log
+                            </h3>
                             <div className="overflow-x-auto rounded-xl border border-slate-100">
                                 <table className="min-w-full border-collapse text-left">
                                     <thead>
@@ -322,10 +351,10 @@ export default function ApplicationDetailView({ application, role, onStatusUpdat
                                     </tbody>
                                 </table>
                             </div>
-                        </section>
+                        </motion.section>
 
                         {role === 'student' && (
-                            <section className="grid gap-4 rounded-2xl border border-slate-200 bg-[#f8fafc] p-4 lg:grid-cols-2">
+                            <motion.section variants={itemVariants} className="grid gap-4 rounded-2xl border border-slate-200 bg-[#f8fafc] p-4 lg:grid-cols-2">
                                 <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
                                     <div className="flex items-center justify-between gap-3">
                                         <div className="flex items-center gap-3">
@@ -385,11 +414,11 @@ export default function ApplicationDetailView({ application, role, onStatusUpdat
                                         )}
                                     </div>
                                 </div>
-                            </section>
+                            </motion.section>
                         )}
                     </div>
-                </div>
+                </motion.div>
             </div>
-        </div>
+        </motion.div>
     );
 }

@@ -41,6 +41,7 @@ const NotificationsPage = () => {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
+            window.dispatchEvent(new CustomEvent('notif-read'));
         } catch (err) {
             console.error('Failed to mark as read:', err);
         }
@@ -59,9 +60,15 @@ const NotificationsPage = () => {
     };
 
     const markAllAsRead = async () => {
-        const unread = notifications.filter(n => !n.isRead);
-        for (const n of unread) {
-            await markAsRead(n._id);
+        try {
+            const token = Cookies.get('token') || localStorage.getItem('token');
+            await axios.patch('/notifications/mark-all-read', {}, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+            window.dispatchEvent(new CustomEvent('notif-read-all'));
+        } catch (err) {
+            console.error('Failed to mark all as read:', err);
         }
     };
 

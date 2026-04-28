@@ -1,14 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import axios from '@/services/apiClient';
 import { motion } from 'framer-motion';
 import {
     LayoutDashboard, Briefcase, Plus, Search, FileText, Building,
     MessageSquare, Bell, Settings, LogOut, ChevronLeft, ChevronRight, X
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import Cookies from 'js-cookie';
 
 /**
  * Shared collapsible sidebar for all Employer pages.
@@ -18,6 +20,49 @@ export default function EmployerSidebar({ closeMobileMenu }) {
     const pathname = usePathname();
     const { logout } = useAuth();
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const [unreadCounts, setUnreadCounts] = useState({ messages: 0, notifications: 0 });
+
+    const fetchUnreadCounts = async () => {
+        try {
+            const token = typeof window !== 'undefined' ? (Cookies.get('token') || localStorage.getItem('token')) : null;
+            if (!token) return;
+            const [msgRes, notifRes] = await Promise.all([
+                axios.get('/messages/unread-count', { headers: { Authorization: `Bearer ${token}` } }),
+                axios.get('/notifications/unread-count', { headers: { Authorization: `Bearer ${token}` } })
+            ]);
+            setUnreadCounts({
+                messages: msgRes.data.count || 0,
+                notifications: notifRes.data.count || 0
+            });
+        } catch (err) {
+            console.error('Failed to fetch unread counts:', err);
+        }
+    };
+
+    useEffect(() => {
+        fetchUnreadCounts();
+        
+        // Listen for custom events to manually decrement/refresh badges
+        const handleRefresh = () => fetchUnreadCounts();
+        const handleMsgRead = () => setUnreadCounts(prev => ({ ...prev, messages: Math.max(0, prev.messages - 1) }));
+        const handleNotifRead = () => setUnreadCounts(prev => ({ ...prev, notifications: Math.max(0, prev.notifications - 1) }));
+        const handleMsgReadAll = () => setUnreadCounts(prev => ({ ...prev, messages: 0 }));
+        const handleNotifReadAll = () => setUnreadCounts(prev => ({ ...prev, notifications: 0 }));
+
+        window.addEventListener('refresh-badges', handleRefresh);
+        window.addEventListener('message-read', handleMsgRead);
+        window.addEventListener('message-read-all', handleMsgReadAll);
+        window.addEventListener('notif-read', handleNotifRead);
+        window.addEventListener('notif-read-all', handleNotifReadAll);
+
+        return () => {
+            window.removeEventListener('refresh-badges', handleRefresh);
+            window.removeEventListener('message-read', handleMsgRead);
+            window.removeEventListener('message-read-all', handleMsgReadAll);
+            window.removeEventListener('notif-read', handleNotifRead);
+            window.removeEventListener('notif-read-all', handleNotifReadAll);
+        };
+    }, []);
 
     const navItems = [
         { label: 'Dashboard', path: '/employer/dashboard', icon: LayoutDashboard },
@@ -25,8 +70,8 @@ export default function EmployerSidebar({ closeMobileMenu }) {
         { label: 'My Postings', path: '/employer/internships', icon: Briefcase },
         { label: 'Applications', path: '/employer/applications', icon: FileText },
         { label: 'Search Candidates', path: '/employer/candidates', icon: Search, id: 'nav-candidates' },
-        { label: 'Messages', path: '/employer/messages', icon: MessageSquare },
-        { label: 'Notifications', path: '/employer/notifications', icon: Bell },
+        { label: 'Messages', path: '/employer/messages', icon: MessageSquare, badge: unreadCounts.messages },
+        { label: 'Notifications', path: '/employer/notifications', icon: Bell, badge: unreadCounts.notifications },
         { label: 'Company Profile', path: '/employer/profile', icon: Building },
     ];
 
@@ -93,10 +138,20 @@ export default function EmployerSidebar({ closeMobileMenu }) {
                                         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                                     />
                                 )}
-                                <span className="relative z-10 flex items-center gap-3">
-                                    <Icon className="w-5 h-5 flex-shrink-0" />
-                                    {!isCollapsed && <span className="whitespace-nowrap text-sm">{item.label}</span>}
+                                <span className="relative z-10 flex items-center justify-between w-full">
+                                    <span className="flex items-center gap-3">
+                                        <Icon className="w-5 h-5 flex-shrink-0" />
+                                        {!isCollapsed && <span className="whitespace-nowrap text-sm">{item.label}</span>}
+                                    </span>
+                                    {!isCollapsed && item.badge && (
+                                        <span className="bg-rose-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-sm animate-in fade-in duration-500">
+                                            {item.badge}
+                                        </span>
+                                    )}
                                 </span>
+                                {isCollapsed && item.badge && (
+                                    <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white z-20"></span>
+                                )}
 
                                 {/* Tooltip for collapsed state */}
                                 {isCollapsed && (
