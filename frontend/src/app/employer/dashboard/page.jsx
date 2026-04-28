@@ -10,7 +10,7 @@ import {
   ChevronDown, TrendingUp, TrendingDown, Briefcase, Eye, Clock, Calendar,
   Download, Activity, Zap, Star, Search, Edit, Trash2,
   Power, Filter, Loader2, AlertTriangle, ArrowUpRight, Sparkles,
-  Sun, Moon, Sunrise
+  Sun, Moon, Sunrise, Bell
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -354,7 +354,7 @@ const EmployerDashboard = () => {
           </div>
         </motion.div>
 
-        {matchStats.length > 0 && (
+        {Array.isArray(matchStats) && matchStats.length > 0 && (
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
             <div className="mb-4">
               <h2 className="text-sm font-bold text-gray-900">Match Quality Distribution</h2>
@@ -391,14 +391,14 @@ const EmployerDashboard = () => {
                 <div className="flex items-center gap-2 mb-1"><Star className="w-5 h-5 text-indigo-600" /><h2 className="text-lg font-black text-gray-900 tracking-tight">Best Matches for You</h2></div>
                 <p className="text-sm text-gray-500 font-medium">Top candidates based on skill alignment</p>
               </div>
-              {topCandidates.length > 3 && (
+              {Array.isArray(topCandidates) && topCandidates.length > 3 && (
                 <Link href="/employer/candidates?rapidMatch=true" className="flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-800 transition-colors bg-white px-4 py-2 rounded-xl shadow-sm border border-indigo-100">
                   View All <ArrowUpRight className="w-4 h-4" />
                 </Link>
               )}
             </div>
             <div className="space-y-4">
-              {topCandidates.length > 0 ? (
+              {Array.isArray(topCandidates) && topCandidates.length > 0 ? (
                 <RecommendedCandidates candidates={topCandidates.slice(0, 3)} />
               ) : (
                 <div className="text-center py-12 bg-white/50 backdrop-blur-sm rounded-2xl border border-white/60">
@@ -422,7 +422,7 @@ const EmployerDashboard = () => {
             <h2 className="text-lg font-black text-gray-900 tracking-tight">Recent Activity</h2>
           </div>
           <div className="space-y-4">
-            {recentActivity.length === 0 ? (
+            {!Array.isArray(recentActivity) || recentActivity.length === 0 ? (
               <div className="text-center py-12 flex flex-col items-center">
                 <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mb-4 border border-gray-100">
                     <Bell className="w-6 h-6 text-gray-300" />
